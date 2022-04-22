@@ -1,0 +1,35 @@
+# type, attribute, reason
+
+#
+# malicious
+#
+malicious,backdoor
+malicious,typosquatting or repo/brand-jacking
+malicious,cryptominer
+
+#
+# suspicious (potentially malicious)
+#
+suspicious,overwrites system binaries
+suspicious,inconsistent with source
+suspicious,behaves differently across environments
+
+#
+# vulnerable to code exploits
+#
+vulnerable,contains known vulnerablities (CVEs)
+vulnerable,insecure network communication
+
+#
+# packages with undesirable or "risky" attributes
+#
+undesirable,old package, no security updates
+undesirable,invalid author email, 2FA not enabled
+undesirable,invalid or no homepage
+undesirable,no or invalid source repo
+undesirable,contains custom installation hooks, hooks may download or execute malicious code
+undesirable,generates new code at runtime
+undesirable,accesses environment variables
+undesirable,accesses files and dirs
+undesirable,communicates with external network
+undesirable,no or insufficient readme

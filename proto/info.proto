@@ -1,0 +1,45 @@
+syntax = "proto3";
+package proto;
+
+message ReleaseInfo {
+    string name = 1;
+    string timestamp = 2;
+}
+
+message RepositoryInfo {
+    // link to the repository
+    string url = 1;
+    // type can be git/svn/hg etc.
+    string type = 2;
+}
+
+message ExecuteInfo {
+    string target = 1;
+    string command = 2;
+}
+
+message PackageInfo {
+    message Metadata {
+        // basic info
+        string package_name = 1;
+        string package_version = 2;
+        string email = 3;
+        string homepage = 4;
+        string license = 5;
+        // host info
+        RepositoryInfo repository = 6;
+        // execute info
+        repeated ExecuteInfo exec_jobs = 7;
+        // author info
+        repeated string authors = 8;
+        repeated string contributors = 9;
+        repeated string maintainers = 10;
+        // release info
+        repeated ReleaseInfo releases = 11;
+    }
+    Metadata info = 1;
+    // Runtime dependencies
+    repeated Metadata dependencies = 2;
+    // Development dependencies
+    repeated Metadata dev_dependencies = 3;
+}

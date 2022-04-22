@@ -1,0 +1,244 @@
+syntax = "proto3";
+package proto;
+
+message FileInfo {
+	// the verbose file name and the relative path with regard to repo root
+	string filename = 1;
+	string relpath = 2;
+	// the file and directory specified in compile_commands
+	string file = 3;
+	string directory = 4;
+}
+
+message SourceLocation {
+	int32 row = 1;
+	int32 column = 2;
+	FileInfo file_info = 3;
+}
+
+message SourceRange {
+	SourceLocation start = 1;
+	SourceLocation end = 2;
+}
+
+enum Language {
+    UNKNOWN = 0;
+    PYTHON = 1;
+    JAVASCRIPT = 2;
+    RUBY = 3;
+    JAVA = 4;
+    PHP = 5;
+    CSHARP = 6;
+    CPP = 7;
+    GO = 8;
+}
+
+enum Functionality {
+    UNCLASSIFIED = 0;
+    SOURCE = 1;
+    SINK = 2;
+    DANGER = 3;
+    PROPAGATE = 4;
+}
+
+/**
+ * Types of taint sources and sinks
+ *
+ * http://blogs.grammatech.com/what-is-taint-checking
+ * http://web.cs.iastate.edu/~weile/cs513x/2018spring/taintanalysis.pdf
+ * https://www.bodden.de/pubs/rab14classifying.pdf
+ */
+enum SourceType {
+    SOURCE_UNCLASSIFIED = 0;
+    // Sources from Susi
+    SOURCE_ACCOUNT = 1;
+    SOURCE_BLUETOOTH = 2;
+    SOURCE_BROWSER = 3;
+    SOURCE_CALENDAR = 4;
+    SOURCE_CONTACT = 5;
+    SOURCE_DATABASE = 6;
+    SOURCE_FILE = 7;
+    SOURCE_NETWORK = 8;
+    SOURCE_NFC = 9;
+    SOURCE_SETTINGS = 10;
+    SOURCE_SYNC = 11;
+    SOURCE_UNIQUE_IDENTIFIER = 12;
+
+    // Sources from other sources
+    SOURCE_ENVIRONMENT = 51;
+    SOURCE_USER_INPUT = 52;
+    SOURCE_OBFUSCATION = 53;
+}
+
+enum SinkType {
+    SINK_UNCLASSIFIED = 0;
+    // Sinks from Susi
+    SINK_ACCOUNT = 1;
+    SINK_AUDIO = 2;
+    SINK_BROWSER = 3;
+    SINK_CALENDAR = 4;
+    SINK_CONTACT = 5;
+    SINK_FILE = 6;
+    SINK_LOG = 7;
+    SINK_NETWORK = 8;
+    SINK_NFC = 9;
+    SINK_PHONE_CONNECTION = 10;
+    SINK_PHONE_STATE = 11;
+    SINK_SMS_MMS = 12;
+    SINK_SYNC = 13;
+    SINK_SYSTEM = 14;
+    SINK_VOIP = 15;
+
+    // Sinks from other sources
+    SINK_CODE_GENERATION = 51;
+    SINK_PROCESS_OPERATION = 52;
+    SINK_DATABASE = 53;
+}
+
+enum DangerType {
+    DANGER_UNCLASSIFIED_DANGER = 0;
+}
+
+enum PropagateType {
+    PROPAGATE_UNCLASSIFIED = 0;
+    PROPAGATE_ASSIGN = 1;
+
+    // Calls can affect the results by return value or reference argument
+    PROPAGATE_CALL = 2;
+    PROPAGATE_SYSCALL = 3;
+    PROPAGATE_LIBCALL = 4;
+
+    // Others
+}
+
+message AstNode {
+    enum NodeType {
+        UNKNOWN = 0;
+        // common types
+
+        // declarations
+        FUNCTION_DECL = 1;
+        VARIABLE_DECL = 2;
+        CLASS_DECL = 3;
+
+        // references
+        FUNCTION_DECL_REF_EXPR = 11;
+        VARIABLE_DECL_REF_EXPR = 12;
+        CLASS_DECL_REF_EXPR = 13;
+
+        /**
+         * Python node types
+         * https://docs.python.org/2/library/ast.html
+         * https://docs.python.org/3/library/ast.html
+         * https://github.com/python-security/pyt/blob/master/pyt/core/node_types.py
+         */
+        PY_FUNCTION_DEF = 101;
+
+        /**
+         * JavaScript node types
+         * https://github.com/Kronuz/esprima-python/blob/master/esprima/syntax.py
+         */
+        JS_ASSIGNMENT_EXPRESSION = 201;
+
+        /**
+         * Ruby node types
+         * https://github.com/whitequark/parser/blob/master/lib/parser/ruby26.y
+         * https://github.com/whitequark/parser/blob/master/lib/parser/ast/processor.rb
+         */
+        RB_REGULAR_NODE = 301;
+        RB_VARIABLE_NODE = 302;
+
+        /**
+         * Java node types
+         * https://github.com/Sable/soot/blob/develop/src/main/generated/jastadd/soot/JastAddJ/ASTNode.java
+         */
+        JAVA_IDENTITY_STMT = 401;
+
+        /**
+         * Php node types
+         * https://github.com/nikic/PHP-Parser/blob/master/grammar/php5.y
+         * https://github.com/nikic/PHP-Parser/blob/master/grammar/php7.y
+         */
+        PHP_EXPR_VARIABLE = 501;
+
+        // TODO: Csharp node types
+        // TODO: Cpp node types
+        // TODO: Go node types
+    }
+
+    NodeType type = 1;
+    string name = 2;
+    string full_name = 3;
+    string base_type = 4;
+    // The module name used to include the base class/type
+    string module = 5;
+    // The right value if current ast node is an assign expression
+    string value = 6;
+    // The definition if current ast node is class/function definition
+    string definition = 7;
+    /**
+     * The arg nodes used for matching APIs, id indicates their index, name/value can be set.
+     *
+     * (1) If value is specified, the parent node should be kept only if the value matches.
+     * (2) If only value/index is specified, the specified args are sinks in taint analysis.
+     */
+    repeated AstNode arg_nodes = 8;
+    // The value of arguments if current ast node is function calls
+    repeated string arguments = 9;
+
+    // All the statements related to current ast node
+    string source = 10;
+    // Collect the range/locations of the node
+    SourceRange range = 11;
+
+    // Map each AstNode to a unique number, and allow flexible constraints expressed in SMT.
+    int32 id = 12;
+    // Each API should either be source, sink or danger. Note: danger APIs are mostly sinks, e.g. rmdir.
+    Functionality functionality = 13;
+    // Record the accurate functionality for APIs.
+    oneof accurate_functionality {
+        SourceType source_type = 14;
+        SinkType sink_type = 15;
+        DangerType danger_type = 16;
+        PropagateType propagate_type = 17;
+    }
+
+    // Record children of the current node
+    repeated AstNode child_nodes = 18;
+    // Whether the base_type can be instantiated or not. This can be used in func_only mode to improve API matching.
+    bool instantiatable = 19;
+}
+
+message AstLookupConfig {
+    // List the APIs as a list of pre-defined ast nodes
+    repeated AstNode apis = 1;
+    // Save generic feature result
+    bool save_feature = 2;
+    // SMT formula of node ids, interpretable by Z3, allow flexible constraints on the ast nodes
+    // https://rise4fun.com/z3/tutorialcontent/sequences
+    string smt_formula = 3;
+    
+    // The satisfiability evaluation result, filled after evaluation. True means we will investigate further on this package.
+    bool smt_satisfied = 4;
+    // Allow any base_type and match only function name. This is a temporary to dynamic types in scripting languages.
+    bool func_only = 5;
+}
+
+message PkgAstResult {
+    // Package information
+    string pkg_name = 1;
+    string pkg_version = 2;
+    Language language = 3;
+    string input_path = 4;
+    AstLookupConfig config = 5;
+
+    // Ast lookup results
+    repeated AstNode api_results = 6;
+    // Abstract syntax tree for files
+    repeated AstNode root_nodes = 7;
+}
+
+message PkgAstResults {
+    repeated PkgAstResult pkgs = 1;
+    uint64 timestamp = 2;
+}

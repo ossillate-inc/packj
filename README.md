@@ -1,4 +1,4 @@
-# <img src="https://www.svgrepo.com/show/255045/box-package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> PackJ</span> 
+# <img src="https://www.svgrepo.com/show/255045/box-package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj</span> 
 
 *packj* (pronounced package) is a standalone tool to vet open-source software packages for "risky" attributes that make them vulnerable to supply chain attacks.
 

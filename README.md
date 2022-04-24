@@ -11,26 +11,26 @@ Packj accepts two input args:
 *NOTE* Packj has only been tested on Linux.
 
 ```
-$ python main.py pypi KrisQian
-[+] Fetching 'KrisQian' from pypi...OK [ver 0.0.7]
+$ python main.py pypi krisqian
+[+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
 [+] Checking author...OK [KrisWuQian@baidu.com]
-[+] Checking version...OK [217 days old]
+[+] Checking version...OK [219 days old]
 [+] Checking readme...OK [0 bytes]
 [+] Checking repo...OK [None]
 [+] Checking homepage...OK [https://www.bilibili.com/bangumi/media/md140632]
 [+] Checking for CVEs...OK [0 found]
-[+] Downloading package 'KrisQian' (ver 0.0.7) from pypi...OK [1.94 KB]
+[+] Downloading package 'krisqian' (ver 0.0.7) from pypi...OK [1.94 KB]
 [+] Analyzing APIs...OK
 [+] 4 risk(s) found, package is undesirable!
 {
     "undesirable": [
-        "no description", 
         "no source repo", 
-        "fetches data over the network", 
-        "reads files and dirs"
+        "generates new code at runtime", 
+        "fetches data over the network ['KrisQian-0.0.7/setup.py:40', 'KrisQian-0.0.7/setup.py:50']", 
+        "reads files and dirs: ['KrisQian-0.0.7/setup.py:59', 'KrisQian-0.0.7/setup.py:70']"
     ]
 }
-=> View detailed and complete report at https://packj.dev/package/PyPi/KrisQian/0.0.7
+=> View pre-vetted package report at https://packj.dev/package/PyPi/krisqian/0.0.7
 ```
 
 Specific package versions to be vetted could be specified using `==`. Please refer to the example below
@@ -58,7 +58,7 @@ $ python main.py pypi requests==2.18.4
         "contains CVE-2018-18074,CVE-2018-18074"
     ]
 }
-=> View detailed and complete report at https://packj.dev/package/PyPi/requests/2.18.4
+View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
 ````
 
 ## How it works

@@ -1,0 +1,11 @@
+asttokens==1.1.11
+dnspython==2.2.1
+func_timeout==4.3.3
+networkx==2.2
+protobuf==3.20.1
+pyIsEmail==1.4.0
+python_dateutil==2.8.2
+python_magic==0.4.25
+rarfile==3.0
+requests==2.18.4
+setuptools==39.0.1

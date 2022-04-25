@@ -14,7 +14,7 @@ def parse_api_usage(pm_name, filepath):
 			apis2perms[api] = perm
 
 	#print(apis2perms)
-	perms = []
+	perms = {}
 
 	usage_data = read_json_from_file(filepath)
 	if not usage_data or 'pkgs' not in usage_data or \
@@ -25,8 +25,16 @@ def parse_api_usage(pm_name, filepath):
 
 	for api_usage in usage_data['pkgs'][0]['apiResults']:
 		api = api_usage['fullName']
+		usage = api_usage['range']['start']['fileInfo']['file'] + ':' + str(api_usage['range']['start']['row'])
+		p = None
 		if api == 'os.environ.get':
-			perms.append('SOURCE_ENVVAR')
+			p = 'SOURCE_ENVVAR'
+		elif api in ['subprocess.Popen','os.system']:
+			p = 'SINK_CODE_GENERATION'
 		elif api in apis2perms:
-			perms.append(apis2perms[api])
-	return set(perms)
+			p = apis2perms[api]
+		if p:
+			if p not in perms:
+				perms[p] = []
+			perms[p].append(usage)
+	return perms

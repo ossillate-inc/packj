@@ -108,9 +108,11 @@ def analyze_repo(pkg_name, ver_str=None, pkg_info=None, risks={}):
 		repo = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not repo:
 			repo = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+			if not repo.startswith('https://github.com') and not repo.startswith('https://gitlab.com'):
+				repo = None
 		if not repo:
+			reason = 'no source repo'
 			alert_type = 'no or invalid source repo'
-			alert_type = 'no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		elif not repo.startswith('https://github.com') and not repo.startswith('https://gitlab.com'):
 			reason = 'invalid source repo'
@@ -183,22 +185,22 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 		perms = parse_api_usage(pm_name, filepath+'.out')
 		assert perms, "No APIs found!"
 
-		for p in perms:
+		for p, usage in perms.items():
 			if p == "SOURCE_FILE":
 				alert_type = 'accesses files and dirs'
-				reason = 'reads files and dirs'
+				reason = 'reads files and dirs: %s' % (usage)
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SINK_FILE":
 				alert_type = 'accesses files and dirs'
-				reason = 'writes to files and dirs'
+				reason = 'writes to files and dirs: %s' % (usage)
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SINK_NETWORK":
 				alert_type = 'communicates with external network'
-				reason = 'sends data over the network'
+				reason = 'sends data over the network %s' % (usage)
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SOURCE_NETWORK":
 				alert_type = 'communicates with external network'
-				reason = 'fetches data over the network'
+				reason = 'fetches data over the network %s' % (usage)
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SOURCE_ENVVAR":
 				alert_type = 'accesses environment variables'
@@ -271,4 +273,5 @@ if __name__ == "__main__":
 	else:
 		print("[+] %d risk(s) found, package is %s!" % (sum(len(v) for v in risks.values()), ', '.join(risks.keys())))
 		print(json.dumps(risks, indent=4))
-		print("=> View detailed and complete report at https://packj.dev/%s/%s/%s" % (pm_name, pkg_name, ver_str))
+		#print("=> View detailed and complete report: %s-%s-%s.json" % (pm_name, pkg_name, ver_str))
+		print("=> View pre-vetted package report at https://packj.dev/package/PyPi/%s/%s" % (pkg_name, ver_str))

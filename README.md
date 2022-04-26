@@ -8,7 +8,7 @@ Packj accepts two input args:
 * name of the registry or package manager, pypi or npm
 * name of the package to be vetted
 
-*NOTE* Packj has only been tested on Linux.
+**NOTE** Packj has only been tested on Linux. You will have to install dependencies first using `pip install -r requirements.txt`
 
 ```
 $ python main.py pypi krisqian

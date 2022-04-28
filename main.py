@@ -6,7 +6,7 @@ import json
 from static_proxy.py_analyzer import PyAnalyzer
 from pm_proxy.pypi import PypiProxy
 
-from util.net import download_file
+from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from util.dates import datetime_delta
 from util.email_validity import check_email_address
 from util.files import read_from_csv
@@ -92,8 +92,23 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}):
 			reason = 'no homepage'
 			alert_type = 'invalid or no homepage'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-		elif url in ['example', 'google', 'pastebin', 'amazon', 'yahoo', 'netflix', 'facebook']:
-			reason = 'invalid homepage'
+
+		# check if insecure
+		ret = __parse_url(url)
+		if ret.scheme != 'https':
+			reason = 'insecure webpage'
+			alert_type = 'invalid or no homepage'
+			risks = alert_user(alert_type, threat_model, reason, risks)
+
+		# check if an existent webpage
+		elif not check_site_exist(url):
+			reason = 'nonexistent webpage'
+			alert_type = 'invalid or no homepage'
+			risks = alert_user(alert_type, threat_model, reason, risks)
+
+		# check if a popular webpage
+		elif check_domain_popular(url):
+			reason = 'invalid (popular) webpage'
 			alert_type = 'invalid or no homepage'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%s]" % (url))

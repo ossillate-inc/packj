@@ -1,6 +1,66 @@
 from util.dates import curr_timestamp
 import os
 
+def __parse_url(url):
+	try:
+		import six
+		if six.PY2:
+			from urlparse import urlparse												
+		elif six.PY3:																	
+			from urllib.parse import urlparse											
+		return urlparse(url)
+	except Exception as e:
+		raise Exception(str(e))
+
+def __open_url(url):
+	try:
+		import six
+		if six.PY2:
+			from urllib2 import urlopen
+		elif six.PY3:																	
+			from urllib.request import urlopen
+		return urlopen(url)
+	except Exception as e:
+		raise Exception(str(e))
+
+def check_domain_popular(url):													
+	try:
+		url_parts = __parse_url(url)												
+		from tldextract import extract
+		subdomain, domain, suffix = extract(url)
+	except Exception as e:
+		print(str(e))
+		return False
+
+	try:
+		from io import BytesIO
+		from zipfile import ZipFile
+		domain_list_url = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'		
+		resp = __open_url(domain_list_url)
+		zipfile = ZipFile(BytesIO(resp.read()))
+		domain_list = []
+		for line in zipfile.open(zipfile.namelist()[0]).readlines():				
+			rank, dom = line.strip().decode('utf-8').split(',')					
+			domain_list.append(dom)												
+		return domain in domain_list and url_parts.path==''
+	except Exception as e:															
+		print("check_domain_popular (%s): %s" % (url, str(e)))						
+		return False
+
+def check_site_exist(url, check_validity=False):
+	try:
+		if check_validity:
+			url_parts = __parse_url(url)
+	except:
+		return False
+
+	try:
+		import requests
+		request = requests.head(url)
+		return request.status_code == 200
+	except Exception as e:
+		print("check_site_exist (%s): %s" % (url, str(e)))
+		return False
 def download_file(url, filepath=None, mode='wb+'):
 	assert url, "NULL url"
 	if not filepath:

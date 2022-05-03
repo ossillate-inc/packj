@@ -67,7 +67,7 @@ View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
 ## How it works
 
 - It first downloads the metadata from the registry using their APIs and analyze it for "risky" attributes.
-- To perform API analysis, the package is downloaded from the registry using their APIs into a temp dir. Then, packj performs static code analysis to detect API usage.
+- To perform API analysis, the package is downloaded from the registry using their APIs into a temp dir. Then, packj performs static code analysis to detect API usage. API analysis is based on [MalOSS](https://github.com/osssanitizer/maloss), a research project from our group at Georgia Tech.
 - Vulnerabilities (CVEs) are checked by pulling info from OSV database at [OSV](https://osv.dev)
 - All risks detected are aggregated and reported 
 

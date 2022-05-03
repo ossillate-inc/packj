@@ -51,17 +51,33 @@ def check_site_exist(url, check_validity=False):
 	try:
 		if check_validity:
 			url_parts = __parse_url(url)
-	except:
-		return False
+	except Exception as e:
+		return False, "Invalid URL (%s)" % (str(e))
 
+	resp = None
 	try:
 		import requests
-		resp = requests.head(url, allow_redirects=True)
+		resp = requests.head(url, allow_redirects=False, verify=True, timeout=30)
 		resp.raise_for_status()
-		return resp.status_code == 200
+		if resp.status_code == 200:
+			return True, "OK"
+		elif resp.status_code == 302:
+			return False, "redirects to another page"
+		return False, str(resp.status_code)
+	except requests.exceptions.SSLError:
+		return False, "invalid SSL certificate, vulnerable to MITM attack"
+	except requests.exceptions.ConnectionError as ce:
+		return False, "nonexistent page, failed to connect"
+	except requests.exceptions.HTTPError as he:
+		# http status codes 400,500, ...
+		return False, "invalid http response, code %s" % (str(resp.status_code) if resp else 'None')
+	except requests.exceptions.Timeout as te:
+		# status code 408
+		return False, "connection timed out"
 	except Exception as e:
-		print("check_site_exist (%s): %s" % (url, str(e)))
-		return False
+		#print("check_site_exist (%s): %s" % (url, str(e)))
+		return False, str(e)
+
 def download_file(url, filepath=None, mode='wb+'):
 	assert url, "NULL url"
 	if not filepath:

@@ -39,7 +39,7 @@ def alert_user(alert_type, threat_model, reason, risks):
 		risk_cat = threat_model[alert_type]
 		if risk_cat not in risks:
 			risks[risk_cat] = []
-		risks[risk_cat].append(reason)
+		risks[risk_cat].append('%s: %s' % (alert_type, reason))
 	return risks
 
 def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks={}):
@@ -101,8 +101,8 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}):
 			risks = alert_user(alert_type, threat_model, reason, risks)
 
 		# check if an existent webpage
-		elif not check_site_exist(url):
-			reason = 'nonexistent webpage'
+		valid_site, reason = check_site_exist(url)
+		if not valid_site:
 			alert_type = 'invalid or no homepage'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 
@@ -126,16 +126,16 @@ def analyze_repo(pkg_name, ver_str=None, pkg_info=None, risks={}):
 			if not repo.startswith('https://github.com') and not repo.startswith('https://gitlab.com'):
 				repo = None
 		if not repo:
-			reason = 'no source repo'
-			alert_type = 'no or invalid source repo'
+			reason = 'no source repo found'
+			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		elif not repo.startswith('https://github.com') and not repo.startswith('https://gitlab.com'):
-			reason = 'invalid source repo'
-			alert_type = 'no or invalid source repo'
+			reason = 'invalid source repo %s' % (repo)
+			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		elif repo.strip('/') in ['https://github.com/pypa/sampleproject', 'https://github.com/kubernetes/kubernetes']:
-			reason = 'invalid source repo'
-			alert_type = 'no or invalid source repo'
+			reason = 'invalid source repo %s' % (repo)
+			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%s]" % (repo))
 	except Exception as e:

@@ -223,7 +223,7 @@ class PypiProxy(PackageManagerProxy):
 			try:
 				return pkg_info['info']['project_urls']['Source']
 			except KeyError:
-				return pkg_info['info']['project_urls']['Homepage']
+				return None
 		except Exception as e:
 			logging.error(str(e))
 			return None

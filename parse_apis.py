@@ -25,7 +25,10 @@ def parse_api_usage(pm_name, filepath):
 
 	for api_usage in usage_data['pkgs'][0]['apiResults']:
 		api = api_usage['fullName']
-		usage = api_usage['range']['start']['fileInfo']['file'] + ':' + str(api_usage['range']['start']['row'])
+		try:
+			usage = api_usage['range']['start']['fileInfo']['file'] + ':' + str(api_usage['range']['start']['row'])
+		except:
+			usage = ''
 		p = None
 		if api == 'os.environ.get':
 			p = 'SOURCE_ENVVAR'

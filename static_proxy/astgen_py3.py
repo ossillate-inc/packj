@@ -210,12 +210,15 @@ def get_api_result(base, name, args, source_text, source_range, filepb):
 	for arg in args:
 		api_result.arguments.append(arg)
 	api_result.source = source_text
-	source_start, source_end = source_range
-	api_result.range.start.row = source_start[0]
-	api_result.range.start.column = source_start[1]
+	if source_range:
+		source_start, source_end = source_range
+		api_result.range.start.row = source_start[0]
+		api_result.range.start.column = source_start[1]
 	api_result.range.start.file_info.CopyFrom(filepb)
-	api_result.range.end.row = source_end[0]
-	api_result.range.end.column = source_end[1]
+	if source_range:
+		source_start, source_end = source_range
+		api_result.range.end.row = source_end[0]
+		api_result.range.end.column = source_end[1]
 	api_result.range.end.file_info.CopyFrom(filepb)
 	return api_result
 

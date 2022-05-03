@@ -56,8 +56,9 @@ def check_site_exist(url, check_validity=False):
 
 	try:
 		import requests
-		request = requests.head(url)
-		return request.status_code == 200
+		resp = requests.head(url, allow_redirects=True)
+		resp.raise_for_status()
+		return resp.status_code == 200
 	except Exception as e:
 		print("check_site_exist (%s): %s" % (url, str(e)))
 		return False

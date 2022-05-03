@@ -91,4 +91,4 @@ Packj has been developed with a goal to assist developers in identifying and rev
 
 ## Team
 
-packj has been developed by cybersecurity researchers at [Ossillate Inc.](https://ossillate.com) to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies.
+packj has been developed by cybersecurity researchers at [Ossillate Inc.](https://ossillate.com/team) to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies.

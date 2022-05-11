@@ -253,6 +253,10 @@ if __name__ == "__main__":
 		assert pkg_info, "package not found!"
 
 		#print("\n%s" % (json.dumps(pkg_info)))
+		try:
+			pkg_name = pkg_info['info']['name']
+		except KeyError:
+			pass
 
 		ver_info = pm_proxy.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		assert ver_info, "No version info!"

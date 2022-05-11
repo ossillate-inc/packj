@@ -1,3 +1,6 @@
+#
+# Based on MalOSS:  https://github.com/osssanitizer/maloss
+#
 import ast
 import logging
 from collections import Counter

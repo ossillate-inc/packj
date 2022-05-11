@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+
+#
+# Based on MalOSS:  https://github.com/osssanitizer/maloss
+#
 import os
 import ast
 import sys

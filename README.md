@@ -36,6 +36,28 @@ $ python main.py pypi krisqian
 => View pre-vetted package report at https://packj.dev/package/PyPi/krisqian/0.0.7
 ```
 
+Packj supports vetting of PyPI and NPM packages. **NOTE** NPM package vetting is a WIP.
+
+```
+$ python main.py npm eslint
+[+] Fetching 'eslint' from npm...OK [ver 8.15.0]
+[+] Checking author...OK [nicholas+npm@nczconsulting.com]
+[+] Checking version...OK [4 days old]
+[+] Checking readme...OK [18367 bytes]
+[+] Checking homepage...OK [https://eslint.org]
+[+] Checking repo...OK [git+https://github.com/eslint/eslint.git]
+[+] Checking for CVEs...OK [0 found]
+[+] Downloading package 'eslint' (ver 8.15.0) from npm...OK [489.42 KB]
+[+] Analyzing APIs...OK
+[+] 2 risk(s) found, package is undesirable!
+{
+    "undesirable": [
+        "generates new code at runtime: generates new code at runtime", 
+        "accesses files and dirs: reads files and dirs: ['package/lib/cli-engine/load-rules.js:37', 'package/lib/cli-engine/file-enumerator.js:142']"
+    ]
+}
+```
+
 Specific package versions to be vetted could be specified using `==`. Please refer to the example below
 
 ```

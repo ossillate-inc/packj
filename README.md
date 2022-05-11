@@ -93,6 +93,7 @@ View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
 - Vulnerabilities (CVEs) are checked by pulling info from OSV database at [OSV](https://osv.dev)
 - All risks detected are aggregated and reported 
 
+Refer to our [PyConUS'22 slides](https://speakerdeck.com/ashishbijlani/pyconus22-slides) for details.
 
 ## Risky attributes and customization
 

@@ -30,14 +30,17 @@ def date_str_to_datetime(date_str, fmt=None):
 def datetime_delta(date_str1, date_str2=None, days=None):
 	try:
 		import datetime
-
+		import pytz
+		
+		utc=pytz.UTC
+		
 		date1 = date_str_to_datetime(date_str1)
 		if not date_str2:
 			date2 = datetime.datetime.now()
 		else:
 			date2 = date_str_to_datetime(date_str2)
 
-		delta = date2 - date1
+		delta = date2.replace(tzinfo=utc) - date1.replace(tzinfo=utc)
 		if days:
 			return delta.days
 		return delta

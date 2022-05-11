@@ -3,6 +3,8 @@ from util.files import read_from_csv, read_json_from_file
 def parse_api_usage(pm_name, filepath):
 	if pm_name == 'pypi':
 		apis2perms_filepath = 'config/python_api/apis2perms.csv'
+	elif pm_name == 'npm':
+		apis2perms_filepath = 'config/javascript_api/apis2perms.csv'
 	else:
 		raise Exception('%s not supported!' % (pm_name))
 
@@ -13,7 +15,6 @@ def parse_api_usage(pm_name, filepath):
 		if api not in apis2perms:
 			apis2perms[api] = perm
 
-	#print(apis2perms)
 	perms = {}
 
 	usage_data = read_json_from_file(filepath)

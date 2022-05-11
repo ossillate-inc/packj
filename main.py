@@ -13,18 +13,8 @@ from util.files import read_from_csv
 from util.enum_util import PackageManagerEnum, LanguageEnum, DistanceAlgorithmEnum, TraceTypeEnum, DataTypeEnum
 
 from parse_apis import parse_api_usage
-
-def get_static_proxy_for_language(language):
-	if language == LanguageEnum.python:
-		return PyAnalyzer()
-	else:
-		raise Exception("Proxy not available for language: %s" % language)
-
-def get_pm_proxy_for_language(language, registry=None, cache_dir=None, isolate_pkg_info=False):
-	if language == LanguageEnum.python:
-		return PypiProxy(registry=registry, cache_dir=cache_dir, isolate_pkg_info=isolate_pkg_info)
-	else:
-		raise Exception("Proxy not available for language: %s" % language)
+from pm_util import get_pm_proxy
+from static_util import get_static_proxy_for_language
 
 def get_threat_model(filename='threats.csv'):
 	threat_model = {}
@@ -46,8 +36,7 @@ def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks=
 	try:
 		print("[+] Checking version...", end='')
 
-		if not ver_info:
-			ver_info = pm_proxy.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+		ver_info = pm_proxy.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		assert ver_info, "No version info!"
 
 		# check upload timestamp
@@ -55,7 +44,7 @@ def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks=
 			uploaded = ver_info['uploaded']
 			days = datetime_delta(uploaded, days=True)
 		except KeyError:
-			uploaded = None
+			raise Exception('parse error')
 
 		if not uploaded or days > 365:
 			reason = 'no release date' if not uploaded else '%d days old' % (days)
@@ -117,19 +106,19 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}):
 	finally:
 		return risks
 
-def analyze_repo(pkg_name, ver_str=None, pkg_info=None, risks={}):
+def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}):
 	try:
 		print("[+] Checking repo...", end='')
-		repo = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+		repo = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		if not repo:
 			repo = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			if not repo.startswith('https://github.com') and not repo.startswith('https://gitlab.com'):
+			if not repo.startswith(('https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/')):
 				repo = None
 		if not repo:
 			reason = 'no source repo found'
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-		elif not repo.startswith('https://github.com') and not repo.startswith('https://gitlab.com'):
+		elif not repo.startswith(('https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/')):
 			reason = 'invalid source repo %s' % (repo)
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
@@ -157,10 +146,10 @@ def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}):
 	finally:
 		return risks
 
-def analyze_author(pkg_name, ver_str=None, pkg_info=None, risks={}):
+def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}):
 	try:
 		print("[+] Checking author...", end='')
-		author_info = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+		author_info = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		assert author_info, "No author info!"
 
 		try:
@@ -186,16 +175,21 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
 			configpath = os.path.join('config','astgen_python_smt.config')
+		elif pm_name == 'npm':
+			language=LanguageEnum.javascript
+			configpath = os.path.join('config','astgen_javascript_smt.config')
 		else:
-			raise "%s not supported!"
+			print("OOOO")
+			raise Exception("***%s not supported!")
 
 		static = get_static_proxy_for_language(language=language)
 		try:
 			static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
 				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=True)
-		except:
+		except Exception as ee:
 			if not os.path.exists(filepath+'.out'):
 				raise Exception("no output!")
+			#raise Exception("invalid analysis %s" % (str(e)))
 
 		perms = parse_api_usage(pm_name, filepath+'.out')
 		assert perms, "No APIs found!"
@@ -237,9 +231,16 @@ if __name__ == "__main__":
 	threat_model = get_threat_model()
 
 	pm_name = sys.argv[1].lower()
-	if pm_name != 'pypi':
-		print("Only PyPI is supported. Exiting")
+	if pm_name == 'pypi':
+		pm = PackageManagerEnum.pypi
+	elif pm_name == 'npm':
+		pm = PackageManagerEnum.npmjs
+	else:
+		print("Package manager %s is not supported" % (pm_name))
 		exit(1)
+
+	pm_proxy = get_pm_proxy(pm, cache_dir=None, isolate_pkg_info=False)
+	assert pm_proxy, "!!!%s not supported" % (pm_name)
 
 	ver_str = None
 	pkg_name = sys.argv[2]
@@ -247,17 +248,19 @@ if __name__ == "__main__":
 		pkg_name, ver_str = pkg_name.split('==')
 
 	try:
-		language=LanguageEnum.python
-		pm_proxy = get_pm_proxy_for_language(language=language, cache_dir=None, isolate_pkg_info=False)
-
 		print("[+] Fetching '%s' from %s..." % (pkg_name, pm_name), end='')
 		pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info, "package not found!"
 
+		#print("\n%s" % (json.dumps(pkg_info)))
+
 		ver_info = pm_proxy.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		assert ver_info, "No version info!"
 
-		ver_str = ver_info['tag']
+		#print(json.dumps(ver_info, indent=4))
+		if not ver_str:
+			ver_str = ver_info['tag']
+
 		print("OK [ver %s]" % (ver_str))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
@@ -265,11 +268,11 @@ if __name__ == "__main__":
 
 	risks = {}
 
-	risks = analyze_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks)
-	risks = analyze_version(pkg_name, ver_str=ver_str, ver_info=ver_info, pkg_info=pkg_info, risks=risks)
+	risks = analyze_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks)
+	risks = analyze_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks)
 	risks = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks)
-	risks = analyze_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks)
 	risks = analyze_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks)
+	risks = analyze_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks)
 	risks = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks)
 
 	# download package
@@ -277,8 +280,12 @@ if __name__ == "__main__":
 		print("[+] Downloading package '%s' (ver %s) from %s..." % (pkg_name, ver_str, pm_name), end='')
 		filepath, size = download_file(ver_info['url'])
 		print("OK [%0.2f KB]" % (float(size)/1024))
+	except KeyError:
+		print("FAILED [download URL missing]")
+		exit(1)
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
+		exit(1)
 
 	if filepath:
 		risks = analyze_apis(pm_name, pkg_name, ver_info, filepath, risks)
@@ -289,4 +296,5 @@ if __name__ == "__main__":
 		print("[+] %d risk(s) found, package is %s!" % (sum(len(v) for v in risks.values()), ', '.join(risks.keys())))
 		print(json.dumps(risks, indent=4))
 		#print("=> View detailed and complete report: %s-%s-%s.json" % (pm_name, pkg_name, ver_str))
+	if pm_name.lower() == 'pypi':
 		print("=> View pre-vetted package report at https://packj.dev/package/PyPi/%s/%s" % (pkg_name, ver_str))

@@ -112,7 +112,11 @@ def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={})
 		repo = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		if not repo:
 			repo = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			if not repo.startswith(('https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/')):
+			if not repo or not repo.startswith(('https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/')):
+				repo = None
+		if not repo:
+			repo = pm_proxy.get_download_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+			if not repo or not repo.startswith(('https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/')):
 				repo = None
 		if not repo:
 			reason = 'no source repo found'

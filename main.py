@@ -9,7 +9,7 @@ from pm_proxy.pypi import PypiProxy
 from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from util.dates import datetime_delta
 from util.email_validity import check_email_address
-from util.files import read_from_csv
+from util.files import write_json_to_file, read_from_csv
 from util.enum_util import PackageManagerEnum, LanguageEnum, DistanceAlgorithmEnum, TraceTypeEnum, DataTypeEnum
 
 from parse_apis import parse_api_usage
@@ -183,7 +183,6 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 			language=LanguageEnum.javascript
 			configpath = os.path.join('config','astgen_javascript_smt.config')
 		else:
-			print("OOOO")
 			raise Exception("***%s not supported!")
 
 		static = get_static_proxy_for_language(language=language)
@@ -193,7 +192,7 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 		except Exception as ee:
 			if not os.path.exists(filepath+'.out'):
 				raise Exception("no output!")
-			#raise Exception("invalid analysis %s" % (str(e)))
+			raise Exception("invalid analysis %s" % (str(ee)))
 
 		perms = parse_api_usage(pm_name, filepath+'.out')
 		assert perms, "No APIs found!"
@@ -223,7 +222,7 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 				alert_type = 'generates new code at runtime'
 				reason = 'generates new code at runtime'
 				risks = alert_user(alert_type, threat_model, reason, risks)
-		print("OK")
+		print("OK [%d analyzed]" % (len(perms)))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -276,6 +275,7 @@ if __name__ == "__main__":
 
 	risks = {}
 
+	# analyze metadata
 	risks = analyze_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks)
 	risks = analyze_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks)
 	risks = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks)
@@ -290,19 +290,20 @@ if __name__ == "__main__":
 		print("OK [%0.2f KB]" % (float(size)/1024))
 	except KeyError:
 		print("FAILED [download URL missing]")
-		exit(1)
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
-		exit(1)
 
 	if filepath:
 		risks = analyze_apis(pm_name, pkg_name, ver_info, filepath, risks)
 
+	print("=============================================")
 	if not len(risks):
 		print("[+] No risks found!")
 	else:
 		print("[+] %d risk(s) found, package is %s!" % (sum(len(v) for v in risks.values()), ', '.join(risks.keys())))
-		print(json.dumps(risks, indent=4))
-		#print("=> View detailed and complete report: %s-%s-%s.json" % (pm_name, pkg_name, ver_str))
+		filename = "%s-%s-%s.json" % (pm_name, pkg_name, ver_str)
+		write_json_to_file(filename, risks, indent=4)
+		print("=> View detailed and complete report: %s" % (filename))
+
 	if pm_name.lower() == 'pypi':
 		print("=> View pre-vetted package report at https://packj.dev/package/PyPi/%s/%s" % (pkg_name, ver_str))

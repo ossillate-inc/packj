@@ -31,3 +31,21 @@ def read_from_csv(filename, skip_header=False):
 		for row in reader:
 			if len(row) and not row[0].startswith('#'):
 				yield row
+
+def write_json_to_file(filepath, data_json, indent=0):
+    try:
+        import json
+    except ImportError as e:
+        raise Exception("'json' module not available. Please install.")
+    try:
+        with open(filepath, "w+") as f:
+            json.dump(data_json, f, indent=indent)
+    except Exception as e:
+        raise Exception("Failed to dump json content to file %s: %s" % (filepath, str(e)))
+
+def write_to_file(filename, data):
+    try:
+        with open(filename, 'w+') as f:
+            f.write("%s" % (data))
+    except Exception as e:
+        raise Exception("Failed to write to file %s: %s" % (filename, str(e)))

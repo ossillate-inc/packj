@@ -183,12 +183,12 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 			language=LanguageEnum.javascript
 			configpath = os.path.join('config','astgen_javascript_smt.config')
 		else:
-			raise Exception("***%s not supported!")
+			raise Exception("Package manager %s not supported!")
 
 		static = get_static_proxy_for_language(language=language)
 		try:
 			static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
-				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=True)
+				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
 		except Exception as ee:
 			if not os.path.exists(filepath+'.out'):
 				raise Exception("no output!")

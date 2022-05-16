@@ -60,7 +60,7 @@ class PypiProxy(PackageManagerProxy):
 			metadata_content = requests.request('GET', metadata_url)
 			pkg_info = json_loads(metadata_content.text)
 		except Exception as e:
-			logging.error("fail in get_metadata for pkg %s, ignoring!\n%s", pkg_name, str(e))
+			logging.debug("fail in get_metadata for pkg %s, ignoring!\n%s", pkg_name, str(e))
 			return None
 		# optionally cache metadata
 		if pkg_info_dir is not None:

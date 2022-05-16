@@ -211,31 +211,3 @@ class JsAnalyzer(StaticAnalyzer):
 
         # clean up residues
         self._cleanup_astgen(analyze_path=analyze_path, is_decompress_path=is_decompress_path)
-
-    def taint(self, inpath, outfile, configpath=None, pkg_name=None, pkg_version=None):
-        analyze_path, is_decompress_path, outfile, _, configpath = self._sanitize_astgen_args(
-            inpath=inpath, outfile=outfile, root=None, configpath=configpath, language=self.language)
-
-        # convert the config to binary
-        configpb = AstLookupConfig()
-        configpath_bin = configpath + '.bin'
-
-        # create binary config from text format
-        self._pb_text_to_bin(proto=configpb, infile=configpath, outfile=configpath_bin)
-
-        # perform static taint analysis
-        taint_cmd = ['node', 'jsprime_wrapper.js', pkg_name, analyze_path, configpath_bin, outfile]
-        exec_command("javascript taint", taint_cmd, cwd="static_proxy/jsprime")
-        pkg_static = ModuleStatic()
-        read_proto_from_file(pkg_static, outfile, binary=True)
-        logging.warning("taint analysis results: %s", pkg_static)
-
-        # save resultpb
-        write_proto_to_file(pkg_static, filename=outfile, binary=False)
-
-        # clean up residues
-        os.remove(configpath_bin)
-        self._cleanup_astgen(analyze_path=analyze_path, is_decompress_path=is_decompress_path)
-
-    def danger(self, pkg_name, outdir, cache_dir=None, configpath=None, pkg_version=None):
-        pass

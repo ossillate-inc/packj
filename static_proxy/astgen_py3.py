@@ -20,7 +20,6 @@ from util.job_util import read_proto_from_file, write_proto_to_file
 from util.job_util import write_dict_to_file
 from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig, FileInfo, AstNode
 
-
 class PythonDeclRefVisitor(ast.NodeVisitor):
 	def __init__(self, buf, infile, asttok, configpb=None, debug=False):
 		self.asttok = asttok
@@ -245,8 +244,8 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 		try:
 			tree = ast.parse(all_source, filename=infile)
 		except SyntaxError as se:
-			logging.warning("Syntax error %s parsing file %s in python2!", se, infile)
-			raise se
+			logging.warning("Syntax error %s parsing file %s in python3!", se, infile)
+			return
 		# mark the tree with tokens information
 		asttok = asttokens.ASTTokens(source_text=all_source, tree=tree, filename=infile)
 		visitor = PythonDeclRefVisitor(buf=buf, infile=infile, asttok=asttok, configpb=configpb)
@@ -262,7 +261,6 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 	write_dict_to_file(buf, outfile + '.json')
 	# save resultpb
 	write_proto_to_file(resultpb, outfile, binary=False)
-
 
 def parse_args(argv):
 	parser = argparse.ArgumentParser(prog="astgen_py3", description="Parse arguments")

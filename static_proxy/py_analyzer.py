@@ -244,17 +244,3 @@ class PyAnalyzer(StaticAnalyzer):
 
         # clean up residues
         self._cleanup_astgen(analyze_path=analyze_path, is_decompress_path=is_decompress_path)
-
-    def taint(self, inpath, outfile, configpath=None, pkg_name=None, pkg_version=None):
-        analyze_path, is_decompress_path, outfile, root, configpath = self._sanitize_astgen_args(
-            inpath=inpath, outfile=outfile, root=None, configpath=configpath, language=self.language)
-
-        # perform static taint analysis
-        pyt_run(pkg_path=analyze_path, config_path=configpath, out_path=outfile)
-
-        # clean up residues
-        self._cleanup_astgen(analyze_path=analyze_path, is_decompress_path=is_decompress_path)
-
-    def danger(self, pkg_name, outdir, cache_dir=None, configpath=None, pkg_version=None):
-        pkg_static = ModuleStatic()
-        pass

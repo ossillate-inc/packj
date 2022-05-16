@@ -190,9 +190,9 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 			static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
 				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
 		except Exception as ee:
-			if not os.path.exists(filepath+'.out'):
-				raise Exception("no output!")
 			raise Exception("invalid analysis %s" % (str(ee)))
+
+		assert os.path.exists(filepath+'.out'), "parse error!"
 
 		perms = parse_api_usage(pm_name, filepath+'.out')
 		assert perms, "No APIs found!"
@@ -303,7 +303,7 @@ if __name__ == "__main__":
 		print("[+] %d risk(s) found, package is %s!" % (sum(len(v) for v in risks.values()), ', '.join(risks.keys())))
 		filename = "%s-%s-%s.json" % (pm_name, pkg_name, ver_str)
 		write_json_to_file(filename, risks, indent=4)
-		print("=> View detailed and complete report: %s" % (filename))
+		print("=> Complete report: %s" % (filename))
 
 	if pm_name.lower() == 'pypi':
 		print("=> View pre-vetted package report at https://packj.dev/package/PyPi/%s/%s" % (pkg_name, ver_str))

@@ -14,7 +14,6 @@ from util.job_util import read_proto_from_file, write_proto_to_file, exec_comman
 from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig, FileInfo, AstNode
 from proto.python.module_pb2 import ModuleStatic
 
-
 Language2Extensions = {
     LanguageEnum.python: ('.py',),
     LanguageEnum.javascript: ('.js',),
@@ -24,7 +23,6 @@ Language2Extensions = {
     LanguageEnum.php: ('.php',)
 }
 
-
 class StaticAnalyzer(object):
     def __init__(self):
         self.language = None
@@ -32,135 +30,6 @@ class StaticAnalyzer(object):
     def astgen(self, inpath, outfile, root=None, configpath=None, pkg_name=None, pkg_version=None, evaluate_smt=False):
         """
         Detects usage of sensitive APIs.
-        """
-        pass
-
-    def taint(self, inpath, outfile, configpath=None, pkg_name=None, pkg_version=None):
-        """
-        Identify data flow from sources to sinks.
-
-        This helps identify stealer, backdoor, and user-controlled sabotage. The returned message is of class module_pb2.ModuleStatic.
-        """
-        pass
-
-    def get_taint_result(self, pm_proxy, pkg_name, outdir, configpath=None, pkg_version=None, cache_only=False):
-        taint_fname = pm_proxy.get_taint_fname(pkg_name=pkg_name, pkg_version=pkg_version)
-        taint_file = join(outdir, taint_fname)
-        taint_result = None
-        if exists(taint_file):
-            logging.warning("get_taint_result: using cached taint_file %s!", taint_file)
-            taint_result = ModuleStatic()
-            read_proto_from_file(taint_result, taint_file, binary=False)
-        else:
-            if cache_only:
-                logging.warning("skipping unprocessed pkg %s ver %s due to cache_only!", pkg_name, pkg_version)
-                return taint_result
-            # download current package and analyze it
-            tempdir = tempfile.mkdtemp(prefix='taint-')
-            pm_proxy.download(pkg_name=pkg_name, pkg_version=pkg_version, outdir=tempdir)
-            tempdir_files = os.listdir(tempdir)
-            if len(tempdir_files) == 0:
-                logging.error("fail to download pkg %s ver %s", pkg_name, pkg_version)
-            else:
-                pkg_file = join(tempdir, tempdir_files[0])
-                self.taint(inpath=pkg_file, outfile=taint_file, configpath=configpath, pkg_name=pkg_name,
-                           pkg_version=pkg_version)
-                if exists(taint_file):
-                    taint_result = ModuleStatic()
-                    read_proto_from_file(taint_result, taint_file, binary=False)
-                else:
-                    logging.error("fail to run taint on downloaded package %s", pkg_file)
-            shutil.rmtree(tempdir)
-        return taint_result
-
-    def taint_tree(self, pkg_name, outdir, cache_dir=None, configpath=None, pkg_version=None, ignore_dep_version=False,
-                   ignore_dep=False):
-        """
-        Performs static taint analysis on packages and their dependencies, based on sources and sinks.
-
-        This identifies suspicious API calls and flows in packages (i.e. network.read, eval).
-        """
-        # sanitize language
-        if self.language is None:
-            raise Exception("Invoking taint on invalid language: %s" % self.language)
-
-        pm_proxy = get_pm_proxy_for_language(language=self.language, cache_dir=cache_dir, isolate_pkg_info=True)
-        # check for cached taint
-        taint_fname = pm_proxy.get_taint_fname(pkg_name=pkg_name, pkg_version=pkg_version)
-        taint_file = join(outdir, taint_fname)
-        if exists(taint_file):
-            logging.warning("skipping cached taint_file %s!", taint_file)
-            return
-
-        # get flattened dependencies, because each package result only contains module summary for itself (no children),
-        # but indirect dependencies can be directly imported.
-        if not ignore_dep:
-            try:
-                flatten_dep_pkgs = pm_proxy.get_dep(pkg_name=pkg_name, pkg_version=pkg_version, flatten=True)
-            except Exception as gde:
-                logging.error("fail to get_dep on pkg %s ver %s: %s", pkg_name, pkg_version, gde)
-                return
-
-            # get the taint results for dependent packages
-            dep_taint_results = []
-            for dep_name, dep_version in flatten_dep_pkgs.items():
-                if ignore_dep_version:
-                    dep_version = None
-                dep_taint_result = self.get_taint_result(pm_proxy=pm_proxy, pkg_name=dep_name, outdir=outdir,
-                                                         configpath=configpath, pkg_version=dep_version)
-                if dep_taint_result:
-                    dep_taint_results.append(dep_taint_result)
-
-            # based on the taint result of the children, generate the new config file and run taint on current package
-            tmp_configpath = self._gen_combined_configpath(configpath=configpath, dep_taint_results=dep_taint_results)
-            taint_result = self.get_taint_result(pm_proxy=pm_proxy, pkg_name=pkg_name, outdir=outdir,
-                                                 configpath=tmp_configpath, pkg_version=pkg_version)
-            os.remove(tmp_configpath)
-        else:
-            taint_result = self.get_taint_result(pm_proxy=pm_proxy, pkg_name=pkg_name, outdir=outdir,
-                                                 configpath=configpath, pkg_version=pkg_version)
-        if taint_result:
-            logging.warning("identified %d flows in %s ver %s", len(taint_result.flows), pkg_name, pkg_version)
-
-    def _gen_combined_configpath(self, configpath, dep_taint_results):
-        # load the old config
-        configpb = AstLookupConfig()
-        read_proto_from_file(configpb, configpath, binary=False)
-
-        # iterate through the taint results to update configpb
-        num_new_sources = 0
-        num_new_sinks = 0
-        for dep_taint_result in dep_taint_results:
-            # dep_taint_result is of type module_pb2.ModuleStatic
-            for new_source in dep_taint_result.sources:
-                configpb.apis.append(new_source.node)
-                num_new_sources += 1
-            for new_sink in dep_taint_result.sinks:
-                configpb.apis.append(new_sink.node)
-                num_new_sinks += 1
-        if num_new_sources + num_new_sinks > 0:
-            logging.warning("added %d new sources and %d new sinks!", num_new_sources, num_new_sinks)
-
-        # generate the new config file
-        outf = tempfile.NamedTemporaryFile(prefix='configpath-', delete=False)
-        write_proto_to_file(proto=configpb, filename=outf.name, binary=False)
-        return outf.name
-
-    def danger(self, pkg_name, outdir, cache_dir=None, configpath=None, pkg_version=None):
-        """
-        Identify arguments of sensitive APIs
-        http://www0.cs.ucl.ac.uk/staff/M.Harman/exe1.html
-
-        This helps identify hard-coded sabotage and argument-specific dangerous calls.
-        """
-        pass
-
-    def danger_tree(self, pkg_name, outdir, cache_dir=None, configpath=None, pkg_version=None, ignore_dep_version=False,
-                    ignore_dep=False):
-        """
-        Perform static API analysis on packages and their dependencies.
-
-        This identifies suspicious API calls (e.g. rmdir).
         """
         pass
 
@@ -264,62 +133,6 @@ class StaticAnalyzer(object):
         api_result.range.end.column = source_end[1]
         api_result.range.end.file_info.CopyFrom(filepb)
         return api_result
-
-    def astfilter(self, pkg_name, outdir, cache_dir=None, configpath=None, pkg_version=None, pkg_manager=None,
-                  ignore_dep_version=False, ignore_dep=False):
-        """
-        Filters packages and their dependencies, based on sensitive APIs and their combinations
-
-        This helps narrow down packages for further analysis.
-        """
-        # sanitize language
-        if self.language is None:
-            raise Exception("Invoking astfilter on invalid language: %s" % self.language)
-
-        if pkg_manager is None:
-            pm_proxy = get_pm_proxy_for_language(language=self.language, cache_dir=cache_dir, isolate_pkg_info=True)
-        else:
-            pm_proxy = get_pm_proxy(pm=pkg_manager, cache_dir=cache_dir, isolate_pkg_info=True)
-        # check for cached astfilter file
-        astfilter_fname = pm_proxy.get_astfilter_fname(pkg_name=pkg_name, pkg_version=pkg_version)
-        astfilter_file = join(outdir, astfilter_fname)
-        if exists(astfilter_file):
-            logging.warning("skipping cached astfilter_file %s!", astfilter_file)
-            return
-
-        # get the astgen results for the main package as well as its dependent packages
-        astgen_results = []
-        main_astgen_result = self.get_astgen_result(pm_proxy=pm_proxy, pkg_name=pkg_name, outdir=outdir,
-                                                    configpath=configpath, pkg_version=pkg_version)
-        if main_astgen_result:
-            astgen_results.append(main_astgen_result)
-        else:
-            logging.error("fail to run astfilter on pkg %s ver %s", pkg_name, pkg_version)
-            return
-
-        # get flattened dependencies and their astgen results
-        if not ignore_dep:
-            try:
-                flatten_dep_pkgs = pm_proxy.get_dep(pkg_name=pkg_name, pkg_version=pkg_version, flatten=True)
-            except Exception as gde:
-                logging.error("fail to get_dep on pkg %s ver %s: %s", pkg_name, pkg_version, gde)
-                return
-
-            for dep_name, dep_version in flatten_dep_pkgs.items():
-                if ignore_dep_version:
-                    dep_version = None
-                dep_astgen_result = self.get_astgen_result(pm_proxy=pm_proxy, pkg_name=dep_name, outdir=outdir,
-                                                           configpath=configpath, pkg_version=dep_version)
-                if dep_astgen_result:
-                    astgen_results.append(dep_astgen_result)
-
-        # check satisfiability of the specified smt formula and dump the corresponding output
-        satisfied = StaticAnalyzer._check_smt(astgen_results=astgen_results, configpath=configpath)
-        main_astgen_result.pkgs[0].config.smt_satisfied = satisfied
-
-        # TODO: maybe record the suspicious API usage in each dependent package as well
-        # dump the astfilter result to file
-        write_proto_to_file(proto=main_astgen_result, filename=astfilter_file, binary=False)
 
     def get_astgen_result(self, pm_proxy, pkg_name, outdir, configpath=None, pkg_version=None, cache_only=False):
         astgen_fname = pm_proxy.get_astgen_fname(pkg_name=pkg_name, pkg_version=pkg_version)

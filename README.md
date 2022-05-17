@@ -2,6 +2,8 @@
 
 *packj* (pronounced package) is a standalone command line (CLI) tool to vet open-source software packages for "risky" attributes that make them vulnerable to supply chain attacks.
 
+![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social) ![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)
+
 ## Usage
 
 Packj accepts two input args:
@@ -33,7 +35,7 @@ $ python main.py pypi krisqian
         "reads files and dirs: ['KrisQian-0.0.7/setup.py:59', 'KrisQian-0.0.7/setup.py:70']"
     ]
 }
-=> View pre-vetted package report at https://packj.dev/package/PyPi/krisqian/0.0.7
+=> View pre-vetted package report at https://packj.dev/package/PyPi/KrisQian/0.0.7
 ```
 
 Packj supports vetting of PyPI and NPM packages. **NOTE** NPM package vetting is a WIP.

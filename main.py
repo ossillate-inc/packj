@@ -32,7 +32,7 @@ def alert_user(alert_type, threat_model, reason, risks):
 		risks[risk_cat].append('%s: %s' % (alert_type, reason))
 	return risks
 
-def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks={}):
+def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking version...", end='')
 
@@ -51,12 +51,13 @@ def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks=
 			alert_type = 'old package'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%d days old]" % (days))
+		report["version"] = ver_info
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
-		return risks
+		return risks, report
 
-def analyze_cves(pm_name, pkg_name, ver_str, risks={}):
+def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
 	try:
 		print("[+] Checking for CVEs...", end='')
 		from osv import get_pkgver_vulns
@@ -68,12 +69,13 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks={}):
 		else:
 			vuln_list = []
 		print("OK [%s found]" % (len(vuln_list)))
+		report["vulnerabilities"] = vuln_list
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
-		return risks
+		return risks, report
 
-def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}):
+def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking homepage...", end='')
 		url = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
@@ -101,12 +103,13 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}):
 			alert_type = 'invalid or no homepage'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%s]" % (url))
+		report["homepage"] = url
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
-		return risks
+		return risks, report
 
-def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}):
+def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking repo...", end='')
 		repo = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
@@ -131,12 +134,13 @@ def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={})
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%s]" % (repo))
+		report["repo"] = repo
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
-		return risks
+		return risks, report
 
-def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}):
+def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking readme...", end='')
 		descr = pm_proxy.get_description(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
@@ -148,9 +152,9 @@ def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}):
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
-		return risks
+		return risks, report
 
-def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}):
+def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking author...", end='')
 		author_info = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
@@ -168,12 +172,13 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 			reason = 'invalid author email' if not valid else 'expired author email domain'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%s]" % (email))
+		report["author"] = author_info
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
-		return risks
+		return risks, report
 
-def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
+def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}, report={}):
 	try:
 		print("[+] Analyzing APIs...", end='')
 		if pm_name == 'pypi':
@@ -197,22 +202,23 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 		perms = parse_api_usage(pm_name, filepath+'.out')
 		assert perms, "No APIs found!"
 
+		report_data = {}
 		for p, usage in perms.items():
 			if p == "SOURCE_FILE":
 				alert_type = 'accesses files and dirs'
-				reason = 'reads files and dirs: %s' % (usage)
+				reason = 'reads files and dirs'
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SINK_FILE":
 				alert_type = 'accesses files and dirs'
-				reason = 'writes to files and dirs: %s' % (usage)
+				reason = 'writes to files and dirs'
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SINK_NETWORK":
 				alert_type = 'communicates with external network'
-				reason = 'sends data over the network %s' % (usage)
+				reason = 'sends data over the network %s'
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SOURCE_NETWORK":
 				alert_type = 'communicates with external network'
-				reason = 'fetches data over the network %s' % (usage)
+				reason = 'fetches data over the network'
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SOURCE_ENVVAR":
 				alert_type = 'accesses environment variables'
@@ -222,11 +228,21 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}):
 				alert_type = 'generates new code at runtime'
 				reason = 'generates new code at runtime'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+			elif p == "SOURCE_OBFUSCATION":
+				continue
+
+			# report
+			if reason not in report_data:
+				report_data[reason] = usage
+			else:
+				report_data[reason] += usage
+
 		print("OK [%d analyzed]" % (len(perms)))
+		report["permissions"] = report_data
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
-		return risks
+		return risks, report
 
 if __name__ == "__main__":
 	from static_util import astgen
@@ -274,14 +290,15 @@ if __name__ == "__main__":
 		exit(1)
 
 	risks = {}
+	report = {}
 
 	# analyze metadata
-	risks = analyze_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks)
-	risks = analyze_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks)
-	risks = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks)
-	risks = analyze_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks)
-	risks = analyze_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks)
-	risks = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks)
+	risks, report = analyze_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	risks, report = analyze_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	risks, report = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
+	risks, report = analyze_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
+	risks, report = analyze_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	risks, report = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks, report=report)
 
 	# download package
 	try:
@@ -294,16 +311,18 @@ if __name__ == "__main__":
 		print("FAILED [%s]" % (str(e)))
 
 	if filepath:
-		risks = analyze_apis(pm_name, pkg_name, ver_info, filepath, risks)
+		risks, report = analyze_apis(pm_name, pkg_name, ver_info, filepath, risks=risks, report=report)
 
 	print("=============================================")
 	if not len(risks):
 		print("[+] No risks found!")
+		report["risks"] = None
 	else:
 		print("[+] %d risk(s) found, package is %s!" % (sum(len(v) for v in risks.values()), ', '.join(risks.keys())))
-		filename = "%s-%s-%s.json" % (pm_name, pkg_name, ver_str)
-		write_json_to_file(filename, risks, indent=4)
-		print("=> Complete report: %s" % (filename))
+		report["risks"] = risks
+	filename = "%s-%s-%s.json" % (pm_name, pkg_name, ver_str)
+	write_json_to_file(filename, report, indent=4)
+	print("=> Complete report: %s" % (filename))
 
 	if pm_name.lower() == 'pypi':
 		print("=> View pre-vetted package report at https://packj.dev/package/PyPi/%s/%s" % (pkg_name, ver_str))

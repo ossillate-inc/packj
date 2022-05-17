@@ -9,7 +9,6 @@ import itertools
 from os.path import splitext, exists, join, basename
 from util.job_util import read_proto_from_file
 
-
 class PackageManagerProxy(object):
     # TODO: add install failure handlers, i.e. what to do if a package is removed or fail to install
     # TODO: add get metadata failure handlers, i.e. what to do if a package is removed or info retrieval fails

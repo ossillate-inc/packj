@@ -11,7 +11,6 @@ from os.path import join, exists
 from util.json_wrapper import json_loads
 from pm_proxy.pm_base import PackageManagerProxy
 
-
 class PypiProxy(PackageManagerProxy):
 	# Build python extensions
 	# https://docs.python.org/2/distutils/configfile.html
@@ -124,6 +123,27 @@ class PypiProxy(PackageManagerProxy):
 				return None
 		except Exception as e:
 			logging.error(str(e))
+			return None
+
+	def get_downloads(self, pkg_name):
+		BASE_URL = "https://pypistats.org/api/"
+		USER_AGENT = "pypistats/0.11.0"
+		endpoint = "packages/" + pkg_name + "/overall"
+		url = BASE_URL + endpoint.lower()
+		r = requests.get(url, headers={"User-Agent": USER_AGENT})
+		if int(r.status_code) == 200:
+			res = r.json()
+			data = res["data"]
+			total_downloads_without_mirrors = {}
+			for item in data:
+				if item['category'] == 'without_mirrors':
+					date = item['date']
+					downloads = int(item['downloads'])
+					total_downloads_without_mirrors[date] = downloads
+			total_downloads = sum(row["downloads"] for row in data)
+			return total_downloads#, total_downloads_without_mirrors
+		else:
+			logging.error("Error fetching downloads: %s" % (str(e)))
 			return None
 
 	def get_homepage(self, pkg_name, ver_str=None, pkg_info=None):

@@ -72,6 +72,16 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
 	finally:
 		return risks, report
 
+def analyze_downloads(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
+	try:
+		print("[+] Checking downloads...", end='')
+		ret = pm_proxy.get_downloads(pkg_name)
+		print("OK [%s]" % (ret))
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+	finally:
+		return risks, report
+
 def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking homepage...", end='')
@@ -286,7 +296,6 @@ if __name__ == "__main__":
 		pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info, "package not found!"
 
-		#print("\n%s" % (json.dumps(pkg_info)))
 		try:
 			pkg_name = pkg_info['info']['name']
 		except KeyError:
@@ -312,6 +321,7 @@ if __name__ == "__main__":
 	risks, report = analyze_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
+	risks, report = analyze_downloads(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks, report=report)
 

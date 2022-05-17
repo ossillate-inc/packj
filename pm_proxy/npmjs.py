@@ -73,6 +73,9 @@ class NpmjsProxy(PackageManagerProxy):
 		logging.error("failed to download pkg %s ver %s", pkg_name, pkg_version)
 		return None
 
+	def get_downloads(self, pkg_name):
+		return None
+
 	def _install_init(self, install_dir):
 		# run npm init to initialize repo
 		npm_init_cmd = ['npm', 'init', '-y']

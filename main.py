@@ -178,7 +178,7 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 	finally:
 		return risks, report
 
-def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}, report={}):
+def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 	try:
 		print("[+] Analyzing APIs...", end='')
 		if pm_name == 'pypi':
@@ -329,7 +329,7 @@ if __name__ == "__main__":
 		print("FAILED [%s]" % (str(e)))
 
 	if filepath:
-		risks, report = analyze_apis(pm_name, pkg_name, ver_info, filepath, risks=risks, report=report)
+		risks, report = analyze_apis(pm_name, pkg_name, ver_str, filepath, risks=risks, report=report)
 
 	print("=============================================")
 	if not len(risks):

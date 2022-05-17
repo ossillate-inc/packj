@@ -33,7 +33,7 @@ $ python main.py pypi krisqian
         "reads files and dirs: ['KrisQian-0.0.7/setup.py:59', 'KrisQian-0.0.7/setup.py:70']"
     ]
 }
-=> View pre-vetted package report at [https://packj.dev/package/PyPi/krisqian/0.0.7](https://packj.dev/package/PyPi/KrisQian/0.0.7)
+=> View pre-vetted package report at https://packj.dev/package/PyPi/KrisQian/0.0.7
 ```
 
 Packj supports vetting of PyPI and NPM packages. **NOTE** NPM package vetting is a WIP.
@@ -83,7 +83,7 @@ $ python main.py pypi requests==2.18.4
         "contains CVE-2018-18074,CVE-2018-18074"
     ]
 }
-View pre-vetted package report at [https://packj.dev/package/PyPi/requests/2.18.4](https://packj.dev/package/PyPi/requests/2.18.4)
+View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
 ````
 
 ## How it works

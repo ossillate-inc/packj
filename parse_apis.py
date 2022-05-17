@@ -27,7 +27,11 @@ def parse_api_usage(pm_name, filepath):
 	for api_usage in usage_data['pkgs'][0]['apiResults']:
 		api = api_usage['fullName']
 		try:
-			usage = api_usage['range']['start']['fileInfo']['file'] + ':' + str(api_usage['range']['start']['row'])
+			usage = {
+				"filepath": api_usage['range']['start']['fileInfo']['file'],
+				"api_name" : api_usage['name'],
+				"lineno": str(api_usage['range']['start']['row']),
+			}
 		except:
 			usage = None
 

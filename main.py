@@ -3,9 +3,6 @@ import sys
 import os
 import json
 
-from static_proxy.py_analyzer import PyAnalyzer
-from pm_proxy.pypi import PypiProxy
-
 from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from util.dates import datetime_delta
 from util.email_validity import check_email_address

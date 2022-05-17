@@ -220,16 +220,34 @@ def analyze_apis(pm_name, pkg_name, ver_info, filepath, risks={}, report={}):
 				alert_type = 'communicates with external network'
 				reason = 'fetches data over the network'
 				risks = alert_user(alert_type, threat_model, reason, risks)
-			elif p == "SOURCE_ENVVAR":
-				alert_type = 'accesses environment variables'
-				reason = 'reads environment variables'
-				risks = alert_user(alert_type, threat_model, reason, risks)
-			elif p == "SINK_CODE_GENERATION":
+			elif p in "SINK_CODE_GENERATION":
 				alert_type = 'generates new code at runtime'
 				reason = 'generates new code at runtime'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+			elif "SINK_PROCESS_OPERATION":
+				alert_type = 'generates new code at runtime'
+				reason = 'spawns new processes in background'
+				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SOURCE_OBFUSCATION":
-				continue
+				alert_type = 'accesses obfuscated (hidden) code'
+				reason = 'reads hidden code'
+				risks = alert_user(alert_type, threat_model, reason, risks)
+			elif p == "SOURCE_SETTINGS":
+				alert_type = 'accesses system/environment variables'
+				reason = 'reads system settings or environment variables'
+				risks = alert_user(alert_type, threat_model, reason, risks)
+			elif p == "SINK_UNCLASSIFIED":
+				alert_type = 'changes system/environment variables'
+				reason = 'modifies system settings or environment variables'
+				risks = alert_user(alert_type, threat_model, reason, risks)
+			elif p == "SOURCE_ACCOUNT":
+				alert_type = 'changes system/environment variables'
+				reason = 'modifies system settings or environment variables'
+				risks = alert_user(alert_type, threat_model, reason, risks)
+			elif p == "SOURCE_USER_INPUT":
+				alert_type = 'reads user input'
+				reason = 'reads user input'
+				risks = alert_user(alert_type, threat_model, reason, risks)
 
 			# report
 			if reason not in report_data:

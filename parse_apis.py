@@ -29,15 +29,14 @@ def parse_api_usage(pm_name, filepath):
 		try:
 			usage = api_usage['range']['start']['fileInfo']['file'] + ':' + str(api_usage['range']['start']['row'])
 		except:
-			usage = ''
-		p = None
-		if api == 'os.environ.get':
-			p = 'SOURCE_ENVVAR'
-		elif api in ['subprocess.Popen','os.system']:
-			p = 'SINK_CODE_GENERATION'
-		elif api in apis2perms:
+			usage = None
+
+		try:
 			p = apis2perms[api]
-		if p:
+		except KeyError:
+			p = None
+
+		if p and usage:
 			if p not in perms:
 				perms[p] = []
 			perms[p].append(usage)

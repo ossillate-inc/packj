@@ -74,48 +74,20 @@ class NpmjsProxy(PackageManagerProxy):
 		return None
 
 	def get_downloads(self, pkg_name):
-		return None
+		try:
+			url = 'https://api.npmjs.org/downloads/point/last-week/' + pkg_name
+			r = requests.get(url)
+			r.raise_for_status()
+			res = r.json()
+			return int(res['downloads'])
+		except Exception as e:
+			logging.error("Error fetching downloads: %s" % (str(e)))
+			return None
 
 	def _install_init(self, install_dir):
 		# run npm init to initialize repo
 		npm_init_cmd = ['npm', 'init', '-y']
 		exec_command('npm init', npm_init_cmd, cwd=install_dir)
-
-	def install(self, pkg_name, pkg_version=None, trace=False, trace_string_size=1024, install_dir=None, outdir=None,
-				sudo=False):
-		if pkg_version:
-			install_cmd = ['npm', 'install', '%s@%s' % (pkg_name, pkg_version)]
-		else:
-			install_cmd = ['npm', 'install', pkg_name]
-		# install with sudo privilege and globally
-		if sudo:
-			install_cmd = ['sudo'] + install_cmd + ['-g']
-		install_cmd = self.decorate_strace(pkg_name=pkg_name, pkg_version=pkg_version, trace=trace,
-										   trace_string_size=trace_string_size, sudo=sudo, outdir=outdir,
-										   command=install_cmd)
-		exec_command('npm install', install_cmd, cwd=install_dir)
-
-	def install_file(self, infile, trace=False, trace_string_size=1024, sudo=False, install_dir=None, outdir=None):
-		# FIXME: install prebuilt C++ addons to avoid building dependencies
-		install_cmd = ['npm', 'install', infile]
-		if sudo:
-			install_cmd = ['sudo'] + install_cmd + ['-g']
-		install_cmd = self.decorate_strace_file(infile=infile, trace=trace, trace_string_size=trace_string_size,
-												sudo=sudo, outdir=outdir, command=install_cmd)
-		exec_command('npm install file', install_cmd, cwd=install_dir)
-
-	def uninstall(self, pkg_name, pkg_version=None, trace=False, trace_string_size=1024, sudo=False, install_dir=None,
-				  outdir=None):
-		if pkg_version:
-			uninstall_cmd = ['npm', 'uninstall', '%s@%s' % (pkg_name, pkg_version)]
-		else:
-			uninstall_cmd = ['npm', 'uninstall', pkg_name]
-		if sudo:
-			uninstall_cmd = ['sudo'] + uninstall_cmd + ['-g']
-		uninstall_cmd = self.decorate_strace(pkg_name=pkg_name, pkg_version=pkg_version, trace=trace,
-											 trace_string_size=trace_string_size, sudo=sudo, outdir=outdir,
-											 command=uninstall_cmd)
-		exec_command('npm uninstall', uninstall_cmd, cwd=install_dir)
 
 	def get_metadata(self, pkg_name, pkg_version=None):
 		# load cached metadata information
@@ -306,118 +278,3 @@ class NpmjsProxy(PackageManagerProxy):
 		# remove the installation directory
 		shutil.rmtree(temp_install_dir)
 		return flatten_dep_pkgs if flatten else dep_pkgs
-
-	def install_dep(self, pkg_name, pkg_version=None, trace=False, trace_string_size=1024, sudo=False, install_dir=None,
-					outdir=None):
-		# sanity check
-		if install_dir is None and not sudo:
-			logging.error("for npmjs nonsudo, install_dir in install_dep is None, doesn't make sense!")
-			return
-		# get package dependency, and then init and install the dependencies
-		dep_pkgs = self.get_dep(pkg_name=pkg_name, pkg_version=pkg_version)
-		dep_pkgs_args = ['%s@%s' % (dep_name, dep_version) for dep_name, dep_version in dep_pkgs.items()]
-		install_dep_cmd = ['npm', 'install'] + dep_pkgs_args
-		if sudo:
-			install_dep_cmd = ['sudo'] + install_dep_cmd + ['-g']
-		else:
-			self._install_init(install_dir=install_dir)
-		install_dep_cmd = self.decorate_strace(pkg_name=pkg_name, pkg_version=pkg_version, trace=trace,
-											   trace_string_size=trace_string_size, sudo=sudo, outdir=outdir,
-											   command=install_dep_cmd, is_dep=True)
-		exec_command('npm install dependency', install_dep_cmd, cwd=install_dir)
-
-	def has_install(self, pkg_name, pkg_version=None, binary=False, with_dep=False):
-		"""
-		pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=pkg_version)
-		return pkg_info and 'scripts' in pkg_info and any(s in pkg_info['scripts'] for s in self._INSTALL_SCRIPTS)
-		"""
-		return True
-
-	def test(self, pkg_name, pkg_version=None, trace=False, trace_string_size=1024, sudo=False, install_dir=None,
-			 outdir=None, timeout=None):
-		# run npm test
-		pass
-
-	def has_test(self, pkg_name, pkg_version=None, binary=False, with_dep=False):
-		pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=pkg_version)
-		return pkg_info and 'scripts' in pkg_info and any(s in pkg_info['scripts'] for s in self._TEST_SCRIPTS)
-
-	def _get_npm_root(self, sudo, install_dir):
-		if not sudo and install_dir is None:
-			logging.error("for npmjs nonsudo, install_dir in main is None, doesn't make sense!")
-			return
-		if sudo:
-			npm_root = exec_command('npm root', ['npm', 'root', '-g'], ret_stdout=True).strip()
-		else:
-			npm_root = exec_command('npm root', ['npm', 'root'], cwd=install_dir, ret_stdout=True).strip()
-		return npm_root
-
-	def main(self, pkg_name, pkg_version=None, trace=False, trace_string_size=1024, sudo=False, install_dir=None,
-			 outdir=None, timeout=None):
-		# assume that the package is installed, and get the root directory for the installed package.
-		main_cmd = ['python', 'main.py', pkg_name, '-m', 'npmjs', '-r',
-					self._get_npm_root(sudo=sudo, install_dir=install_dir)]
-		# get the scripts or binaries to run
-		# http://2ality.com/2016/01/locally-installed-npm-executables.html
-		pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=pkg_version)
-		binaries = pkg_info.get('bin', {})
-		if type(binaries) == str:
-			# if there is only one binary, then name is pkg_name
-			binaries = {pkg_name: binaries}
-		for binary in binaries:
-			main_cmd += ['-b', binary]
-		# available scripts and to-test scripts
-		scripts = pkg_info.get('scripts', {})
-		scripts_to_test = self._START_SCRIPTS + self._STOP_SCRIPTS + self._RESTART_SCRIPTS
-		main_scripts = {k: scripts[k] for k in set(scripts) & set(scripts_to_test)}
-		for main_script in main_scripts:
-			main_cmd += ['-s', main_script]
-		exec_command('python main.py', main_cmd, cwd="pm_proxy/scripts", timeout=timeout)
-
-	def has_main(self, pkg_name, pkg_version=None, binary=False, with_dep=False):
-		# Specifics of npm's package.json handling
-		# https://docs.npmjs.com/files/package.json
-		pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=pkg_version)
-		if pkg_info:
-			# FIXME: how about build script used in event-stream?
-			if 'scripts' in pkg_info and any(s in pkg_info['scripts'] for s in self._START_SCRIPTS + self._STOP_SCRIPTS + self._RESTART_SCRIPTS):
-				logging.info("%s has start/stop/restart scripts!", pkg_name)
-				return True
-			elif 'bin' in pkg_info:
-				logging.info("%s has main executable!", pkg_name)
-				return True
-			else:
-				return False
-
-	def exercise(self, pkg_name, pkg_version=None, trace=False, trace_string_size=1024, sudo=False, install_dir=None,
-				 outdir=None, timeout=None):
-		# assume that the package is installed, and get the root directory for the installed package.
-		npm_root = self._get_npm_root(sudo=sudo, install_dir=install_dir)
-		exercise_cmd = ['node', 'exercise.js', pkg_name]
-		# require(pkg_name) and trigger the events or initialize its global classes or objects
-		exercise_src_location = 'pm_proxy/scripts/exercise.js'
-		exercise_tgt_location = join(npm_root, 'exercise.js')
-		if sudo:
-			# FIXME: /usr/bin/node_modules is generated by sudo user and requires sudo privilege to write to it
-			copyfile_cmd = ['sudo', 'cp', exercise_src_location, exercise_tgt_location]
-			exec_command('copy exercise.js', copyfile_cmd)
-		else:
-			shutil.copyfile(exercise_src_location, exercise_tgt_location)
-		# parse the dependencies and install them
-		dep_names = json.load(open('pm_proxy/scripts/package.json', 'r'))['dependencies']
-		for dep_name in dep_names:
-			self.install(pkg_name=dep_name, install_dir=npm_root, sudo=sudo)
-		exec_command('node exercise.js', exercise_cmd, cwd=npm_root, timeout=timeout)
-
-	def has_exercise(self, pkg_name, pkg_version=None, binary=False, with_dep=False):
-		pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=pkg_version)
-		# server side script
-		if pkg_info:
-			if 'main' in pkg_info:
-				logging.info("%s is server-side or client-side npmjs package!", pkg_name)
-				return True
-			elif 'browser' in pkg_info:
-				logging.info("%s is client-side npmjs package!", pkg_name)
-				return True
-			else:
-				return False

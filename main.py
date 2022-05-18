@@ -8,6 +8,7 @@ from util.dates import datetime_delta
 from util.email_validity import check_email_address
 from util.files import write_json_to_file, read_from_csv
 from util.enum_util import PackageManagerEnum, LanguageEnum, DistanceAlgorithmEnum, TraceTypeEnum, DataTypeEnum
+from util.formatting import human_format
 
 from parse_apis import parse_api_usage
 from pm_util import get_pm_proxy
@@ -76,7 +77,7 @@ def analyze_downloads(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={},
 	try:
 		print("[+] Checking downloads...", end='')
 		ret = pm_proxy.get_downloads(pkg_name)
-		print("OK [%s]" % (ret))
+		print("OK [%s weekly]" % (human_format(ret)))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:

@@ -77,6 +77,10 @@ def analyze_downloads(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={},
 	try:
 		print("[+] Checking downloads...", end='')
 		ret = pm_proxy.get_downloads(pkg_name)
+		if ret < 1000:
+			reason = 'only %d weekly downloads' % (ret)
+			alert_type = 'few downloads'
+			risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%s weekly]" % (human_format(ret)))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))

@@ -27,6 +27,7 @@ undesirable,old package, no security updates
 undesirable,invalid author email, 2FA not enabled
 undesirable,invalid or no homepage
 undesirable,invalid or no source repo
+undesirable,few downloads
 undesirable,contains custom installation hooks, hooks may download or execute malicious code
 undesirable,generates new code at runtime
 undesirable,accesses environment variables

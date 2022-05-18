@@ -284,7 +284,7 @@ if __name__ == "__main__":
 		exit(1)
 
 	pm_proxy = get_pm_proxy(pm, cache_dir=None, isolate_pkg_info=False)
-	assert pm_proxy, "!!!%s not supported" % (pm_name)
+	assert pm_proxy, "%s not supported" % (pm_name)
 
 	ver_str = None
 	pkg_name = sys.argv[2]

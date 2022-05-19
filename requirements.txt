@@ -3,7 +3,7 @@ dnspython
 esprima==4.0.1
 func_timeout==4.3.3
 networkx==2.2
-pip==20.0.2
+pip==21.1
 protobuf==3.17.3
 pyIsEmail==1.4.0
 python_dateutil==2.8.2

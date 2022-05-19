@@ -23,9 +23,10 @@ $ python main.py pypi krisqian
 [+] Checking readme...OK [0 bytes]
 [+] Checking repo...OK [None]
 [+] Checking homepage...OK [https://www.bilibili.com/bangumi/media/md140632]
+[+] Checking downloads...OK [42 weekly]
 [+] Checking for CVEs...OK [0 found]
 [+] Downloading package 'krisqian' (ver 0.0.7) from pypi...OK [1.94 KB]
-[+] Analyzing APIs...OK
+[+] Analyzing APIs...OK [3 analyzed]
 [+] 4 risk(s) found, package is undesirable!
 {
     "undesirable": [
@@ -47,10 +48,11 @@ $ python main.py npm eslint
 [+] Checking version...OK [4 days old]
 [+] Checking readme...OK [18367 bytes]
 [+] Checking homepage...OK [https://eslint.org]
+[+] Checking downloads...OK [25.1M weekly]
 [+] Checking repo...OK [git+https://github.com/eslint/eslint.git]
 [+] Checking for CVEs...OK [0 found]
 [+] Downloading package 'eslint' (ver 8.15.0) from npm...OK [489.42 KB]
-[+] Analyzing APIs...OK
+[+] Analyzing APIs...OK [2 analyzed]
 [+] 2 risk(s) found, package is undesirable!
 {
     "undesirable": [
@@ -70,9 +72,10 @@ $ python main.py pypi requests==2.18.4
 [+] Checking readme...OK [49017 bytes]
 [+] Checking repo...OK [https://github.com/psf/requests]
 [+] Checking homepage...OK [http://python-requests.org]
+[+] Checking downloads...OK [49.4M weekly]
 [+] Checking for CVEs...OK [2 found]
 [+] Downloading package 'requests' (ver 2.18.4) from pypi...OK [123.27 KB]
-[+] Analyzing APIs...OK
+[+] Analyzing APIs...OK [6 analyzed]
 [+] 6 risk(s) found, package is undesirable, vulnerable!
 {
     "undesirable": [

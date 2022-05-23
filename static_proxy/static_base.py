@@ -12,7 +12,6 @@ from util.enum_util import LanguageEnum
 from util.compress_files import decompress_file, get_file_with_meta
 from util.job_util import read_proto_from_file, write_proto_to_file, exec_command
 from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig, FileInfo, AstNode
-from proto.python.module_pb2 import ModuleStatic
 
 Language2Extensions = {
     LanguageEnum.python: ('.py',),

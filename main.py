@@ -124,20 +124,21 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={})
 def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking repo...", end='')
+		popular_hosting_services = ['https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/']
 		repo = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		if not repo:
 			repo = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			if not repo or not repo.startswith(('https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/')):
+			if not repo or not repo.startswith(tuple(popular_hosting_services)):
 				repo = None
 		if not repo:
 			repo = pm_proxy.get_download_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			if not repo or not repo.startswith(('https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/')):
+			if not repo or not repo.startswith(tuple(popular_hosting_services)):
 				repo = None
 		if not repo:
 			reason = 'no source repo found'
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-		elif not repo.startswith(('https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/')):
+		elif not repo.startswith(tuple(popular_hosting_services)):
 			reason = 'invalid source repo %s' % (repo)
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
@@ -207,7 +208,8 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 			static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
 				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
 		except Exception as ee:
-			raise Exception("invalid analysis %s" % (str(ee)))
+			logging.error("Failed to parse: %s" % (str(ee)))
+			raise Exception("parse error")
 
 		assert os.path.exists(filepath+'.out'), "parse error!"
 

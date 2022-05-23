@@ -9,9 +9,8 @@ import subprocess
 import proto.python.ast_pb2 as ast_pb2
 from util.enum_util import LanguageEnum
 from util.job_util import read_proto_from_file, write_proto_to_file, exec_command
-from static_base import StaticAnalyzer
+from .static_base import StaticAnalyzer
 from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
-from proto.python.module_pb2 import ModuleStatic
 
 logging.getLogger().setLevel(logging.ERROR)
 

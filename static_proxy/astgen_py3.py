@@ -18,7 +18,6 @@ import asttokens
 import proto.python.ast_pb2 as ast_pb2
 from util.job_util import read_proto_from_file, write_proto_to_file
 from util.job_util import write_dict_to_file
-from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig, FileInfo, AstNode
 
 class PythonDeclRefVisitor(ast.NodeVisitor):
 	def __init__(self, buf, infile, asttok, configpb=None, debug=False):
@@ -171,64 +170,14 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 	def get_declrefs(self):
 		return self.declrefs
 
-
-def get_infiles(inpath, root):
-	infiles = []
-	if isfile(inpath):
-		if root is None:
-			root = dirname(inpath)
-		root = abspath(root)
-		infiles.append(abspath(inpath))
-	elif isdir(inpath):
-		if root is None:
-			root = inpath
-		root = abspath(root)
-		for i_root, _, i_files in os.walk(inpath):
-			for fname in i_files:
-				if fname.endswith(('.py',)):
-					infiles.append(abspath(join(i_root, fname)))
-	if len(infiles) == 0:
-		raise Exception("No input files from %s for language python3", inpath)
-	return infiles, root
-
-
-def get_filepb(infile, root):
-	filepb = FileInfo()
-	filepb.filename = basename(infile)
-	filepb.relpath = relpath(dirname(infile), root)
-	filepb.file = relpath(infile, root)
-	filepb.directory = root
-	return filepb
-
-
-def get_api_result(base, name, args, source_text, source_range, filepb):
-	api_result = AstNode()
-	api_result.type = ast_pb2.AstNode.FUNCTION_DECL_REF_EXPR
-	api_result.name = name
-	if base is None:
-		api_result.full_name = name
-	else:
-		api_result.base_type = base
-		api_result.full_name = '%s.%s' % (base, name)
-	for arg in args:
-		api_result.arguments.append(arg)
-	api_result.source = source_text
-	if source_range:
-		source_start, source_end = source_range
-		api_result.range.start.row = source_start[0]
-		api_result.range.start.column = source_start[1]
-	api_result.range.start.file_info.CopyFrom(filepb)
-	if source_range:
-		source_start, source_end = source_range
-		api_result.range.end.row = source_end[0]
-		api_result.range.end.column = source_end[1]
-	api_result.range.end.file_info.CopyFrom(filepb)
-	return api_result
-
-
 def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=None):
+
+	from static_proxy.static_base import StaticAnalyzer
+	from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
+	from util.enum_util import LanguageEnum
+
 	# get input files
-	infiles, root = get_infiles(inpath=inpath, root=root)
+	infiles, root = StaticAnalyzer._get_infiles(inpath=inpath, root=root, language=LanguageEnum.python)
 
 	# initialize resultpb
 	resultpb = PkgAstResults()
@@ -252,15 +201,16 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 		visitor.visit(tree)
 		logging.warning("collected functions: %s", Counter(visitor.get_declrefs()).items())
 
-		filepb = get_filepb(infile, root)
+		filepb = StaticAnalyzer._get_filepb(infile, root)
 		for base, name, args, source_text, source_range in visitor.get_declrefs():
-			api_result = get_api_result(base, name, args, source_text, source_range, filepb)
+			api_result = StaticAnalyzer._get_api_result(base, name, args, source_text, source_range, filepb)
 			pkg.api_results.add().CopyFrom(api_result)
 
 	logging.warning('writing to %s' % (outfile+'.json'))
 	write_dict_to_file(buf, outfile + '.json')
 	# save resultpb
 	write_proto_to_file(resultpb, outfile, binary=False)
+
 
 def parse_args(argv):
 	parser = argparse.ArgumentParser(prog="astgen_py3", description="Parse arguments")
@@ -288,4 +238,3 @@ if __name__ == "__main__":
 	# Run the ast generation
 	py3_astgen(inpath=args.inpath, outfile=args.outfile, configpb=configpb, root=args.root, pkg_name=args.package_name,
 			   pkg_version=args.package_version)
-

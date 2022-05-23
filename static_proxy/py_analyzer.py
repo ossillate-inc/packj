@@ -27,11 +27,24 @@ class PyAnalyzer(StaticAnalyzer):
         super(PyAnalyzer, self).__init__()
         self.language = LanguageEnum.python
 
+    def exec_py2_astgen(analyze_path, outfile, configpath, root=None, pkg_name=None, pkg_version=None):
+        try:
+            astgen_py2_cmd = ['python', 'astgen_py.py', analyze_path, outfile, '-c', configpath]
+            if root is not None:
+                astgen_py2_cmd.extend(['-b', root])
+            if pkg_name is not None:
+                astgen_py2_cmd.extend(['-n', pkg_name])
+            if pkg_version is not None:
+                astgen_py2_cmd.extend(['-v', pkg_version])
+            exec_command("python2 astgen", astgen_py2_cmd, cwd="static_proxy")
+        except Exception as e:
+            logging.warning("Failed to analyze for APIs using Python2: %s" % (str(e)))
+
     def astgen(self, inpath, outfile, root=None, configpath=None, pkg_name=None, pkg_version=None, evaluate_smt=False):
         analyze_path, is_decompress_path, outfile, root, configpath = self._sanitize_astgen_args(
             inpath=inpath, outfile=outfile, root=root, configpath=configpath, language=self.language)
 
-        # try python2
+        # default: python3
         try:
             # load the config proto
             configpb = AstLookupConfig()
@@ -45,14 +58,7 @@ class PyAnalyzer(StaticAnalyzer):
         # try python2
         except SyntaxError as se:
             logging.warning("Syntax error %s, now trying to parse %s again in python2!", se, analyze_path)
-            astgen_py2_cmd = ['python', 'astgen_py.py', analyze_path, outfile, '-c', configpath]
-            if root is not None:
-                astgen_py2_cmd.extend(['-b', root])
-            if pkg_name is not None:
-                astgen_py2_cmd.extend(['-n', pkg_name])
-            if pkg_version is not None:
-                astgen_py2_cmd.extend(['-v', pkg_version])
-            exec_command("python2 astgen", astgen_py2_cmd, cwd="static_proxy")
+            self.exec_py2_astgen(analyze_path, outfile, configpath, root=root, pkg_name=pkg_name, pkg_version=pkg_version)
         except Exception as e:
             logging.error("Fatal error %s running astgen for %s!" % (str(e), analyze_path))
 
@@ -64,5 +70,5 @@ class PyAnalyzer(StaticAnalyzer):
             resultpb.pkgs[0].config.smt_satisfied = satisfied
             write_proto_to_file(resultpb, filename=outfile, binary=False)
 
-        # clean up residues
+        # clean up residue files
         self._cleanup_astgen(analyze_path=analyze_path, is_decompress_path=is_decompress_path)

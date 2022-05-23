@@ -2,6 +2,7 @@ from __future__ import print_function
 import sys
 import os
 import json
+import logging
 
 from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from util.dates import datetime_delta
@@ -13,6 +14,11 @@ from util.formatting import human_format
 from parse_apis import parse_api_usage
 from pm_util import get_pm_proxy
 from static_util import get_static_proxy_for_language
+
+# sys.version_info[0] is the major version number. sys.version_info[1] is minor
+if sys.version_info[0] != 3:
+	print("\n*** WARNING *** Please use Python 3! Exiting.")
+	exit(1)
 
 def get_threat_model(filename='threats.csv'):
 	threat_model = {}
@@ -32,7 +38,7 @@ def alert_user(alert_type, threat_model, reason, risks):
 
 def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking version...", end='')
+		print("[+] Checking version...", end='', flush=True)
 
 		ver_info = pm_proxy.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		assert ver_info, "No version info!"
@@ -57,7 +63,7 @@ def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks=
 
 def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
 	try:
-		print("[+] Checking for CVEs...", end='')
+		print("[+] Checking for CVEs...", end='', flush=True)
 		from osv import get_pkgver_vulns
 		vuln_list = get_pkgver_vulns(pm_name, pkg_name, ver_str)
 		if vuln_list:
@@ -75,7 +81,7 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
 
 def analyze_downloads(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking downloads...", end='')
+		print("[+] Checking downloads...", end='', flush=True)
 		ret = pm_proxy.get_downloads(pkg_name)
 		if ret < 1000:
 			reason = 'only %d weekly downloads' % (ret)
@@ -89,7 +95,7 @@ def analyze_downloads(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={},
 
 def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking homepage...", end='')
+		print("[+] Checking homepage...", end='', flush=True)
 		url = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not url:
 			reason = 'no homepage'
@@ -123,7 +129,7 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={})
 
 def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking repo...", end='')
+		print("[+] Checking repo...", end='', flush=True)
 		popular_hosting_services = ['https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/']
 		repo = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		if not repo:
@@ -155,7 +161,7 @@ def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={},
 
 def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking readme...", end='')
+		print("[+] Checking readme...", end='', flush=True)
 		descr = pm_proxy.get_description(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not descr or len(descr) < 100:
 			reason = 'no description' if not descr else 'insufficient description'
@@ -169,7 +175,7 @@ def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 
 def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking author...", end='')
+		print("[+] Checking author...", end='', flush=True)
 		author_info = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		assert author_info, "No author info!"
 
@@ -193,7 +199,7 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 
 def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 	try:
-		print("[+] Analyzing APIs...", end='')
+		print("[+] Analyzing APIs...", end='', flush=True)
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
 			configpath = os.path.join('config','astgen_python_smt.config')
@@ -208,7 +214,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 			static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
 				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
 		except Exception as ee:
-			logging.error("Failed to parse: %s" % (str(ee)))
+			logging.debug("Failed to parse: %s" % (str(ee)))
 			raise Exception("parse error")
 
 		assert os.path.exists(filepath+'.out'), "parse error!"
@@ -299,7 +305,7 @@ if __name__ == "__main__":
 		pkg_name, ver_str = pkg_name.split('==')
 
 	try:
-		print("[+] Fetching '%s' from %s..." % (pkg_name, pm_name), end='')
+		print("[+] Fetching '%s' from %s..." % (pkg_name, pm_name), end='', flush=True)
 		pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info, "package not found!"
 
@@ -334,11 +340,11 @@ if __name__ == "__main__":
 
 	# download package
 	try:
-		print("[+] Downloading package '%s' (ver %s) from %s..." % (pkg_name, ver_str, pm_name), end='')
+		print("[+] Downloading package '%s' (ver %s) from %s..." % (pkg_name, ver_str, pm_name), end='', flush=True)
 		filepath, size = download_file(ver_info['url'])
 		print("OK [%0.2f KB]" % (float(size)/1024))
 	except KeyError:
-		print("FAILED [download URL missing]")
+		print("FAILED [URL missing]")
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 

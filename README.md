@@ -13,7 +13,7 @@ Packj accepts two input args:
 **NOTE** 
 - Packj has only been tested on Linux. 
 - You will have to install dependencies first using `pip install -r requirements.txt`
-- Supports both Python3 and Python2. 
+- Works with Python3. API analysis will fail if used with Python2.
 
 ```
 $ python3 main.py pypi krisqian

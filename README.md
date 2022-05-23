@@ -13,10 +13,10 @@ Packj accepts two input args:
 **NOTE** 
 - Packj has only been tested on Linux. 
 - You will have to install dependencies first using `pip install -r requirements.txt`
-- Supports only Python2.7
+- Supports both Python3 and Python2. 
 
 ```
-$ python main.py pypi krisqian
+$ python3 main.py pypi krisqian
 [+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
 [+] Checking author...OK [KrisWuQian@baidu.com]
 [+] Checking version...OK [219 days old]
@@ -42,7 +42,7 @@ $ python main.py pypi krisqian
 Packj supports vetting of PyPI and NPM packages. **NOTE** NPM package vetting is a WIP.
 
 ```
-$ python main.py npm eslint
+$ python3 main.py npm eslint
 [+] Fetching 'eslint' from npm...OK [ver 8.15.0]
 [+] Checking author...OK [nicholas+npm@nczconsulting.com]
 [+] Checking version...OK [4 days old]
@@ -65,7 +65,7 @@ $ python main.py npm eslint
 Specific package versions to be vetted could be specified using `==`. Please refer to the example below
 
 ```
-$ python main.py pypi requests==2.18.4
+$ python3 main.py pypi requests==2.18.4
 [+] Fetching 'requests' from pypi...OK [ver 2.18.4]
 [+] Checking author...OK [me@kennethreitz.org]
 [+] Checking version...OK [1711 days old]

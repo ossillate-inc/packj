@@ -211,6 +211,7 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 	try:
 		print("[+] Checking author...", end='', flush=True)
 
+		# check author/maintainer email
 		author_info = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		assert author_info, "no data!"
 
@@ -219,9 +220,31 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 		except KeyError:
 			email = None
 
-		# check author email
-		valid, valid_with_dns = check_email_address(email)
-		if not valid or not valid_with_dns:
+		if email:
+			email = email.replace(' ','')
+			if isinstance(email, list):
+				email_list = email
+			elif isinstance(email, str):
+				if ',' in email:
+					email_list = email.split(',')
+				elif ' ' in email:
+					email_list = email.split(' ')
+				elif ';' in email:
+					email_list = email.split(';')
+				else:
+					email_list = [email]
+			else:
+				raise Exception("parse error!")
+			for item in email_list:
+				try:
+					valid, valid_with_dns = check_email_address(item)
+				except Exception as ee:
+					logging.debug("Failed to parse email %s: %s" % (item, str(ee)))
+					valid = False
+				if not valid or not valid_with_dns:
+					break
+
+		if not email or not valid or not valid_with_dns:
 			alert_type = 'invalid or no author email (2FA not enabled)'
 			reason = 'no email' if not email else 'invalid author email' if not valid else 'expired author email domain'
 			risks = alert_user(alert_type, threat_model, reason, risks)

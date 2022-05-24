@@ -135,25 +135,25 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={})
 			reason = 'no homepage'
 			alert_type = 'invalid or no homepage'
 			risks = alert_user(alert_type, threat_model, reason, risks)
+		else:
+			# check if insecure
+			ret = __parse_url(url)
+			if ret.scheme != 'https':
+				reason = 'insecure webpage'
+				alert_type = 'invalid or no homepage'
+				risks = alert_user(alert_type, threat_model, reason, risks)
 
-		# check if insecure
-		ret = __parse_url(url)
-		if ret.scheme != 'https':
-			reason = 'insecure webpage'
-			alert_type = 'invalid or no homepage'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			# check if an existent webpage
+			valid_site, reason = check_site_exist(url)
+			if not valid_site:
+				alert_type = 'invalid or no homepage'
+				risks = alert_user(alert_type, threat_model, reason, risks)
 
-		# check if an existent webpage
-		valid_site, reason = check_site_exist(url)
-		if not valid_site:
-			alert_type = 'invalid or no homepage'
-			risks = alert_user(alert_type, threat_model, reason, risks)
-
-		# check if a popular webpage
-		elif check_domain_popular(url):
-			reason = 'invalid (popular) webpage'
-			alert_type = 'invalid or no homepage'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			# check if a popular webpage
+			elif check_domain_popular(url):
+				reason = 'invalid (popular) webpage'
+				alert_type = 'invalid or no homepage'
+				risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%s]" % (url))
 		report["homepage"] = url
 	except Exception as e:

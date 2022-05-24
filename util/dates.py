@@ -13,6 +13,15 @@ def curr_timestamp():
 	import datetime
 	return date_timestamp(datetime.datetime.now())
 
+def datetime_to_date_str(date, fmt:str='%m-%d-%Y'):
+	try:
+		import datetime
+		if not date:
+			return None
+		return date.strftime(fmt)
+	except Exception as e:
+		raise Exception("Failed to get date string from datetime %s: %s" % (date, str(e)))
+
 def date_str_to_datetime(date_str, fmt=None):
 	try:
 		if not date_str:
@@ -27,23 +36,24 @@ def date_str_to_datetime(date_str, fmt=None):
 	except Exception as e:
 		raise Exception("Failed to get datetime from date string %s: %s" % (date_str, str(e)))
 
-def datetime_delta(date_str1, date_str2=None, days=None):
+def datetime_delta(date1, date2=None, days=None):
 	try:
 		import datetime
 		import pytz
 		
 		utc=pytz.UTC
-		
-		date1 = date_str_to_datetime(date_str1)
-		if not date_str2:
+
+		if isinstance(date1, str):
+			date1 = date_str_to_datetime(date1)
+		if not date2:
 			date2 = datetime.datetime.now()
-		else:
-			date2 = date_str_to_datetime(date_str2)
+		elif isinstance(date2, str):
+			date2 = date_str_to_datetime(date2)
 
 		delta = date2.replace(tzinfo=utc) - date1.replace(tzinfo=utc)
 		if days:
-			return delta.days
+			return abs(delta.days)
 		return delta
 	except Exception as e:
 		raise Exception("Failed to get datetime delta between %s and %s: %s" % \
-				(date_str1, date_str2 if date_str2 else 'now()', str(e)))
+				(date1, date2 if date2 else 'now()', str(e)))

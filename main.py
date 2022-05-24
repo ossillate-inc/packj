@@ -36,12 +36,44 @@ def alert_user(alert_type, threat_model, reason, risks):
 		risks[risk_cat].append('%s: %s' % (alert_type, reason))
 	return risks
 
-def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks={}, report={}):
+def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={}):
+	try:
+		print("[+] Checking release history...", end='', flush=True)
+
+		# get package release history
+		release_history = pm_proxy.get_release_history(pkg_name, pkg_info=pkg_info)
+		assert release_history, "no data!"
+
+		if len(release_history) < 2:
+			reason = 'only %s versions released' % (len(release_history))
+			alert_type = 'few versions or releases'
+			risks = alert_user(alert_type, threat_model, reason, risks)
+
+		else:
+			try:
+				days = release_history[ver_str]['days_since_last_release']
+
+				# check if the latest release is made after a long gap (indicative of package takeover)
+				if days and days > 180:
+					reason = 'version released after %d days' % (days)
+					alert_type = 'version release after a long gap'
+					risks = alert_user(alert_type, threat_model, reason, risks)
+			except Exception as ee:
+				print(str(ee))
+				pass
+
+		print("OK [%d versions]" % (len(release_history)))
+		report['releases'] = release_history
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+	finally:
+		return risks, report
+
+def analyze_version(ver_info, risks={}, report={}):
 	try:
 		print("[+] Checking version...", end='', flush=True)
 
-		ver_info = pm_proxy.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-		assert ver_info, "No version info!"
+		assert ver_info, "no data!"
 
 		# check upload timestamp
 		try:
@@ -50,10 +82,12 @@ def analyze_version(pkg_name, ver_str=None, ver_info=None, pkg_info=None, risks=
 		except KeyError:
 			raise Exception('parse error')
 
+		# check if the latest release is too old (unmaintained package)
 		if not uploaded or days > 365:
 			reason = 'no release date' if not uploaded else '%d days old' % (days)
 			alert_type = 'old package'
 			risks = alert_user(alert_type, threat_model, reason, risks)
+
 		print("OK [%d days old]" % (days))
 		report["version"] = ver_info
 	except Exception as e:
@@ -176,8 +210,9 @@ def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking author...", end='', flush=True)
+
 		author_info = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
-		assert author_info, "No author info!"
+		assert author_info, "no data!"
 
 		try:
 			email = author_info['email']
@@ -187,9 +222,10 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 		# check author email
 		valid, valid_with_dns = check_email_address(email)
 		if not valid or not valid_with_dns:
-			alert_type = 'invalid author email (2FA not enabled)'
-			reason = 'invalid author email' if not valid else 'expired author email domain'
+			alert_type = 'invalid or no author email (2FA not enabled)'
+			reason = 'no email' if not email else 'invalid author email' if not valid else 'expired author email domain'
 			risks = alert_user(alert_type, threat_model, reason, risks)
+
 		print("OK [%s]" % (email))
 		report["author"] = author_info
 	except Exception as e:
@@ -304,6 +340,7 @@ if __name__ == "__main__":
 	if '==' in pkg_name:
 		pkg_name, ver_str = pkg_name.split('==')
 
+	# get version metadata
 	try:
 		print("[+] Fetching '%s' from %s..." % (pkg_name, pm_name), end='', flush=True)
 		pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
@@ -330,8 +367,9 @@ if __name__ == "__main__":
 	report = {}
 
 	# analyze metadata
+	risks, report = analyze_version(ver_info, risks=risks, report=report)
+	risks, report = analyze_release_history(pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
-	risks, report = analyze_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_downloads(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)

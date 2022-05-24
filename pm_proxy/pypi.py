@@ -74,6 +74,36 @@ class PypiProxy(PackageManagerProxy):
 				logging.error("get_metadata: output format %s is not supported!", self.metadata_format)
 		return pkg_info
 
+	def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
+		from util.dates import datetime_delta, datetime_to_date_str
+		if not pkg_info:
+			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+		assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
+		# skip versions that don't have a distribution
+		ver_dists = [(ver, dists) for ver, dists in pkg_info['releases'].items() if len(dists) > 0]
+
+		history = {}
+		last_date = None
+		for ver_str, dists in ver_dists:
+			try:
+				date = sorted([dateutil.parser.parse(dist['upload_time']) for dist in dists], reverse=True)[0]
+			except:
+				date = None
+
+			days = None
+			if date and last_date:
+				try:
+					days = datetime_delta(date, date2=last_date, days=True)
+				except:
+					pass
+			last_date = date
+
+			history[ver_str] = {
+				"release_date" : datetime_to_date_str(date),
+				"days_since_last_release" : days
+			}
+		return history
+
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
@@ -105,7 +135,10 @@ class PypiProxy(PackageManagerProxy):
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
 			try:
-				return pkg_info['info']['project_urls']['Download']
+				info = pkg_info['info']
+				if info and info['project_urls']:
+					return info['project_urls']['Download']
+				return None
 			except KeyError:
 				return None
 		except Exception as e:
@@ -118,7 +151,10 @@ class PypiProxy(PackageManagerProxy):
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
 			try:
-				return pkg_info['info']['project_urls']['Source']
+				info = pkg_info['info']
+				if info and info['project_urls']:
+					return info['project_urls']['Source']
+				return None
 			except KeyError:
 				return None
 		except Exception as e:

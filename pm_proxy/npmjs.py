@@ -139,6 +139,36 @@ class NpmjsProxy(PackageManagerProxy):
 		assert pkg_info and 'homepage' in pkg_info, "invalid package metadata!"
 		return pkg_info['homepage']
 
+	def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
+		from util.dates import datetime_delta, datetime_to_date_str
+		if not pkg_info:
+			pkg_info = self.get_metadata(pkg_name=pkg_name)
+		assert pkg_info and 'time' in pkg_info, "invalid package metadata!"
+		history = {}
+		last_date = None
+		for ver_str, ts in pkg_info['time'].items():
+			if ver_str in ['modified', 'created']:
+				continue
+
+			try:
+				date = dateutil.parser.parse(ts)
+			except:
+				date = None
+
+			days = None
+			if date and last_date:
+				try:
+					days = datetime_delta(date, date2=last_date, days=True)
+				except:
+					pass
+			last_date = date
+
+			history[ver_str] = {
+				"release_date" : datetime_to_date_str(date),
+				"days_since_last_release" : days
+			}
+		return history
+
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)

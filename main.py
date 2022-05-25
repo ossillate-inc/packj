@@ -260,7 +260,7 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 
 def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 	try:
-		print("[+] Analyzing APIs...", end='', flush=True)
+		print("[+] Analyzing code...", end='', flush=True)
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
 			configpath = os.path.join('config','astgen_python_smt.config')
@@ -284,47 +284,58 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 		assert perms, "No APIs found!"
 
 		report_data = {}
+		perms_needed = set()
 		for p, usage in perms.items():
 			if p == "SOURCE_FILE":
 				alert_type = 'accesses files and dirs'
 				reason = 'reads files and dirs'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('file')
 			elif p == "SINK_FILE":
 				alert_type = 'accesses files and dirs'
 				reason = 'writes to files and dirs'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('file')
 			elif p == "SINK_NETWORK":
 				alert_type = 'communicates with external network'
 				reason = 'sends data over the network'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('network')
 			elif p == "SOURCE_NETWORK":
 				alert_type = 'communicates with external network'
 				reason = 'fetches data over the network'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('network')
 			elif p in "SINK_CODE_GENERATION":
 				alert_type = 'generates new code at runtime'
 				reason = 'generates new code at runtime'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('fork')
 			elif "SINK_PROCESS_OPERATION":
 				alert_type = 'generates new code at runtime'
 				reason = 'spawns new processes in background'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('fork')
 			elif p == "SOURCE_OBFUSCATION":
 				alert_type = 'accesses obfuscated (hidden) code'
 				reason = 'reads hidden code'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('decode')
 			elif p == "SOURCE_SETTINGS":
 				alert_type = 'accesses system/environment variables'
 				reason = 'reads system settings or environment variables'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('envvars')
 			elif p == "SINK_UNCLASSIFIED":
 				alert_type = 'changes system/environment variables'
 				reason = 'modifies system settings or environment variables'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('envvars')
 			elif p == "SOURCE_ACCOUNT":
 				alert_type = 'changes system/environment variables'
 				reason = 'modifies system settings or environment variables'
 				risks = alert_user(alert_type, threat_model, reason, risks)
+				perms_needed.add('envvars')
 			elif p == "SOURCE_USER_INPUT":
 				alert_type = 'reads user input'
 				reason = 'reads user input'
@@ -336,7 +347,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 			else:
 				report_data[reason] += usage
 
-		print("OK [%d analyzed]" % (len(perms)))
+		print("OK [needs %d perms: %s]" % (len(perms_needed), ','.join(perms_needed)))
 		report["permissions"] = report_data
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))

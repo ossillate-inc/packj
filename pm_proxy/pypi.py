@@ -129,6 +129,18 @@ class PypiProxy(PackageManagerProxy):
 			logging.error(str(e))
 			return None
 
+	def get_dependencies(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
+		try:
+			if not pkg_info:
+				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
+			return pkg_info['info']['requires_dist']
+		except KeyError:
+			return None
+		except Exception as e:
+			logging.error(str(e))
+			return None
+
 	def get_download_url(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:

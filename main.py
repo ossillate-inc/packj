@@ -49,7 +49,7 @@ def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={
 			alert_type = 'few versions or releases'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 
-		print("OK [%d versions]" % (len(release_history)))
+		print("OK [%d version(s)]" % (len(release_history)))
 		report['releases'] = release_history
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
@@ -110,6 +110,20 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
 			vuln_list = []
 		print("OK [%s found]" % (len(vuln_list)))
 		report["vulnerabilities"] = vuln_list
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+	finally:
+		return risks, report
+
+def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=None, ver_info=None, risks={}, report={}):
+	try:
+		print("[+] Checking dependencies...", end='', flush=True)
+		deps = pm_proxy.get_dependencies(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
+		if deps and len(deps) > 10:
+			alert_type = 'too many dependencies'
+			reason = '%d found' % (len(deps))
+			risks = alert_user(alert_type, threat_model, reason, risks)
+		print("OK [%s]" % ('%d direct' % (len(deps)) if deps else 'none found'))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -382,6 +396,7 @@ if __name__ == "__main__":
 		pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info, "package not found!"
 
+		#print(json.dumps(pkg_info, indent=4))
 		try:
 			pkg_name = pkg_info['info']['name']
 		except KeyError:
@@ -411,6 +426,7 @@ if __name__ == "__main__":
 	risks, report = analyze_downloads(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks, report=report)
+	risks, report = analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 
 	# download package
 	try:

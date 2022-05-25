@@ -99,7 +99,15 @@ View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
 - Python PyPI package downloads are fetched from [pypistats](https://pypistats.org)
 - All risks detected are aggregated and reported 
 
-Refer to our [PyConUS'22 slides](https://speakerdeck.com/ashishbijlani/pyconus22-slides) for details.
+## Learn more 
+
+To learn more about Packj tool or open-source software supply chain attacks, refer to our
+
+[![PyConUS'22 Video](https://img.youtube.com/vi/Rcuqn56uCDk/0.jpg)](https://www.youtube.com/watch?v=Rcuqn56uCDk)
+
+- PyConUS'22 [talk](https://www.youtube.com/watch?v=Rcuqn56uCDk) and [slides](https://speakerdeck.com/ashishbijlani/pyconus22-slides).
+- BlackHAT Asia'22 Arsenal [presentation](https://www.blackhat.com/asia-22/arsenal/schedule/#mitigating-open-source-software-supply-chain-attacks-26241)
+- PackagingCon'21 [talk](https://www.youtube.com/watch?v=PHfN-NrUCoo) and [slides](https://speakerdeck.com/ashishbijlani/mitigating-open-source-software-supply-chain-attacks)
 
 ## Risky attributes and customization
 

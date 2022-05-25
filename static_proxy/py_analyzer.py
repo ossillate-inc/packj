@@ -38,7 +38,7 @@ class PyAnalyzer(StaticAnalyzer):
                 astgen_py2_cmd.extend(['-v', pkg_version])
             exec_command("python2 astgen", astgen_py2_cmd, cwd="static_proxy")
         except Exception as e:
-            logging.warning("Failed to analyze for APIs using Python2: %s" % (str(e)))
+            logging.debug("Failed to analyze for APIs using Python2: %s" % (str(e)))
 
     def astgen(self, inpath, outfile, root=None, configpath=None, pkg_name=None, pkg_version=None, evaluate_smt=False):
         analyze_path, is_decompress_path, outfile, root, configpath = self._sanitize_astgen_args(
@@ -57,10 +57,10 @@ class PyAnalyzer(StaticAnalyzer):
 
         # try python2
         except SyntaxError as se:
-            logging.warning("Syntax error %s, now trying to parse %s again in python2!", se, analyze_path)
+            logging.debug("Syntax error %s, now trying to parse %s again in python2!", se, analyze_path)
             self.exec_py2_astgen(analyze_path, outfile, configpath, root=root, pkg_name=pkg_name, pkg_version=pkg_version)
         except Exception as e:
-            logging.error("Fatal error %s running astgen for %s!" % (str(e), analyze_path))
+            logging.debug("Fatal error %s running astgen for %s!" % (str(e), analyze_path))
 
         # optionally evaluate smt formula
         if evaluate_smt:

@@ -44,26 +44,28 @@ def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={
 		release_history = pm_proxy.get_release_history(pkg_name, pkg_info=pkg_info)
 		assert release_history, "no data!"
 
-		if len(release_history) < 2:
+		if len(release_history) <= 2:
 			reason = 'only %s versions released' % (len(release_history))
 			alert_type = 'few versions or releases'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 
-		else:
-			try:
-				days = release_history[ver_str]['days_since_last_release']
-
-				# check if the latest release is made after a long gap (indicative of package takeover)
-				if days and days > 180:
-					reason = 'version released after %d days' % (days)
-					alert_type = 'version release after a long gap'
-					risks = alert_user(alert_type, threat_model, reason, risks)
-			except Exception as ee:
-				print(str(ee))
-				pass
-
 		print("OK [%d versions]" % (len(release_history)))
 		report['releases'] = release_history
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+		return risks, report
+
+	print("[+] Checking release time gap...", end='', flush=True)
+	try:
+		days = release_history[ver_str]['days_since_last_release']
+
+		# check if the latest release is made after a long gap (indicative of package takeover)
+		if days and days > 180:
+			reason = 'version released after %d days' % (days)
+			alert_type = 'version release after a long gap'
+			risks = alert_user(alert_type, threat_model, reason, risks)
+
+		print("OK [%s]" % ('%d days since last release' % (days) if days else 'first release'))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:

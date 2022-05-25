@@ -293,7 +293,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SINK_NETWORK":
 				alert_type = 'communicates with external network'
-				reason = 'sends data over the network %s'
+				reason = 'sends data over the network'
 				risks = alert_user(alert_type, threat_model, reason, risks)
 			elif p == "SOURCE_NETWORK":
 				alert_type = 'communicates with external network'

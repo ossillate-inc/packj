@@ -18,24 +18,31 @@ Packj accepts two input args:
 ```
 $ python3 main.py pypi krisqian
 [+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
+[+] Checking version...OK [250 days old]
+[+] Checking release history...OK [7 version(s)]
+[+] Checking release time gap...OK [1 days since last release]
 [+] Checking author...OK [KrisWuQian@baidu.com]
-[+] Checking version...OK [219 days old]
 [+] Checking readme...OK [0 bytes]
-[+] Checking repo...OK [None]
 [+] Checking homepage...OK [https://www.bilibili.com/bangumi/media/md140632]
-[+] Checking downloads...OK [42 weekly]
+[+] Checking downloads...OK [45 weekly]
+[+] Checking repo...OK [None]
 [+] Checking for CVEs...OK [0 found]
-[+] Downloading package 'krisqian' (ver 0.0.7) from pypi...OK [1.94 KB]
-[+] Analyzing APIs...OK [3 analyzed]
-[+] 4 risk(s) found, package is undesirable!
+[+] Checking dependencies...OK [none found]
+[+] Downloading package 'KrisQian' (ver 0.0.7) from pypi...OK [1.94 KB]
+[+] Analyzing code...OK [needs 3 perms: network,file,fork]
+=============================================
+[+] 6 risk(s) found, package is undesirable!
 {
     "undesirable": [
-        "no source repo", 
+        "no readme",
+        "only 45 weekly downloads",
+        "no source repo found", 
         "generates new code at runtime", 
-        "fetches data over the network ['KrisQian-0.0.7/setup.py:40', 'KrisQian-0.0.7/setup.py:50']", 
+        "fetches data over the network: ['KrisQian-0.0.7/setup.py:40', 'KrisQian-0.0.7/setup.py:50']", 
         "reads files and dirs: ['KrisQian-0.0.7/setup.py:59', 'KrisQian-0.0.7/setup.py:70']"
     ]
 }
+=> Complete report: pypi-KrisQian-0.0.7.json
 => View pre-vetted package report at https://packj.dev/package/PyPi/KrisQian/0.0.7
 ```
 
@@ -43,21 +50,25 @@ Packj supports vetting of PyPI and NPM packages. **NOTE** NPM package vetting is
 
 ```
 $ python3 main.py npm eslint
-[+] Fetching 'eslint' from npm...OK [ver 8.15.0]
-[+] Checking author...OK [nicholas+npm@nczconsulting.com]
+[+] Fetching 'eslint' from npm...OK [ver 8.16.0]
 [+] Checking version...OK [4 days old]
-[+] Checking readme...OK [18367 bytes]
+[+] Checking release history...OK [305 version(s)]
+[+] Checking release time gap...OK [15 days since last release]
+[+] Checking author...OK [nicholas+npm@nczconsulting.com]
+[+] Checking readme...OK [18234 bytes]
 [+] Checking homepage...OK [https://eslint.org]
-[+] Checking downloads...OK [25.1M weekly]
+[+] Checking downloads...OK [25.6M weekly]
 [+] Checking repo...OK [git+https://github.com/eslint/eslint.git]
 [+] Checking for CVEs...OK [0 found]
-[+] Downloading package 'eslint' (ver 8.15.0) from npm...OK [489.42 KB]
-[+] Analyzing APIs...OK [2 analyzed]
+[+] Checking dependencies...OK [35 direct]
+[+] Downloading package 'eslint' (ver 8.16.0) from npm...OK [490.14 KB]
+[+] Analyzing code...OK [needs 2 perms: file,fork]
+=============================================
 [+] 2 risk(s) found, package is undesirable!
 {
     "undesirable": [
-        "generates new code at runtime: generates new code at runtime", 
-        "accesses files and dirs: reads files and dirs: ['package/lib/cli-engine/load-rules.js:37', 'package/lib/cli-engine/file-enumerator.js:142']"
+        "generates new code at runtime", 
+        "reads files and dirs: ['package/lib/cli-engine/load-rules.js:37', 'package/lib/cli-engine/file-enumerator.js:142']"
     ]
 }
 ```
@@ -67,22 +78,27 @@ Specific package versions to be vetted could be specified using `==`. Please ref
 ```
 $ python3 main.py pypi requests==2.18.4
 [+] Fetching 'requests' from pypi...OK [ver 2.18.4]
+[+] Checking version...OK [1744 days old]
+[+] Checking release history...OK [142 version(s)]
+[+] Checking release time gap...OK [14 days since last release]
 [+] Checking author...OK [me@kennethreitz.org]
-[+] Checking version...OK [1711 days old]
-[+] Checking readme...OK [49017 bytes]
-[+] Checking repo...OK [https://github.com/psf/requests]
+[+] Checking readme...OK [49006 bytes]
 [+] Checking homepage...OK [http://python-requests.org]
-[+] Checking downloads...OK [49.4M weekly]
+[+] Checking downloads...OK [51.1M weekly]
+[+] Checking repo...OK [https://github.com/psf/requests]
 [+] Checking for CVEs...OK [2 found]
+[+] Checking dependencies...OK [9 direct]
 [+] Downloading package 'requests' (ver 2.18.4) from pypi...OK [123.27 KB]
-[+] Analyzing APIs...OK [6 analyzed]
+[+] Analyzing code...OK [needs 3 perms: fork,network,file]
+=============================================
 [+] 6 risk(s) found, package is undesirable, vulnerable!
 {
     "undesirable": [
-        "1711 days old",
+        "old package: 1744 days old",
+        "invalid or no homepage: insecure webpage",
+        "generates new code at runtime",
         "fetches data over the network", 
-        "reads files and dirs", 
-        "reads environment variables"
+        "reads files and dirs",
     ], 
     "vulnerable": [
         "contains CVE-2018-18074,CVE-2018-18074"

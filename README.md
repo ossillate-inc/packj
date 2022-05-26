@@ -71,6 +71,7 @@ $ python3 main.py npm eslint
         "reads files and dirs: ['package/lib/cli-engine/load-rules.js:37', 'package/lib/cli-engine/file-enumerator.js:142']"
     ]
 }
+=> Complete report: npm-eslint-8.16.0.json
 ```
 
 Specific package versions to be vetted could be specified using `==`. Please refer to the example below
@@ -104,7 +105,8 @@ $ python3 main.py pypi requests==2.18.4
         "contains CVE-2018-18074,CVE-2018-18074"
     ]
 }
-View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
+=> Complete report: pypi-requests-2.18.4.json
+=> View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
 ````
 
 ## How it works

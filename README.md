@@ -30,6 +30,7 @@ $ python3 main.py pypi krisqian
 [+] Checking dependencies...OK [none found]
 [+] Downloading package 'KrisQian' (ver 0.0.7) from pypi...OK [1.94 KB]
 [+] Analyzing code...OK [needs 3 perms: network,file,fork]
+[+] Checking files/funcs...OK [9 files (2 .py), 6 funcs, LoC: 184]
 =============================================
 [+] 6 risk(s) found, package is undesirable!
 {
@@ -63,6 +64,7 @@ $ python3 main.py npm eslint
 [+] Checking dependencies...OK [35 direct]
 [+] Downloading package 'eslint' (ver 8.16.0) from npm...OK [490.14 KB]
 [+] Analyzing code...OK [needs 2 perms: file,fork]
+[+] Checking files/funcs...OK [395 files (390 .js), 1022 funcs, LoC: 76.3K]
 =============================================
 [+] 2 risk(s) found, package is undesirable!
 {
@@ -91,6 +93,7 @@ $ python3 main.py pypi requests==2.18.4
 [+] Checking dependencies...OK [9 direct]
 [+] Downloading package 'requests' (ver 2.18.4) from pypi...OK [123.27 KB]
 [+] Analyzing code...OK [needs 3 perms: fork,network,file]
+[+] Checking files/funcs...OK [47 files (33 .py), 578 funcs, LoC: 13.9K]
 =============================================
 [+] 6 risk(s) found, package is undesirable, vulnerable!
 {

@@ -216,7 +216,7 @@ def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 		print("[+] Checking readme...", end='', flush=True)
 		descr = pm_proxy.get_description(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not descr or len(descr) < 100:
-			reason = 'no description' if not descr else 'insufficient description'
+			reason = 'no readme' if not descr else 'insufficient readme'
 			alert_type = 'no or insufficient readme'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 		print("OK [%d bytes]" % (len(descr)))

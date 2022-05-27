@@ -1,19 +1,29 @@
-# <img src="https://www.svgrepo.com/show/255045/box-package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj</span> 
+# <img src="https://www.svgrepo.com/show/255045/box-package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj flags malicious and other "risky" open-source packages</span> 
 
-*packj* (pronounced package) is a standalone command line (CLI) tool to vet open-source software packages for "risky" attributes that make them vulnerable to supply chain attacks.
+*Packj* (pronounced package) is a command line (CLI) tool to vet open-source software packages for "risky" attributes that make them vulnerable to supply chain attacks. This is the tool behind our large-scale security analysis platform [Packj.dev](https://packj.dev) that continuously vets packages and provides free reports.
 
 ![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social) ![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)
 
-## Usage
+## Contents
+
+* [How to use ](#how-to-use)
+* [How it works](#how-it-works)
+* [Risky attributes](#risky-attributes)
+* [How to customize](#how-to-customize)
+* [Talks and videos](#resources)
+* [Project roadmap](#feature-roadmap)
+* [Team and collaborators](#team)
+
+# How to use #
 
 Packj accepts two input args:
 * name of the registry or package manager, pypi or npm
 * name of the package to be vetted
 
 **NOTE** 
-- Packj has only been tested on Linux. 
-- You will have to install dependencies first using `pip install -r requirements.txt`
-- Works with Python3. API analysis will fail if used with Python2.
+* Packj has only been tested on Linux. 
+* You will have to install dependencies first using `pip install -r requirements.txt`
+* Requires Python3. API analysis will fail if used with Python2.
 
 ```
 $ python3 main.py pypi krisqian
@@ -112,15 +122,42 @@ $ python3 main.py pypi requests==2.18.4
 => View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
 ````
 
-## How it works
+# How it works
 
 - It first downloads the metadata from the registry using their APIs and analyze it for "risky" attributes.
 - To perform API analysis, the package is downloaded from the registry using their APIs into a temp dir. Then, packj performs static code analysis to detect API usage. API analysis is based on [MalOSS](https://github.com/osssanitizer/maloss), a research project from our group at Georgia Tech.
 - Vulnerabilities (CVEs) are checked by pulling info from OSV database at [OSV](https://osv.dev)
-- Python PyPI package downloads are fetched from [pypistats](https://pypistats.org)
+- Python PyPI and NPM package downloads are fetched from [pypistats](https://pypistats.org) and [npmjs](https://api.npmjs.org/downloads)
 - All risks detected are aggregated and reported 
 
-## Learn more 
+# Risky attributes #
+
+The design of Packj is guided by our study of 651 malware samples of documented open-source software supply chain attacks. Specifically, we have empirically identified a number of risky code and metadata attributes that make a package vulnerable to supply chain attacks. 
+
+For instance, we flag inactive or unmaintained packages that no longer receive security fixes. Inspired by Android app runtime permissions, Packj uses a permission-based security model to offer control and code transparency to developers. Packages that invoke sensitive operating system functionality such as file accesses and remote network communication are flagged as risky as this functionality could leak sensitive data.
+
+Some of the attributes we vet for, include
+
+| Attribute        |  Type    | Description                                              |  Reason                                                    |
+|       :---:      |   :-:    |     :-:                                                  |   :-:                                                      |
+|  Release date    | Metadata | Version release date to flag old or abandonded packages  | Old or unmaintained packages do not receive security fixes |
+|  OS or lang APIs | Code     | Use of sensitive APIs, such as `exec` and `eval`         | Malware uses APIs from the operating system or language runtime to perform sensitive operations (e.g., read SSH keys) |
+|  Contributors' email | Metadata | Email addresses of the contributors | Incorrect or invalid of email addresses suggest lack of 2FA |
+|  Source repo | Metadata | Presence and validity of public source repo | Absence of a public repo means no easy way to audit or review the source code publicly |
+
+Full list of the attributes we track can be viewed at [threats.csv](https://github.com/ossillate-inc/packj/blob/main/threats.csv)
+
+These attributes have been identified as risky by several other researchers [[1](https://arxiv.org/pdf/2112.10165.pdf), [2](https://www.usenix.org/system/files/sec19-zimmermann.pdf), [3](https://www.ndss-symposium.org/wp-content/uploads/ndss2021_1B-1_23055_paper.pdf)] as well. 
+
+# How to customize #
+
+Packj has been developed with a goal to assist developers in identifying and reviewing potential supply chain risks in packages. 
+
+However, since the degree of perceived security risk from an untrusted package depends on the specific security requirements, Packj can be customized according to your threat model. For instance, a package with no 2FA may be perceived to pose greater security risks to some developers, compared to others who may be more willing to use such packages for the functionality offered. Given the volatile nature of the problem, providing customized and granular risk measurement is one of our goals.
+
+Packj can be customized to minimize noise and reduce alert fatigue by simply commenting out unwanted attributes in [threats.csv](https://github.com/ossillate-inc/packj/blob/main/threats.csv)
+
+# Resources #
 
 To learn more about Packj tool or open-source software supply chain attacks, refer to our
 
@@ -129,24 +166,24 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 - PyConUS'22 [talk](https://www.youtube.com/watch?v=Rcuqn56uCDk) and [slides](https://speakerdeck.com/ashishbijlani/pyconus22-slides).
 - BlackHAT Asia'22 Arsenal [presentation](https://www.blackhat.com/asia-22/arsenal/schedule/#mitigating-open-source-software-supply-chain-attacks-26241)
 - PackagingCon'21 [talk](https://www.youtube.com/watch?v=PHfN-NrUCoo) and [slides](https://speakerdeck.com/ashishbijlani/mitigating-open-source-software-supply-chain-attacks)
+- Academic [dissertation](https://cyfi.ece.gatech.edu/publications/DUAN-DISSERTATION-2019.pdf) on open-source software security and the [paper](https://www.ndss-symposium.org/wp-content/uploads/ndss2021_1B-1_23055_paper.pdf) from our group at Georgia Tech that started this research.
 
-## Risky attributes and customization
+# Feature roadmap #
 
-The design of Packj is guided by our study of 651 malware samples of documented open-source software supply chain attacks. Specifically, we have empirically identified a number of risky code and metadata attributes that make a package vulnerable to supply chain attacks. 
+* Add support for other language ecosystems. Ruby is a work in progress, and will be available in June, 2022.
+* Add functionality to detect several other "risky" code as well as metadata attributes. 
+* Packj currently only performs static code analysis, we are working on adding support for dynamic analysis (ETA: end of summer)
 
-For instance, we flag inactive or unmaintained packages that no longer receive security fixes. Inspired by Android app runtime permissions, Packj uses a permission-based security model to offer control and code transparency to developers. Packages that invoke sensitive operating system functionality such as file accesses and remote network communication are flagged as risky as this functionality could leak sensitive data.
+# Team #
 
-Some of the attributes we vet for, include
+Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://ossillate.com/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators.
 
-- Last version release date to rule out old or abandonded packages
-- Use of sensitive APIs, such as `exec` and `eval`
-- Correctness and validity of author email (for 2FA)
-- Presence and validity of public source repo
+- [Dr. Ashish Bijlani](https://github.com/ashishbijlani)
+- [Devdutt Patnaik](https://github.com/DevP17)
+- [Ajinkya Rajput](https://github.com/the-elves)
+- [Lucas Zhang](https://github.com/LucasZhang58)
+- [Shubham Thakur](https://github.com/sbmthakur)
+- [Dr. Ruian Duan](https://github.com/lingfennan)
 
-Full list of such attributes can be viewed at [threats.csv](https://github.com/ossillate-inc/packj/blob/main/threats.csv)
 
-Packj has been developed with a goal to assist developers in identifying and reviewing potential supply chain risks in packages. Since the degree of perceived security risk from an untrusted package depends on the specific security requirements, Packj can be customized according to the threat model of the user. For instance, a package with no 2FA may be perceived to pose greater security risks to some developers, compared to others who may be more willing to use such packages for the functionality offered. Given the volatile nature of the problem, providing customized and granular risk measurement is one of the goals of our tool. Packj can be customized to reduce alert fatigue by commenting out unwanted attributes in [threats.csv](https://github.com/ossillate-inc/packj/blob/main/threats.csv)
 
-## Team
-
-packj has been developed by cybersecurity researchers at [Ossillate Inc.](https://ossillate.com/team) to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies.

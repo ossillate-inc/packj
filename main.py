@@ -353,12 +353,12 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 				alert_type = 'generates new code at runtime'
 				reason = 'generates new code at runtime'
 				risks = alert_user(alert_type, threat_model, reason, risks)
-				perms_needed.add('fork')
+				perms_needed.add('codegen')
 			elif "SINK_PROCESS_OPERATION":
-				alert_type = 'generates new code at runtime'
-				reason = 'spawns new processes in background'
+				alert_type = 'forks or exits OS processes'
+				reason = 'performs a process operation'
 				risks = alert_user(alert_type, threat_model, reason, risks)
-				perms_needed.add('fork')
+				perms_needed.add('process')
 			elif p == "SOURCE_OBFUSCATION":
 				alert_type = 'accesses obfuscated (hidden) code'
 				reason = 'reads hidden code'

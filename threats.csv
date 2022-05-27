@@ -32,6 +32,7 @@ undesirable,few versions or releases
 undesirable,version release after a long gap
 undesirable,contains custom installation hooks, hooks may download or execute malicious code
 undesirable,generates new code at runtime
+undesirable,forks or exits OS processes
 undesirable,accesses environment variables
 undesirable,accesses files and dirs
 undesirable,communicates with external network

@@ -62,13 +62,5 @@ class PyAnalyzer(StaticAnalyzer):
         except Exception as e:
             logging.debug("Fatal error %s running astgen for %s!" % (str(e), analyze_path))
 
-        # optionally evaluate smt formula
-        if evaluate_smt:
-            resultpb = PkgAstResults()
-            read_proto_from_file(resultpb, filename=outfile, binary=False)
-            satisfied = self._check_smt(astgen_results=[resultpb], configpath=configpath)
-            resultpb.pkgs[0].config.smt_satisfied = satisfied
-            write_proto_to_file(resultpb, filename=outfile, binary=False)
-
         # clean up residue files
         self._cleanup_astgen(analyze_path=analyze_path, is_decompress_path=is_decompress_path)

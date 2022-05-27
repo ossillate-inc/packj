@@ -145,4 +145,4 @@ def read_proto_from_string(proto, content_string, binary=True):
 def write_dict_to_file(dict_data, outfile):
 	import json
 	with open(outfile, 'w+') as of:
-		json.dump(dict_data, of)
+		json.dump(dict_data, of, indent=4)

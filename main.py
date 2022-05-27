@@ -12,8 +12,10 @@ from util.enum_util import PackageManagerEnum, LanguageEnum, DistanceAlgorithmEn
 from util.formatting import human_format
 
 from parse_apis import parse_api_usage
+from parse_composition import parse_package_composition
 from pm_util import get_pm_proxy
 from static_util import get_static_proxy_for_language
+from static_proxy.static_base import Language2Extensions
 
 # sys.version_info[0] is the major version number. sys.version_info[1] is minor
 if sys.version_info[0] != 3:
@@ -272,6 +274,33 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 	finally:
 		return risks, report
 
+def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
+	try:
+		print("[+] Checking files/funcs...", end='', flush=True)
+
+		if pm_name == 'pypi':
+			language=LanguageEnum.python
+		elif pm_name == 'npm':
+			language=LanguageEnum.javascript
+		else:
+			raise Exception("Package manager %s not supported!")
+
+		num_files, lang_files, num_funcs, total_loc = parse_package_composition(pkg_name, ver_str, filepath + '.out.json')
+		lang_file_ext = ','.join(Language2Extensions[language])
+
+		print("OK [%s files (%d %s), %s funcs, LoC: %s]" % \
+				(num_files, lang_files, lang_file_ext, num_funcs, human_format(total_loc)))
+		report["composition"] = {
+			"num_files" : num_files,
+			"num_funcs" : num_funcs,
+			"%s_files" % (lang_file_ext) : lang_files,
+			"Loc"		: total_loc,
+		}
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+	finally:
+		return risks, report
+
 def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 	try:
 		print("[+] Analyzing code...", end='', flush=True)
@@ -440,6 +469,7 @@ if __name__ == "__main__":
 
 	if filepath:
 		risks, report = analyze_apis(pm_name, pkg_name, ver_str, filepath, risks=risks, report=report)
+		risks, report = analyze_composition(pm_name, pkg_name, ver_str, filepath, risks=risks, report=report)
 
 	print("=============================================")
 	if not len(risks):

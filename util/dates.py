@@ -13,7 +13,7 @@ def curr_timestamp():
 	import datetime
 	return date_timestamp(datetime.datetime.now())
 
-def datetime_to_date_str(date, fmt:str='%m-%d-%Y'):
+def datetime_to_date_str(date, fmt='%m-%d-%Y'):
 	try:
 		import datetime
 		if not date:

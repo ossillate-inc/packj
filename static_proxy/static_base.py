@@ -85,11 +85,13 @@ class StaticAnalyzer(object):
     @staticmethod
     def _get_infiles(inpath, root, language):
         infiles = []
+        allfiles = []
         if isfile(inpath):
             if root is None:
                 root = dirname(inpath)
             root = abspath(root)
             infiles.append(abspath(inpath))
+            allfiles.append(abspath(inpath))
         elif isdir(inpath):
             if root is None:
                 root = inpath
@@ -98,9 +100,10 @@ class StaticAnalyzer(object):
                 for fname in i_files:
                     if fname.endswith(Language2Extensions[language]):
                         infiles.append(abspath(join(i_root, fname)))
+                    allfiles.append(abspath(join(i_root, fname)))
         if len(infiles) == 0:
-            logging.error("No input files from %s for language %s", inpath, language)
-        return infiles, root
+            logging.warning("No input files from %s for language %s", inpath, language)
+        return allfiles, infiles, root
 
     @staticmethod
     def _get_filepb(infile, root):

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 #
-# Based on MalOSS:  https://github.com/osssanitizer/maloss
+# Based on MalOSS:	https://github.com/osssanitizer/maloss
 #
 import os
 import ast
@@ -20,13 +20,12 @@ from util.job_util import read_proto_from_file, write_proto_to_file
 from util.job_util import write_dict_to_file
 
 class PythonDeclRefVisitor(ast.NodeVisitor):
-	def __init__(self, buf, infile, asttok, configpb=None, debug=False):
+	def __init__(self, infile, asttok, configpb=None, debug=False):
 		self.asttok = asttok
 		self.debug = debug
 		self.save_feature = configpb.save_feature if configpb else False
 		self.func_only = configpb.func_only if configpb else False
 		self.infile = infile
-		self.buf = buf
 
 		# initialize the declaration filters
 		self.declrefs_filter_set = None
@@ -46,6 +45,7 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 		self.modules = set()
 		# the collected declaration references
 		self.declrefs = []
+		self.all_declrefs = {"Calls":[],"Functions":[]}
 
 	def generic_visit(self, node):
 		ast.NodeVisitor.generic_visit(self, node)
@@ -65,12 +65,21 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 
 	def visit_FunctionDef(self, node):
 		logging.debug('visiting FunctionDef node (line %d)' % (node.lineno))
+
 		# FIXME: warn about redefined functions?
 		if node.name in self.alias2name or node.name in self.name2module:
 			logging.warning("redefined imported function %s!" % (node.name))
+
 		ast.NodeVisitor.generic_visit(self, node)
 		if self.save_feature:
 			logging.warning("set root_nodes")
+
+		node_details = {
+			 "Name"		: node.name,
+			 "File"		: self.infile,
+			 "Line"		: node.lineno,
+		}
+		self.all_declrefs["Functions"].append(node_details)
 
 	def visit_ClassDef(self, node):
 		logging.debug('visiting ClassDef node (line %d)' % (node.lineno))
@@ -133,36 +142,28 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 			# append '**' to reproduce the calling text
 			args.append('**' + self.asttok.get_text(node.kwargs))
 
-		# log stuff
-		if base:
-			logging.warning("calling function %s.%s with args %s at line %d" % (base, name, args, node.lineno))
-			out = {
-				 "Function"  : "%s.%s" % (base, name),
-				 "Args"		 : args,
-				 "File"		 : self.infile,
-				 "Line"		 : node.lineno,
-			 }
-
-		else:
-			logging.warning("calling function %s with args %s at line %d" % (name, args, node.lineno))
-			out = {
-				 "Function"  : name,
-				 "Args"		 : args,
-				 "File"		 : self.infile,
-				 "Line"		 : node.lineno,
-			 }
-		self.buf.append(out)
-
 		full_name = name if base is None else '%s.%s' % (base, name)
+
+		# log stuff
+		logging.warning("calling function %s with args %s at line %d" % (full_name, args, node.lineno))
+
+		node_details = {
+			 "Name"	: full_name,
+			 "Args"	: args,
+			 "File"	: self.infile,
+			 "Line"	: node.lineno,
+		}
+		self.all_declrefs["Calls"].append(node_details)
+
+		source_range = None
 		source_text = self.asttok.get_text(node)
 		if source_text:
 			source_range = (node.first_token.start, node.last_token.end)
-		else:
-			source_range = None
 		if self.func_only:
 			name_to_check = '.' + name if base else name
 		else:
 			name_to_check = full_name
+
 		if self.declrefs_filter_set is None or name_to_check in self.declrefs_filter_set:
 			self.declrefs.append((base, name, tuple(args), source_text, source_range))
 		ast.NodeVisitor.generic_visit(self, node)
@@ -170,14 +171,24 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 	def get_declrefs(self):
 		return self.declrefs
 
+	def get_all_declrefs(self):
+		return self.all_declrefs
+
 def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=None):
 
 	from static_proxy.static_base import StaticAnalyzer
 	from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
 	from util.enum_util import LanguageEnum
 
+	composition = {
+		"Files" : [],
+		"Functions" : [],
+		"Calls" : [],
+	}
+
 	# get input files
-	infiles, root = StaticAnalyzer._get_infiles(inpath=inpath, root=root, language=LanguageEnum.python)
+	language = LanguageEnum.python
+	allfiles, infiles, root = StaticAnalyzer._get_infiles(inpath=inpath, root=root, language=language)
 
 	# initialize resultpb
 	resultpb = PkgAstResults()
@@ -187,30 +198,58 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 	if pkg_version is not None:
 		pkg.pkg_version = pkg_version
 	pkg.language = ast_pb2.PYTHON
-	buf = []
-	for infile in infiles:
-		all_source = open(infile, 'r').read()
+	for infile in allfiles:
+		try:
+			all_source = open(infile, 'r').read()
+		except Exception as e:
+			logging.warning("Failed to read file %s: %s" % (infile, str(e)))
+			continue
+
+		try:
+			file_details = {
+				"Name"	: infile,
+				"LoC"	: len(all_source.split('\n')),
+				"Native" : infile in infiles,
+			}
+			composition["Files"].append(file_details)
+		except Exception as e:
+			logging.error("Failed to parse FILE %s ast details: %s" % (infile, str(e)))
+
+		if infile not in infiles:
+			continue
+
 		try:
 			tree = ast.parse(all_source, filename=infile)
 		except SyntaxError as se:
 			logging.warning("Syntax error %s parsing file %s in Python3. Skipping!" % (str(se), infile))
 			continue
+
 		# mark the tree with tokens information
-		asttok = asttokens.ASTTokens(source_text=all_source, tree=tree, filename=infile)
-		visitor = PythonDeclRefVisitor(buf=buf, infile=infile, asttok=asttok, configpb=configpb)
-		visitor.visit(tree)
-		logging.warning("collected functions: %s" % (Counter(visitor.get_declrefs()).items()))
+		try:
+			asttok = asttokens.ASTTokens(source_text=all_source, tree=tree, filename=infile)
+			visitor = PythonDeclRefVisitor(infile=infile, asttok=asttok, configpb=configpb)
+			visitor.visit(tree)
+			logging.warning("collected functions: %s" % (Counter(visitor.get_declrefs()).items()))
 
-		filepb = StaticAnalyzer._get_filepb(infile, root)
-		for base, name, args, source_text, source_range in visitor.get_declrefs():
-			api_result = StaticAnalyzer._get_api_result(base, name, args, source_text, source_range, filepb)
-			pkg.api_results.add().CopyFrom(api_result)
+			filepb = StaticAnalyzer._get_filepb(infile, root)
+			for base, name, args, source_text, source_range in visitor.get_declrefs():
+				api_result = StaticAnalyzer._get_api_result(base, name, args, source_text, source_range, filepb)
+				pkg.api_results.add().CopyFrom(api_result)
 
-	logging.warning('writing to %s' % (outfile+'.json'))
-	write_dict_to_file(buf, outfile + '.json')
+			for item_type, item_details in visitor.get_all_declrefs().items():
+				composition[item_type] += item_details
+		except Exception as e:
+			logging.debug("Error parsing AST for file %s in Python3: %s" % (infile, str(se)))
+			
+	# save AST details
+	try:
+		logging.warning('writing to %s' % (outfile+'.json'))
+		write_dict_to_file(composition, outfile + '.json')
+	except Exception as e:
+		logging.debug("failed to write ast_details: %s" % (str(e)))
+
 	# save resultpb
 	write_proto_to_file(resultpb, outfile, binary=False)
-
 
 def parse_args(argv):
 	parser = argparse.ArgumentParser(prog="astgen_py3", description="Parse arguments")

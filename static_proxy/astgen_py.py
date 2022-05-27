@@ -14,150 +14,156 @@ from util.job_util import write_dict_to_file
 logging.getLogger().setLevel(logging.ERROR)
 
 class PythonDeclRefVisitor(ast.NodeVisitor):
-    def __init__(self, buf, infile, asttok, configpb=None, debug=False):
-        self.asttok = asttok
-        self.debug = debug
-        self.save_feature = configpb.save_feature if configpb else False
-        self.func_only = configpb.func_only if configpb else False
-        self.infile = infile
-        self.buf = buf
+	def __init__(self, infile, asttok, configpb=None, debug=False):
+		self.asttok = asttok
+		self.debug = debug
+		self.save_feature = configpb.save_feature if configpb else False
+		self.func_only = configpb.func_only if configpb else False
+		self.infile = infile
 
-        # initialize the declaration filters
-        self.declrefs_filter_set = None
-        if configpb is not None:
-            self.declrefs_filter_set = set()
-            for api in configpb.apis:
-                if api.type == ast_pb2.AstNode.FUNCTION_DECL_REF_EXPR:
-                    if self.func_only:
-                        name_to_check = '.' + api.name if api.base_type else api.name
-                        self.declrefs_filter_set.add(name_to_check)
-                    else:
-                        self.declrefs_filter_set.add(api.full_name)
-        self.name2module = {}
-        self.alias2name = {}
-        # TODO: Module-based filter may reduce false positives, but can also introduce false negatives if not support cross file/module check.
-        # the modules imported in the current file
-        self.modules = set()
-        # the collected declaration references
-        self.declrefs = []
+		# initialize the declaration filters
+		self.declrefs_filter_set = None
+		if configpb is not None:
+			self.declrefs_filter_set = set()
+			for api in configpb.apis:
+				if api.type == ast_pb2.AstNode.FUNCTION_DECL_REF_EXPR:
+					if self.func_only:
+						name_to_check = '.' + api.name if api.base_type else api.name
+						self.declrefs_filter_set.add(name_to_check)
+					else:
+						self.declrefs_filter_set.add(api.full_name)
+		self.name2module = {}
+		self.alias2name = {}
+		# TODO: Module-based filter may reduce false positives, but can also introduce false negatives if not support cross file/module check.
+		# the modules imported in the current file
+		self.modules = set()
+		# the collected declaration references
+		self.declrefs = []
+		self.all_declrefs = {"Calls":[],"Functions":[]}
 
-    def generic_visit(self, node):
-        ast.NodeVisitor.generic_visit(self, node)
-        if self.debug:
-            if hasattr(node, 'lineno'):
-                logging.warning('visiting %s node at line %d' % (type(node).__name__, node.lineno))
-            else:
-                logging.warning('visiting %s node' % (type(node).__name__))
+	def generic_visit(self, node):
+		ast.NodeVisitor.generic_visit(self, node)
+		if self.debug:
+			if hasattr(node, 'lineno'):
+				logging.warning('visiting %s node at line %d' % (type(node).__name__, node.lineno))
+			else:
+				logging.warning('visiting %s node' % (type(node).__name__))
 
-    def visit_ImportFrom(self, node):
-        logging.debug('visiting ImportFrom node (line %d)' % (node.lineno))
-        for name in node.names:
-            self.name2module.setdefault(name.name, node.module)
-            if name.asname is not None:
-                self.alias2name.setdefault(name.asname, name.name)
-        ast.NodeVisitor.generic_visit(self, node)
+	def visit_ImportFrom(self, node):
+		logging.debug('visiting ImportFrom node (line %d)' % (node.lineno))
+		for name in node.names:
+			self.name2module.setdefault(name.name, node.module)
+			if name.asname is not None:
+				self.alias2name.setdefault(name.asname, name.name)
+		ast.NodeVisitor.generic_visit(self, node)
 
-    def visit_FunctionDef(self, node):
-        logging.debug('visiting FunctionDef node (line %d)' % (node.lineno))
-        # FIXME: warn about redefined functions?
-        if node.name in self.alias2name or node.name in self.name2module:
-            logging.warning("redefined imported function %s!" % (node.name))
-        ast.NodeVisitor.generic_visit(self, node)
-        if self.save_feature:
-            logging.warning("set root_nodes")
+	def visit_FunctionDef(self, node):
+		logging.debug('visiting FunctionDef node (line %d)' % (node.lineno))
+		# FIXME: warn about redefined functions?
+		if node.name in self.alias2name or node.name in self.name2module:
+			logging.warning("redefined imported function %s!" % (node.name))
+		ast.NodeVisitor.generic_visit(self, node)
+		if self.save_feature:
+			logging.warning("set root_nodes")
+		node_details = {
+			 "Name"		: node.name,
+			 "File"		: self.infile,
+			 "Line"		: node.lineno,
+		}
+		self.all_declrefs["Functions"].append(node_details)
 
-    def visit_ClassDef(self, node):
-        logging.debug('visiting ClassDef node (line %d)' % (node.lineno))
-        ast.NodeVisitor.generic_visit(self, node)
-        if self.save_feature:
-            logging.warning("set root_nodes")
+	def visit_ClassDef(self, node):
+		logging.debug('visiting ClassDef node (line %d)' % (node.lineno))
+		ast.NodeVisitor.generic_visit(self, node)
+		if self.save_feature:
+			logging.warning("set root_nodes")
 
-    def visit_Call(self, node):
-        logging.debug('visiting Call node (line %d)' % (node.lineno))
+	def visit_Call(self, node):
+		logging.debug('visiting Call node (line %d)' % (node.lineno))
 
-        # debug code
-        if self.debug:
-            for fieldname, value in ast.iter_fields(node):
-                logging.warning('fieldname %s, value %s' % (fieldname, value))
-                if fieldname == 'func':
-                    for f_fieldname, f_value in ast.iter_fields(value):
-                        logging.info('func fieldname %s, func value %s' % (f_fieldname, f_value))
-                        if f_fieldname == 'id':
-                            logging.warning('func id: %s' % (f_value))
+		# debug code
+		if self.debug:
+			for fieldname, value in ast.iter_fields(node):
+				logging.warning('fieldname %s, value %s' % (fieldname, value))
+				if fieldname == 'func':
+					for f_fieldname, f_value in ast.iter_fields(value):
+						logging.info('func fieldname %s, func value %s' % (f_fieldname, f_value))
+						if f_fieldname == 'id':
+							logging.warning('func id: %s' % (f_value))
 
-        # compute base and func
-        if isinstance(node.func, ast.Attribute):
-            name = node.func.attr
+		# compute base and func
+		if isinstance(node.func, ast.Attribute):
+			name = node.func.attr
 
-            if isinstance(node.func.value, ast.Name):
-                base = node.func.value.id
-            elif isinstance(node.func.value, ast.Call):
-                base = self.asttok.get_text(node.func.value)
-                logging.debug("node.func.value is ast.Call, Ignoring!")
-            elif isinstance(node.func.value, ast.Subscript):
-                base = self.asttok.get_text(node.func.value)
-                # NOTE: currently, we use text of chained functions (i.e. foo().bar(), foo() is used),
-                # because Python is runtime type language, and it is not possible to get the type statically
-                logging.warning("node.func.value type ast.Subscript, fields: %s",
-                                list(ast.iter_fields(node.func.value)))
-            else:
-                base = self.asttok.get_text(node.func.value)
-                logging.warning("node.func.value type: %s, fields: %s",
-                              type(node.func.value), list(ast.iter_fields(node.func.value)))
-        else:
-            # NOTE: we assume the imported functions are not redefined! this may not be true!
-            if isinstance(node.func, ast.Name):
-                name = node.func.id
-            else:
-                name = self.asttok.get_text(node.func)
-                logging.warning("node.func type: %s, name: %s" % (type(node.func), name))
-            name = self.alias2name[name] if name in self.alias2name else name
-            base = self.name2module[name] if name in self.name2module else None
+			if isinstance(node.func.value, ast.Name):
+				base = node.func.value.id
+			elif isinstance(node.func.value, ast.Call):
+				base = self.asttok.get_text(node.func.value)
+				logging.debug("node.func.value is ast.Call, Ignoring!")
+			elif isinstance(node.func.value, ast.Subscript):
+				base = self.asttok.get_text(node.func.value)
+				# NOTE: currently, we use text of chained functions (i.e. foo().bar(), foo() is used),
+				# because Python is runtime type language, and it is not possible to get the type statically
+				logging.warning("node.func.value type ast.Subscript, fields: %s",
+								list(ast.iter_fields(node.func.value)))
+			else:
+				base = self.asttok.get_text(node.func.value)
+				logging.warning("node.func.value type: %s, fields: %s",
+							  type(node.func.value), list(ast.iter_fields(node.func.value)))
+		else:
+			# NOTE: we assume the imported functions are not redefined! this may not be true!
+			if isinstance(node.func, ast.Name):
+				name = node.func.id
+			else:
+				name = self.asttok.get_text(node.func)
+				logging.warning("node.func type: %s, name: %s" % (type(node.func), name))
+			name = self.alias2name[name] if name in self.alias2name else name
+			base = self.name2module[name] if name in self.name2module else None
 
-        # compute arguments
-        args = []
-        for arg_index, arg_node in enumerate(node.args):
-            args.append(self.asttok.get_text(arg_node))
-        for keyword_index, keyword_node in enumerate(node.keywords):
-            args.append(self.asttok.get_text(keyword_node))
-        if hasattr(node, 'starargs') and node.starargs is not None:
-            # append '*' to reproduce the calling text
-            args.append('*' + self.asttok.get_text(node.starargs))
-        if hasattr(node, 'kwargs') and node.kwargs is not None:
-            # append '**' to reproduce the calling text
-            args.append('**' + self.asttok.get_text(node.kwargs))
+		# compute arguments
+		args = []
+		for arg_index, arg_node in enumerate(node.args):
+			args.append(self.asttok.get_text(arg_node))
+		for keyword_index, keyword_node in enumerate(node.keywords):
+			args.append(self.asttok.get_text(keyword_node))
+		if hasattr(node, 'starargs') and node.starargs is not None:
+			# append '*' to reproduce the calling text
+			args.append('*' + self.asttok.get_text(node.starargs))
+		if hasattr(node, 'kwargs') and node.kwargs is not None:
+			# append '**' to reproduce the calling text
+			args.append('**' + self.asttok.get_text(node.kwargs))
 
-        # log stuff
-        if base:
-            logging.warning("calling function %s.%s with args %s at line %d" % (base, name, args, node.lineno))
-            out = {
-                "Function"  : "%s.%s" % (base, name),
-                "Args"		: args,
-                "File"		: self.infile, 
-				"Line"		: node.lineno,
-            }
-        else:
-            logging.warning("calling function %s with args %s at line %d" % (name, args, node.lineno))
-            out = {
-                "Function"	: name,
-                "Args"		: args,
-                "File"		: self.infile, 
-				"Line"		: node.lineno,
-            }
-        self.buf.append(out)
-        full_name = name if base is None else '%s.%s' % (base, name)
-        source_text = self.asttok.get_text(node)
-        source_range = (node.first_token.start, node.last_token.end)
-        if self.func_only:
-            name_to_check = '.' + name if base else name
-        else:
-            name_to_check = full_name
-        if self.declrefs_filter_set is None or name_to_check in self.declrefs_filter_set:
-            self.declrefs.append((base, name, tuple(args), source_text, source_range))
-        ast.NodeVisitor.generic_visit(self, node)
+		# log stuff
+		full_name = name if base is None else '%s.%s' % (base, name)
 
-    def get_declrefs(self):
-        return self.declrefs
+		# log stuff
+		logging.warning("calling function %s with args %s at line %d" % (full_name, args, node.lineno))
+		node_details = {
+			 "Name"	: full_name,
+			 "Args"	: args,
+			 "File"	: self.infile,
+			 "Line"	: node.lineno,
+		}
+		self.all_declrefs["Calls"].append(node_details)
+
+		source_range = None
+		source_text = self.asttok.get_text(node)
+		if source_text:
+			source_range = (node.first_token.start, node.last_token.end)
+		if self.func_only:
+			name_to_check = '.' + name if base else name
+		else:
+			name_to_check = full_name
+
+		if self.declrefs_filter_set is None or name_to_check in self.declrefs_filter_set:
+			self.declrefs.append((base, name, tuple(args), source_text, source_range))
+		ast.NodeVisitor.generic_visit(self, node)
+
+	def get_declrefs(self):
+		return self.declrefs
+
+	def get_all_declrefs(self):
+		return self.all_declrefs
 
 def py_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=None):
 
@@ -165,8 +171,15 @@ def py_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=N
 	from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
 	from util.enum_util import LanguageEnum
 
+	composition = {
+		"Files" : [],
+		"Functions" : [],
+		"Calls" : [],
+	}
+
 	# get input files
-	infiles, root = StaticAnalyzer._get_infiles(inpath=inpath, root=root, language=LanguageEnum.python)
+	language = LanguageEnum.python
+	allfiles, infiles, root = StaticAnalyzer._get_infiles(inpath=inpath, root=root, language=language)
 
 	# initialize resultpb
 	resultpb = PkgAstResults()
@@ -176,27 +189,57 @@ def py_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=N
 	if pkg_version is not None:
 		pkg.pkg_version = pkg_version
 	pkg.language = ast_pb2.PYTHON
-	buf = []
+
 	for infile in infiles:
-		all_source = open(infile, 'r').read()
+		try:
+			all_source = open(infile, 'r').read()
+		except Exception as e:
+			logging.warning("Failed to read file %s: %s" % (infile, str(e)))
+			continue
+
+		try:
+			file_details = {
+				"Name"	: infile,
+				"LoC"	: len(all_source.split('\n')),
+				"Native" : infile in infiles,
+			}
+			composition["Files"].append(file_details)
+		except Exception as e:
+			logging.warning("Failed to parse FILE %s ast details: %s" % (infile, str(e)))
+
+		if infile not in infiles:
+			continue
+
 		try:
 			tree = ast.parse(all_source, filename=infile)
 		except SyntaxError as se:
 			logging.warning("Syntax error %s parsing file %s in Python2. Skipping!" % (str(se), infile))
 			continue
+
 		# mark the tree with tokens information
-		asttok = asttokens.ASTTokens(source_text=all_source, tree=tree, filename=infile)
-		visitor = PythonDeclRefVisitor(buf=buf, infile=infile, asttok=asttok, configpb=configpb)
-		visitor.visit(tree)
-		logging.warning("collected functions: %s" % (Counter(visitor.get_declrefs()).items()))
+		try:
+			asttok = asttokens.ASTTokens(source_text=all_source, tree=tree, filename=infile)
+			visitor = PythonDeclRefVisitor(buf=buf, infile=infile, asttok=asttok, configpb=configpb)
+			visitor.visit(tree)
+			logging.warning("collected functions: %s" % (Counter(visitor.get_declrefs()).items()))
 
-		filepb = StaticAnalyzer._get_filepb(infile, root)
-		for base, name, args, source_text, source_range in visitor.get_declrefs():
-			api_result = StaticAnalyzer._get_api_result(base, name, args, source_text, source_range, filepb)
-			pkg.api_results.add().CopyFrom(api_result)
+			filepb = StaticAnalyzer._get_filepb(infile, root)
+			for base, name, args, source_text, source_range in visitor.get_declrefs():
+				api_result = StaticAnalyzer._get_api_result(base, name, args, source_text, source_range, filepb)
+				pkg.api_results.add().CopyFrom(api_result)
 
-	logging.warning('writing to %s' % (outfile+'.json'))
-	write_dict_to_file(buf, outfile + '.json')
+			for item_type, item_details in visitor.get_all_declrefs().items():
+				composition[item_type] += item_details
+		except Exception as e:
+			logging.warning("Error parsing AST for file %s in Python3: %s" % (infile, str(se)))
+
+	# save AST details
+	try:
+		logging.warning('writing to %s' % (outfile+'.json'))
+		write_dict_to_file(composition, outfile + '.json')
+	except Exception as e:
+		logging.error(str(e))
+
 	# save resultpb
 	write_proto_to_file(resultpb, outfile, binary=False)
 

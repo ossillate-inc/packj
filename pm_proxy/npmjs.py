@@ -106,14 +106,14 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_homepage(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)
-		assert pkg_info and 'homepage' in pkg_info, "invalid package metadata!"
+		assert pkg_info and 'homepage' in pkg_info, "package not found!"
 		return pkg_info['homepage']
 
 	def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
 		from util.dates import datetime_delta, datetime_to_date_str
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)
-		assert pkg_info and 'time' in pkg_info, "invalid package metadata!"
+		assert pkg_info and 'time' in pkg_info, "package not found!"
 		history = {}
 		last_date = None
 		for ver_str, ts in pkg_info['time'].items():
@@ -142,7 +142,7 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)
-		assert pkg_info and 'versions' in pkg_info, "invalid package metadata!"
+		assert pkg_info and 'versions' in pkg_info, "package not found!"
 		try:
 			if not ver_str:
 				ver_str = pkg_info['dist-tags']['latest']
@@ -172,7 +172,8 @@ class NpmjsProxy(PackageManagerProxy):
 		if not ver_info or 'repository' not in ver_info:
 			if not pkg_info:
 				pkg_info = self.get_metadata(pkg_name=pkg_name)
-			assert pkg_info and 'ho' in pkg_info, "invalid package metadata!"
+			assert pkg_info and 'versions' in pkg_info, "package not found!"
+			ver_info = self.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		assert ver_info and 'repository' in ver_info, "invalid version metadata!"
 		repo_info = ver_info['repository']
 		if isinstance(repo_info, str):

@@ -1,3 +1,12 @@
+def ts_to_date_str(tstamp:float, fmt:str='%m-%d-%Y'):
+	try:
+		import datetime
+		if not tstamp:
+			return None
+		return datetime.datetime.fromtimestamp(tstamp).strftime(fmt)
+	except Exception as e:
+		raise Exception("Failed to get date string from timestamp %s: %s" % (tstamp, str(e)))
+
 def date_timestamp(date):
 	import sys
 	if sys.version_info[0] < 3 or sys.version_info[1] < 4:

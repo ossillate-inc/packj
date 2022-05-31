@@ -10,12 +10,14 @@ from util.email_validity import check_email_address
 from util.files import write_json_to_file, read_from_csv
 from util.enum_util import PackageManagerEnum, LanguageEnum, DistanceAlgorithmEnum, TraceTypeEnum, DataTypeEnum
 from util.formatting import human_format
+from util.repo import git_clone, replace_last
 
 from parse_apis import parse_api_usage
 from parse_composition import parse_package_composition
 from pm_util import get_pm_proxy
 from static_util import get_static_proxy_for_language
 from static_proxy.static_base import Language2Extensions
+from parse_repo import fetch_repo_data
 
 # sys.version_info[0] is the major version number. sys.version_info[1] is minor
 if sys.version_info[0] != 3:
@@ -52,7 +54,7 @@ def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={
 			risks = alert_user(alert_type, threat_model, reason, risks)
 
 		print("OK [%d version(s)]" % (len(release_history)))
-		report['releases'] = release_history
+		report['num_releases'] = len(release_history)
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 		return risks, report
@@ -66,8 +68,9 @@ def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={
 			reason = 'version released after %d days' % (days)
 			alert_type = 'version release after a long gap'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-
-		print("OK [%s]" % ('%d days since last release' % (days) if days else 'first release'))
+			print("ALERT [%s]" % ('%d days since last release' % (days) if days else 'first release'))
+		else:
+			print("OK [%s]" % ('%d days since last release' % (days) if days else 'first release'))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -91,8 +94,9 @@ def analyze_version(ver_info, risks={}, report={}):
 			reason = 'no release date' if not uploaded else '%d days old' % (days)
 			alert_type = 'old package'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-
-		print("OK [%d days old]" % (days))
+			print("ALERT [%d days old]" % (days))
+		else:
+			print("OK [%d days old]" % (days))
 		report["version"] = ver_info
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
@@ -108,9 +112,10 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
 			alert_type = 'contains known vulnerablities (CVEs)'
 			reason = 'contains %s' % (','.join(vul['id'] for vul in vuln_list))
 			risks = alert_user(alert_type, threat_model, reason, risks)
+			print("ALERT [%s found]" % (len(vuln_list)))
 		else:
 			vuln_list = []
-		print("OK [%s found]" % (len(vuln_list)))
+			print("OK [none found]")
 		report["vulnerabilities"] = vuln_list
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
@@ -125,7 +130,9 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=None, ver_info=None, risk
 			alert_type = 'too many dependencies'
 			reason = '%d found' % (len(deps))
 			risks = alert_user(alert_type, threat_model, reason, risks)
-		print("OK [%s]" % ('%d direct' % (len(deps)) if deps else 'none found'))
+			print("ALERT [%s]" % (reason))
+		else:
+			print("OK [%s]" % ('%d direct' % (len(deps)) if deps else 'none found'))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -179,33 +186,100 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={})
 	finally:
 		return risks, report
 
-def analyze_repo(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking repo...", end='', flush=True)
-		popular_hosting_services = ['https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/']
-		repo = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
-		if not repo:
-			repo = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			if not repo or not repo.startswith(tuple(popular_hosting_services)):
-				repo = None
-		if not repo:
-			repo = pm_proxy.get_download_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			if not repo or not repo.startswith(tuple(popular_hosting_services)):
-				repo = None
-		if not repo:
+		repo_url = report['repo']['url']
+		print("\t[+] Checking repo data...", end='', flush=True)
+		repo_data = fetch_repo_data(repo_url)
+		assert repo_data, "repo does not exist"
+
+		try:
+			num_forks = repo_data['num_forks']
+		except KeyError:
+			num_forks = None
+
+		try:
+			num_stars = repo_data['num_stars']
+		except KeyError:
+			num_stars = None
+
+		try:
+			forked_from = repo_data['forked_from']
+		except KeyError:
+			forked_from = None
+
+		if num_forks and num_forks < 5:
+			alert_type = 'few source repo forks'
+			reason = 'only %d forks' % (num_forks)
+			risks = alert_user(alert_type, threat_model, reason, risks)
+		if num_stars and num_stars < 10:
+			alert_type = 'few source repo stars'
+			reason = 'only %d stars' % (num_stars)
+			risks = alert_user(alert_type, threat_model, reason, risks)
+		if forked_from:
+			alert_type = 'source repo is a forked copy'
+			reason = 'forked from %s' % (forked_from)
+			risks = alert_user(alert_type, threat_model, reason, risks)
+		print("OK [stars: %d, forks: %d%s]" % \
+			(num_stars, num_forks, ', forked from: %s' % (forked_from) if forked_from else ''))
+		report['repo'].update(repo_data)
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+	finally:
+		return risks, report
+
+def analyze_repo_activity(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+	try:
+		repo_url = report['repo']['url']
+		print("\t[+] Checking repo activity...", end='', flush=True)
+		reason, repo_data = git_clone(repo_url)
+		if reason:
+			alert_type = 'invalid or no source repo'
+			risks = alert_user(alert_type, threat_model, reason, risks)
+			print("ALERT [%s]" % (reason))
+		elif repo_data:
+			print("OK [commits: %d, contributors: %d, tags: %d]" % \
+				(repo_data['commits'], repo_data['contributors'], repo_data['tags']))
+			report['repo'].update(repo_data)
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+	finally:
+		return risks, report
+
+def analyze_repo_url(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+	try:
+		print("[+] Checking repo_url URL...", end='', flush=True)
+		popular_hosting_services = ['https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/','https://bitbucket.com/']
+		repo_url = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
+		if not repo_url:
+			repo_url = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+			if not repo_url or not repo_url.startswith(tuple(popular_hosting_services)):
+				repo_url = None
+		if not repo_url:
+			repo_url = pm_proxy.get_download_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+			if not repo_url or not repo_url.startswith(tuple(popular_hosting_services)):
+				repo_url = None
+		if repo_url:
+			if repo_url.startswith('git+https://'):
+				repo_url = repo_url.lstrip('git+')
+			if repo_url.startswith('git://'):
+				repo_url = repo_url.replace('git://','https://')
+			if repo_url.startswith('git+ssh://git@'):
+				repo_url = repo_url.replace('git+ssh://git@','https://')
+			if repo_url.endswith('.git'):
+				repo_url = replace_last(repo_url, '.git', '')
+		if not repo_url:
 			reason = 'no source repo found'
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-		elif not repo.startswith(tuple(popular_hosting_services)):
-			reason = 'invalid source repo %s' % (repo)
+		elif not repo_url.startswith(tuple(popular_hosting_services)):
+			reason = 'invalid source repo %s' % (repo_url)
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-		elif repo.strip('/') in ['https://github.com/pypa/sampleproject', 'https://github.com/kubernetes/kubernetes']:
-			reason = 'invalid source repo %s' % (repo)
-			alert_type = 'invalid or no source repo'
-			risks = alert_user(alert_type, threat_model, reason, risks)
-		print("OK [%s]" % (repo))
-		report["repo"] = repo
+		print("OK [%s]" % (repo_url))
+		report["repo"] = {
+			"url" : repo_url,
+		}
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -219,7 +293,9 @@ def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 			reason = 'no readme' if not descr else 'insufficient readme'
 			alert_type = 'no or insufficient readme'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-		print("OK [%d bytes]" % (len(descr)))
+			print("ALERT [%s]" % (reason))
+		else:
+			print("OK [%d bytes]" % (len(descr)))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -238,6 +314,14 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 		except KeyError:
 			email = None
 
+		report["author"] = author_info
+		print("OK [%s]" % (email))
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+		return risks, report
+
+	try:
+		print("\t[+] Checking email/domain validity...", end='', flush=True)
 		if email:
 			email = email.replace(' ','')
 			if isinstance(email, list):
@@ -266,9 +350,9 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 			alert_type = 'invalid or no author email (2FA not enabled)'
 			reason = 'no email' if not email else 'invalid author email' if not valid else 'expired author email domain'
 			risks = alert_user(alert_type, threat_model, reason, risks)
-
-		print("OK [%s]" % (email))
-		report["author"] = author_info
+			print("ALERT [%s]" % (reason))
+		else:
+			print("OK [%s]" % (email))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -324,7 +408,9 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 		assert os.path.exists(filepath+'.out'), "parse error!"
 
 		perms = parse_api_usage(pm_name, filepath+'.out')
-		assert perms, "No APIs found!"
+		if not perms:
+			print("OK [no perms found]")
+			return risks, report
 
 		report_data = {}
 		perms_needed = set()
@@ -390,7 +476,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 			else:
 				report_data[reason] += usage
 
-		print("OK [needs %d perms: %s]" % (len(perms_needed), ','.join(perms_needed)))
+		print("ALERT [needs %d perms: %s]" % (len(perms_needed), ','.join(perms_needed)))
 		report["permissions"] = report_data
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
@@ -453,7 +539,10 @@ if __name__ == "__main__":
 	risks, report = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_downloads(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	risks, report = analyze_repo_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	if 'repo' in report and 'url' in report['repo'] and report['repo']['url']:
+		risks, report = analyze_repo_data(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+		risks, report = analyze_repo_activity(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks, report=report)
 	risks, report = analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 

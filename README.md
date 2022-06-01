@@ -4,13 +4,14 @@
 
 ![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social) ![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)
 
-## Contents
+# Contents #
 
 * [How to use ](#how-to-use)
 * [How it works](#how-it-works)
 * [Risky attributes](#risky-attributes)
 * [How to customize](#how-to-customize)
 * [Talks and videos](#resources)
+* [Malware found](#malware-found)
 * [Project roadmap](#feature-roadmap)
 * [Team and collaborators](#team)
 
@@ -25,55 +26,61 @@ Packj accepts two input args:
 * You will have to install dependencies first using `pip install -r requirements.txt`
 * Requires Python3. API analysis will fail if used with Python2.
 
+Packj supports vetting of PyPI and NPM packages. It performs static code analysis and checks for several metadata attributes such as release timestamps, author email, downloads, dependencies. Packages with expired email domains, large release time gap, sensitive APIs, etc. are flagged as risky for [security reasons](#risky-attributes).
+
 ```
-$ python3 main.py pypi krisqian
-[+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
-[+] Checking version...OK [250 days old]
-[+] Checking release history...OK [7 version(s)]
-[+] Checking release time gap...OK [1 days since last release]
-[+] Checking author...OK [KrisWuQian@baidu.com]
-[+] Checking readme...OK [0 bytes]
-[+] Checking homepage...OK [https://www.bilibili.com/bangumi/media/md140632]
-[+] Checking downloads...OK [45 weekly]
-[+] Checking repo...OK [None]
-[+] Checking for CVEs...OK [0 found]
-[+] Checking dependencies...OK [none found]
-[+] Downloading package 'KrisQian' (ver 0.0.7) from pypi...OK [1.94 KB]
-[+] Analyzing code...OK [needs 3 perms: network,file,fork]
-[+] Checking files/funcs...OK [9 files (2 .py), 6 funcs, LoC: 184]
+$ python3 main.py npm browserify
+[+] Fetching 'browserify' from npm...OK [ver 17.0.0]
+[+] Checking version...ALERT [598 days old]
+[+] Checking release history...OK [484 version(s)]
+[+] Checking release time gap...OK [68 days since last release]
+[+] Checking author...OK [mail@substack.net]
+	[+] Checking email/domain validity...ALERT [expired author email domain]
+[+] Checking readme...OK [26838 bytes]
+[+] Checking homepage...OK [https://github.com/browserify/browserify#readme]
+[+] Checking downloads...OK [2.2M weekly]
+[+] Checking repo_url URL...OK [https://github.com/browserify/browserify]
+	[+] Checking repo data...OK [stars: 14077, forks: 1236]
+	[+] Checking repo activity...OK [commits: 2290, contributors: 207, tags: 413]
+[+] Checking for CVEs...OK [none found]
+[+] Checking dependencies...ALERT [48 found]
+[+] Downloading package 'browserify' (ver 17.0.0) from npm...OK [163.83 KB]
+[+] Analyzing code...ALERT [needs 3 perms: process,file,codegen]
+[+] Checking files/funcs...OK [429 files (383 .js), 744 funcs, LoC: 9.7K]
 =============================================
-[+] 6 risk(s) found, package is undesirable!
+[+] 5 risk(s) found, package is undesirable!
+=> Complete report: npm-browserify-17.0.0.json
 {
     "undesirable": [
-        "no readme",
-        "only 45 weekly downloads",
-        "no source repo found", 
+        "old package: 598 days old",
+        "invalid or no author email: expired author email domain",
         "generates new code at runtime", 
-        "fetches data over the network: ['KrisQian-0.0.7/setup.py:40', 'KrisQian-0.0.7/setup.py:50']", 
-        "reads files and dirs: ['KrisQian-0.0.7/setup.py:59', 'KrisQian-0.0.7/setup.py:70']"
+        "reads files and dirs",
+        "forks or exits OS processes",
     ]
 }
-=> Complete report: pypi-KrisQian-0.0.7.json
-=> View pre-vetted package report at https://packj.dev/package/PyPi/KrisQian/0.0.7
 ```
 
-Packj supports vetting of PyPI and NPM packages. **NOTE** NPM package vetting is a WIP.
+Packj also analyzes public repo code as well as metadata (e.g., stars, forks).
 
 ```
 $ python3 main.py npm eslint
 [+] Fetching 'eslint' from npm...OK [ver 8.16.0]
-[+] Checking version...OK [4 days old]
+[+] Checking version...OK [10 days old]
 [+] Checking release history...OK [305 version(s)]
 [+] Checking release time gap...OK [15 days since last release]
 [+] Checking author...OK [nicholas+npm@nczconsulting.com]
+	[+] Checking email/domain validity...OK [nicholas+npm@nczconsulting.com]
 [+] Checking readme...OK [18234 bytes]
 [+] Checking homepage...OK [https://eslint.org]
-[+] Checking downloads...OK [25.6M weekly]
-[+] Checking repo...OK [git+https://github.com/eslint/eslint.git]
-[+] Checking for CVEs...OK [0 found]
-[+] Checking dependencies...OK [35 direct]
+[+] Checking downloads...OK [23.8M weekly]
+[+] Checking repo_url URL...OK [https://github.com/eslint/eslint]
+	[+] Checking repo data...OK [stars: 20669, forks: 3689]
+	[+] Checking repo activity...OK [commits: 8447, contributors: 1013, tags: 302]
+[+] Checking for CVEs...OK [none found]
+[+] Checking dependencies...ALERT [35 found]
 [+] Downloading package 'eslint' (ver 8.16.0) from npm...OK [490.14 KB]
-[+] Analyzing code...OK [needs 2 perms: file,fork]
+[+] Analyzing code...ALERT [needs 2 perms: codegen,file]
 [+] Checking files/funcs...OK [395 files (390 .js), 1022 funcs, LoC: 76.3K]
 =============================================
 [+] 2 risk(s) found, package is undesirable!
@@ -91,18 +98,21 @@ Specific package versions to be vetted could be specified using `==`. Please ref
 ```
 $ python3 main.py pypi requests==2.18.4
 [+] Fetching 'requests' from pypi...OK [ver 2.18.4]
-[+] Checking version...OK [1744 days old]
+[+] Checking version...ALERT [1750 days old]
 [+] Checking release history...OK [142 version(s)]
 [+] Checking release time gap...OK [14 days since last release]
 [+] Checking author...OK [me@kennethreitz.org]
+	[+] Checking email/domain validity...OK [me@kennethreitz.org]
 [+] Checking readme...OK [49006 bytes]
 [+] Checking homepage...OK [http://python-requests.org]
-[+] Checking downloads...OK [51.1M weekly]
-[+] Checking repo...OK [https://github.com/psf/requests]
-[+] Checking for CVEs...OK [2 found]
+[+] Checking downloads...OK [50M weekly]
+[+] Checking repo_url URL...OK [https://github.com/psf/requests]
+	[+] Checking repo data...OK [stars: 47547, forks: 8758]
+	[+] Checking repo activity...OK [commits: 6112, contributors: 725, tags: 144]
+[+] Checking for CVEs...ALERT [2 found]
 [+] Checking dependencies...OK [9 direct]
 [+] Downloading package 'requests' (ver 2.18.4) from pypi...OK [123.27 KB]
-[+] Analyzing code...OK [needs 3 perms: fork,network,file]
+[+] Analyzing code...ALERT [needs 4 perms: codegen,process,file,network]
 [+] Checking files/funcs...OK [47 files (33 .py), 578 funcs, LoC: 13.9K]
 =============================================
 [+] 6 risk(s) found, package is undesirable, vulnerable!
@@ -156,6 +166,47 @@ Packj has been developed with a goal to assist developers in identifying and rev
 However, since the degree of perceived security risk from an untrusted package depends on the specific security requirements, Packj can be customized according to your threat model. For instance, a package with no 2FA may be perceived to pose greater security risks to some developers, compared to others who may be more willing to use such packages for the functionality offered. Given the volatile nature of the problem, providing customized and granular risk measurement is one of our goals.
 
 Packj can be customized to minimize noise and reduce alert fatigue by simply commenting out unwanted attributes in [threats.csv](https://github.com/ossillate-inc/packj/blob/main/threats.csv)
+
+# Malware found #
+
+We found over 40 malicious packages on PyPI using this tool. A number of them been taken down. Refer to an example below:
+
+```
+$ python3 main.py pypi krisqian
+[+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
+[+] Checking version...OK [256 days old]
+[+] Checking release history...OK [7 version(s)]
+[+] Checking release time gap...OK [1 days since last release]
+[+] Checking author...OK [KrisWuQian@baidu.com]
+	[+] Checking email/domain validity...OK [KrisWuQian@baidu.com]
+[+] Checking readme...ALERT [no readme]
+[+] Checking homepage...OK [https://www.bilibili.com/bangumi/media/md140632]
+[+] Checking downloads...OK [13 weekly]
+[+] Checking repo_url URL...OK [None]
+[+] Checking for CVEs...OK [none found]
+[+] Checking dependencies...OK [none found]
+[+] Downloading package 'KrisQian' (ver 0.0.7) from pypi...OK [1.94 KB]
+[+] Analyzing code...ALERT [needs 3 perms: process,network,file]
+[+] Checking files/funcs...OK [9 files (2 .py), 6 funcs, LoC: 184]
+=============================================
+[+] 6 risk(s) found, package is undesirable!
+{
+    "undesirable": [
+        "no readme",
+        "only 45 weekly downloads",
+        "no source repo found", 
+        "generates new code at runtime", 
+        "fetches data over the network: ['KrisQian-0.0.7/setup.py:40', 'KrisQian-0.0.7/setup.py:50']", 
+        "reads files and dirs: ['KrisQian-0.0.7/setup.py:59', 'KrisQian-0.0.7/setup.py:70']"
+    ]
+}
+=> Complete report: pypi-KrisQian-0.0.7.json
+=> View pre-vetted package report at https://packj.dev/package/PyPi/KrisQian/0.0.7
+```
+
+Packj flagged KrisQian (v0.0.7) as suspicious due to absence of source repo and use of sensitive APIs (network, code generation) during package installation time (in setup.py). We decided to take a deeper look, and found the package malicious. Please find our detailed analysis at [https://packj.dev/malware/krisqian](https://packj.dev/malware/krisqian).
+
+More examples of malware we found are listed at [https://packj.dev/malware](https://packj.dev/malware) Please reach out to us at [oss@ossillate.com](mailto:oss@ossillate.com) for full list.
 
 # Resources #
 

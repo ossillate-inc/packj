@@ -110,17 +110,19 @@ def fetch_repo_data(repo_url):
 	try:
 		logging.debug("Request to dump repo %s data" % (repo_url))
 		if repo_url.startswith('https://github.com/'):
-			return fetch_github_repo_data(repo_url.replace('https://github.com/',''))
+			ret = fetch_github_repo_data(repo_url.replace('https://github.com/',''))
 		elif repo_url.startswith('http://github.com/'):
-			return fetch_github_repo_data(repo_url.replace('http://github.com/',''))
+			ret = fetch_github_repo_data(repo_url.replace('http://github.com/',''))
 		elif repo_url.startswith('https://gitlab.com/'):
-			return fetch_gitlab_repo_data(repo_url.replace('https://gitlab.com/',''))
+			ret = fetch_gitlab_repo_data(repo_url.replace('https://gitlab.com/',''))
 		elif repo_url.startswith('http://gitlab.com/'):
-			return fetch_gitlab_repo_data(repo_url.replace('http://gitlab.com/',''))
-		raise Exception("repo hosting service %s not supported!" % (repo_url))
+			ret = fetch_gitlab_repo_data(repo_url.replace('http://gitlab.com/',''))
+		else:
+			raise Exception("%s not supported!" % (repo_url))
+		return None, ret
 	except Exception as e:
-		logging.debug("Failed to analyze github repo %s: %s" % (repo_url, str(e)))
-		return None
+		logging.debug("Failed to analyze repo %s: %s" % (repo_url, str(e)))
+		return str(e), None
 
 if __name__ == "__main__":
 	import json

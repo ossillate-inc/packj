@@ -190,8 +190,8 @@ def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risk
 	try:
 		repo_url = report['repo']['url']
 		print("\t[+] Checking repo data...", end='', flush=True)
-		repo_data = fetch_repo_data(repo_url)
-		assert repo_data, "repo does not exist"
+		err, repo_data  = fetch_repo_data(repo_url)
+		assert repo_data, err
 
 		try:
 			num_forks = repo_data['num_forks']

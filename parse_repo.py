@@ -1,7 +1,10 @@
 import logging
+import json
 
 def parse_repo_data(service, repo_data):
 	assert repo_data, "no data!"
+	assert service in ['gitlab','github'], 'service %s not supported!' % (service)
+
 	try:
 		created_at = repo_data['created_at']
 	except KeyError:
@@ -12,8 +15,6 @@ def parse_repo_data(service, repo_data):
 			last_activity_at = repo_data['last_activity_at']
 		elif service == 'github':
 			last_activity_at = repo_data['updated_at']
-		else:
-			raise Exception('service %s not supported!' % (service))
 	except KeyError:
 		last_activity_at = None
 
@@ -22,33 +23,43 @@ def parse_repo_data(service, repo_data):
 	except KeyError:
 		num_forks = None
 
+	num_stars = None
 	try:
 		if service == 'gitlab':
 			num_stars = repo_data['star_count']
 		elif service == 'github':
 			num_stars = repo_data['stargazers_count']
-		else:
-			raise Exception('service %s not supported!' % (service))
 	except KeyError:
-		num_stars = None
+		pass
 
+	author = None
 	try:
 		if service == 'gitlab':
-			if 'namespace' in repo_data and repo_data['namespace']['kind'] == 'user':
-				author = repo_data['namespace']['name']
+			if 'namespace' in repo_data:
+				if repo_data['namespace']['kind'] == 'user':
+					author = repo_data['namespace']['name']
+				elif repo_data['namespace']['kind'] == 'group':
+					author = repo_data['namespace']['name']
 		elif service == 'github':
 			if 'owner' in repo_data and 'login' in repo_data['owner']:
 				author = repo_data['owner']['login']
-		else:
-			raise Exception('service %s not supported!' % (service))
 	except KeyError:
-		author = None
+		pass
+
+	try:
+		if service == 'github':
+			repo_url = repo_data['html_url']
+		elif service == 'gitlab':
+			repo_url = repo_data['web_url']
+	except KeyError:
+		pass
 
 	try:
 		descr = repo_data['description']
 	except KeyError:
 		descr = None
 
+	forked_from = None
 	try:
 		if service == 'github':
 			if repo_data['fork'] and repo_data['parent'] and repo_data['parent']['html_url']:
@@ -60,12 +71,10 @@ def parse_repo_data(service, repo_data):
 				forked_from = repo_data['parent']['web_url']
 			else:
 				forked_from = None
-		else:
-			raise Exception('service %s not supported!' % (service))
 	except KeyError:
-		forked_from = None
+		pass
 
-	return {
+	parsed_data = {
 		'created' : created_at,
 		'author' : author,
 		'description' : descr,
@@ -74,6 +83,9 @@ def parse_repo_data(service, repo_data):
 		'num_forks' : num_forks,
 		'forked_from' : forked_from,
 	}
+	if repo_url:
+		parsed_data['url'] = repo_url
+	return parsed_data
 
 def fetch_gitlab_repo_data(repo_id):
 	import gitlab

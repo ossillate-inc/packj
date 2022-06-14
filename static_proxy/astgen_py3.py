@@ -11,7 +11,6 @@ import argparse
 from collections import Counter
 from os.path import isdir, abspath, basename, dirname, relpath, join, isfile
 
-logging.getLogger().setLevel(logging.ERROR)
 sys.path.append("../")
 
 import asttokens

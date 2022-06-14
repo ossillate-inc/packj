@@ -11,8 +11,6 @@ import proto.python.ast_pb2 as ast_pb2
 from util.job_util import read_proto_from_file, write_proto_to_file
 from util.job_util import write_dict_to_file
 
-logging.getLogger().setLevel(logging.ERROR)
-
 class PythonDeclRefVisitor(ast.NodeVisitor):
 	def __init__(self, infile, asttok, configpb=None, debug=False):
 		self.asttok = asttok

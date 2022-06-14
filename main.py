@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from __future__ import print_function
 import sys
 import os
@@ -24,13 +26,14 @@ if sys.version_info[0] != 3:
 	print("\n*** WARNING *** Please use Python 3! Exiting.")
 	exit(1)
 
-def get_threat_model(filename='threats.csv'):
-	threat_model = {}
+threat_model = {}
+
+def build_threat_model(filename='threats.csv'):
+	global threat_model
 	for line in read_from_csv(filename, skip_header=True):
 		typ = line[0]
 		attr = line[1].strip('\n')
 		threat_model[attr] = typ
-	return threat_model
 
 def alert_user(alert_type, threat_model, reason, risks):
 	if alert_type in threat_model:
@@ -483,25 +486,20 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 	finally:
 		return risks, report
 
-if __name__ == "__main__":
+def main(pm, pkg_name):
 	from static_util import astgen
 
-	threat_model = get_threat_model()
+	try:
+		build_threat_model()
+	except Exception as e:
+		logging.debug("Failed to build threat model: %s!" % (str(e)))
+		return
 
-	pm_name = sys.argv[1].lower()
-	if pm_name == 'pypi':
-		pm = PackageManagerEnum.pypi
-	elif pm_name == 'npm':
-		pm = PackageManagerEnum.npmjs
-	else:
-		print("Package manager %s is not supported" % (pm_name))
-		exit(1)
-
+	global pm_proxy
 	pm_proxy = get_pm_proxy(pm, cache_dir=None, isolate_pkg_info=False)
 	assert pm_proxy, "%s not supported" % (pm_name)
 
 	ver_str = None
-	pkg_name = sys.argv[2]
 	if '==' in pkg_name:
 		pkg_name, ver_str = pkg_name.split('==')
 
@@ -573,3 +571,34 @@ if __name__ == "__main__":
 
 	if pm_name.lower() == 'pypi':
 		print("=> View pre-vetted package report at https://packj.dev/package/PyPi/%s/%s" % (pkg_name, ver_str))
+
+if __name__ == "__main__":
+	try:
+		from options import Options
+		opts = Options(sys.argv[1:])
+		assert opts, "Failed to parse cmdline args!"
+
+		args = opts.args()
+		assert args, "Failed to parse cmdline args!"
+
+		if args.debug:
+			import tempfile
+			name, filename = tempfile.mkstemp(suffix='.log')
+			print("*** Running in debug mode (log: %s) ***" % (filename))
+			logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
+								format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')
+		else:
+			logging.getLogger().setLevel(logging.ERROR)
+
+		pm_name = args.pm_name.lower()
+		if pm_name == 'pypi':
+			pm = PackageManagerEnum.pypi
+		elif pm_name == 'npm':
+			pm = PackageManagerEnum.npmjs
+		else:
+			raise Exception("Package manager %s is not supported" % (pm_name))
+
+		main(pm, args.pkg_name)
+	except Exception as e:
+		print(str(e))
+		exit(1)

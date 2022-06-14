@@ -17,8 +17,6 @@ from util.enum_util import LanguageEnum
 from .static_base import StaticAnalyzer
 from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
 
-logging.getLogger().setLevel(logging.ERROR)
-
 from static_proxy.astgen_py3 import py3_astgen
 from static_proxy.astgen_py import py_astgen
 

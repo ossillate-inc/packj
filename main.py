@@ -45,7 +45,7 @@ def alert_user(alert_type, threat_model, reason, risks):
 
 def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking release history...", end='', flush=True)
+		print("\t[+] Checking release history...", end='', flush=True)
 
 		# get package release history
 		release_history = pm_proxy.get_release_history(pkg_name, pkg_info=pkg_info)
@@ -60,10 +60,17 @@ def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={
 		report['num_releases'] = len(release_history)
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
+	finally:
 		return risks, report
 
-	print("[+] Checking release time gap...", end='', flush=True)
+def analyze_release_time(pkg_name, ver_str, pkg_info=None, risks={}, report={}):
 	try:
+		print("\t[+] Checking release time gap...", end='', flush=True)
+
+		# get package release history
+		release_history = pm_proxy.get_release_history(pkg_name, pkg_info=pkg_info)
+		assert release_history, "no data!"
+
 		days = release_history[ver_str]['days_since_last_release']
 
 		# check if the latest release is made after a long gap (indicative of package takeover)
@@ -74,6 +81,22 @@ def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={
 			print("ALERT [%s]" % ('%d days since last release' % (days) if days else 'first release'))
 		else:
 			print("OK [%s]" % ('%d days since last release' % (days) if days else 'first release'))
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+	finally:
+		return risks, report
+
+def analyze_pkg_descr(pkg_name, ver_str, pkg_info=None, ver_info=None, risks={}, report={}):
+	try:
+		print("\t[+] Checking package description...", end='', flush=True)
+		descr = pm_proxy.get_description(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+		if not descr:
+			reason = 'no description'
+			alert_type = 'no description'
+			risks = alert_user(alert_type, threat_model, reason, risks)
+			print("ALERT [%s]" % (reason))
+		else:
+			print("OK [%s]" % (descr))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -189,6 +212,16 @@ def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={})
 	finally:
 		return risks, report
 
+def analyze_repo_descr(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+	try:
+		print("\t[+] Checking repo description...", end='', flush=True)
+		descr = report['repo']['description']
+		print("OK [%s]" % (descr))
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+	finally:
+		return risks, report
+
 def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
 		repo_url = report['repo']['url']
@@ -251,7 +284,7 @@ def analyze_repo_activity(pkg_name, ver_str=None, pkg_info=None, ver_info=None, 
 
 def analyze_repo_url(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
-		print("[+] Checking repo_url URL...", end='', flush=True)
+		print("[+] Checking repo URL...", end='', flush=True)
 		popular_hosting_services = ['https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/','https://bitbucket.com/']
 		repo_url = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		if not repo_url:
@@ -291,14 +324,14 @@ def analyze_repo_url(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks
 def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking readme...", end='', flush=True)
-		descr = pm_proxy.get_description(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-		if not descr or len(descr) < 100:
-			reason = 'no readme' if not descr else 'insufficient readme'
+		readme = pm_proxy.get_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+		if not readme or len(readme) < 100:
+			reason = 'no readme' if not readme else 'insufficient readme'
 			alert_type = 'no or insufficient readme'
 			risks = alert_user(alert_type, threat_model, reason, risks)
 			print("ALERT [%s]" % (reason))
 		else:
-			print("OK [%d bytes]" % (len(descr)))
+			print("OK [%d bytes]" % (len(readme)))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
@@ -531,8 +564,10 @@ def main(pm, pkg_name):
 	report = {}
 
 	# analyze metadata
-	risks, report = analyze_version(ver_info, risks=risks, report=report)
+	risks, report = analyze_pkg_descr(pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_release_history(pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
+	risks, report = analyze_version(ver_info, risks=risks, report=report)
+	risks, report = analyze_release_time(pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
@@ -540,6 +575,7 @@ def main(pm, pkg_name):
 	risks, report = analyze_repo_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	if 'repo' in report and 'url' in report['repo'] and report['repo']['url']:
 		risks, report = analyze_repo_data(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+		risks, report = analyze_repo_descr(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 		risks, report = analyze_repo_activity(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks, report=report)
 	risks, report = analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)

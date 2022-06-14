@@ -198,6 +198,12 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_description(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)
+		assert pkg_info and 'description' in pkg_info, "invalid metadata!"
+		return pkg_info['description']
+
+	def get_readme(self, pkg_name, ver_str=None, pkg_info=None):
+		if not pkg_info:
+			pkg_info = self.get_metadata(pkg_name=pkg_name)
 		assert pkg_info and 'readme' in pkg_info, "invalid metadata!"
 		return pkg_info['readme']
 

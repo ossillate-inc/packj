@@ -44,7 +44,7 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 		self.modules = set()
 		# the collected declaration references
 		self.declrefs = []
-		self.all_declrefs = {"Calls":[],"Functions":[]}
+		self.all_declrefs = {"Calls":[],"Classes":[],"Functions":[]}
 
 	def generic_visit(self, node):
 		ast.NodeVisitor.generic_visit(self, node)
@@ -73,8 +73,12 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 		if self.save_feature:
 			logging.warning("set root_nodes")
 
+		args = []
+		for arg in node.args.args:
+			args.append(self.asttok.get_text(arg))
 		node_details = {
 			 "Name"		: node.name,
+			 "Args"		: args,
 			 "File"		: self.infile,
 			 "Line"		: node.lineno,
 		}
@@ -85,6 +89,13 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 		ast.NodeVisitor.generic_visit(self, node)
 		if self.save_feature:
 			logging.warning("set root_nodes")
+
+		node_details = {
+			 "Name"		: node.name,
+			 "File"		: self.infile,
+			 "Line"		: node.lineno,
+		}
+		self.all_declrefs["Classes"].append(node_details)
 
 	def visit_Call(self, node):
 		logging.debug('visiting Call node (line %d)' % (node.lineno))
@@ -181,6 +192,7 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 
 	composition = {
 		"Files" : [],
+		"Classes" : [],
 		"Functions" : [],
 		"Calls" : [],
 	}

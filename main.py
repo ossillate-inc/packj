@@ -40,7 +40,9 @@ def alert_user(alert_type, threat_model, reason, risks):
 		risk_cat = threat_model[alert_type]
 		if risk_cat not in risks:
 			risks[risk_cat] = []
-		risks[risk_cat].append('%s: %s' % (alert_type, reason))
+		item = '%s: %s' % (alert_type, reason)
+		if item not in risks[risk_cat]:
+			risks[risk_cat].append(item)
 	return risks
 
 def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={}):

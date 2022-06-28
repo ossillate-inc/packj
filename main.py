@@ -261,6 +261,9 @@ def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risk
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 
+	if not repo_data:
+		return risks, report
+
 	try:
 		print("\t[+] Checking if repo is a forked copy...", end='', flush=True)
 		if forked_from:
@@ -586,7 +589,8 @@ def main(pm, pkg_name):
 	risks, report = analyze_repo_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	if 'repo' in report and 'url' in report['repo'] and report['repo']['url']:
 		risks, report = analyze_repo_data(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
-		risks, report = analyze_repo_descr(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+		if 'description' in report['repo']:
+			risks, report = analyze_repo_descr(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 		risks, report = analyze_repo_activity(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	risks, report = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks, report=report)
 	risks, report = analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)

@@ -482,12 +482,12 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 				reason = 'fetches data over the network'
 				risks = alert_user(alert_type, threat_model, reason, risks)
 				perms_needed.add('network')
-			elif p in "SINK_CODE_GENERATION":
+			elif p == "SINK_CODE_GENERATION":
 				alert_type = 'generates new code at runtime'
 				reason = 'generates new code at runtime'
 				risks = alert_user(alert_type, threat_model, reason, risks)
 				perms_needed.add('codegen')
-			elif "SINK_PROCESS_OPERATION":
+			elif p == "SINK_PROCESS_OPERATION":
 				alert_type = 'forks or exits OS processes'
 				reason = 'performs a process operation'
 				risks = alert_user(alert_type, threat_model, reason, risks)

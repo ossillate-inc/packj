@@ -13,7 +13,7 @@
 * [Talks and videos](#resources)
 * [Malware found](#malware-found)
 * [Project roadmap](#feature-roadmap)
-* [Team and collaborators](#team)
+* [Team and collaboration](#team)
 
 # How to use #
 
@@ -236,5 +236,6 @@ Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https:
 - [Shubham Thakur](https://github.com/sbmthakur)
 - [Dr. Ruian Duan](https://github.com/lingfennan)
 
+We welcome code contributions. Join our [discord community](https://discord.gg/8hx3yEtF) for discussion and feature requests.
 
 

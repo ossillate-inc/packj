@@ -250,17 +250,26 @@ def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risk
 			alert_type = 'few source repo forks'
 			reason = 'only %d forks' % (num_forks)
 			risks = alert_user(alert_type, threat_model, reason, risks)
+
 		if num_stars and num_stars < 10:
 			alert_type = 'few source repo stars'
 			reason = 'only %d stars' % (num_stars)
 			risks = alert_user(alert_type, threat_model, reason, risks)
+
+		print("OK [stars: %d, forks: %d]" % (num_stars, num_forks))
+		report['repo'].update(repo_data)
+	except Exception as e:
+		print("FAILED [%s]" % (str(e)))
+
+	try:
+		print("\t[+] Checking if repo is a forked copy...", end='', flush=True)
 		if forked_from:
 			alert_type = 'source repo is a forked copy'
 			reason = 'forked from %s' % (forked_from)
 			risks = alert_user(alert_type, threat_model, reason, risks)
-		print("OK [stars: %d, forks: %d%s]" % \
-			(num_stars, num_forks, ', forked from: %s' % (forked_from) if forked_from else ''))
-		report['repo'].update(repo_data)
+			print("OK [forked from %s]" % forked_from)
+		else:
+			print("OK [original, not forked]")
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:

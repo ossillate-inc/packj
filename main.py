@@ -28,7 +28,6 @@ if sys.version_info[0] != 3:
 THREAT_MODEL = {}
 
 def build_threat_model(filename='threats.csv'):
-	global THREAT_MODEL
 	for line in read_from_csv(filename, skip_header=True):
 		typ = line[0]
 		attr = line[1].strip('\n')

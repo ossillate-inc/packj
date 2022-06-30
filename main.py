@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
+from dataclasses import dataclass
+from enum import Enum
 import sys
 import os
 import logging
+from typing import Optional
 
 from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from util.dates import datetime_delta
@@ -467,6 +471,38 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 	finally:
 		return risks, report
 
+
+class Risk(tuple, Enum):
+	FILE_IO = 'accesses files and dirs', 'file'
+	USER_IO = 'reads user input', None  # should this really be None?
+	NET = 'communicates with external network', 'network'
+	CODE = 'generates new code at runtime', 'codegen'
+	PROC = 'forks or exits OS processes', 'process'
+	HIDDEN = 'accesses obfuscated (hidden) code', 'decode'
+	ENV_READ = 'accesses system/environment variables', 'envvars'
+	ENV_WRITE = 'changes system/environment variables', 'envvars'
+
+@dataclass
+class Alert:
+	risk: Risk
+	desc: Optional[str] = None
+
+
+ALERTS = {
+	'SOURCE_FILE': Alert(Risk.FILE_IO, 'reads files and dirs'),
+	'SINK_FILE': Alert(Risk.FILE_IO, 'writes to files and dirs'),
+	'SINK_NETWORK': Alert(Risk.NET, 'sends data over the network'),
+	'SOURCE_NETWORK': Alert(Risk.NET, 'fetches data over the network'),
+	'SINK_CODE_GENERATION': Alert(Risk.CODE),
+	'SINK_PROCESS_OPERATION': Alert(Risk.PROC, 'performs a process operation'),
+	'SOURCE_OBFUSCATION': Alert(Risk.HIDDEN, 'reads hidden code'),
+	'SOURCE_SETTINGS': Alert(Risk.ENV_READ, 'reads system settings or environment variables'),
+	'SINK_UNCLASSIFIED': Alert(Risk.ENV_WRITE, 'modifies system settings or environment variables'),
+	'SOURCE_ACCOUNT': Alert(Risk.ENV_WRITE, 'modifies system settings or environment variables'),
+	'SOURCE_USER_INPUT': Alert(Risk.USER_IO),
+}
+
+
 def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 	try:
 		print('[+] Analyzing code...', end='', flush=True)
@@ -497,60 +533,13 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 		report_data = {}
 		perms_needed = set()
 		for p, usage in perms.items():
-			if p == 'SOURCE_FILE':
-				alert_type = 'accesses files and dirs'
-				reason = 'reads files and dirs'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('file')
-			elif p == 'SINK_FILE':
-				alert_type = 'accesses files and dirs'
-				reason = 'writes to files and dirs'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('file')
-			elif p == 'SINK_NETWORK':
-				alert_type = 'communicates with external network'
-				reason = 'sends data over the network'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('network')
-			elif p == 'SOURCE_NETWORK':
-				alert_type = 'communicates with external network'
-				reason = 'fetches data over the network'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('network')
-			elif p == 'SINK_CODE_GENERATION':
-				alert_type = 'generates new code at runtime'
-				reason = 'generates new code at runtime'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('codegen')
-			elif p == 'SINK_PROCESS_OPERATION':
-				alert_type = 'forks or exits OS processes'
-				reason = 'performs a process operation'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('process')
-			elif p == 'SOURCE_OBFUSCATION':
-				alert_type = 'accesses obfuscated (hidden) code'
-				reason = 'reads hidden code'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('decode')
-			elif p == 'SOURCE_SETTINGS':
-				alert_type = 'accesses system/environment variables'
-				reason = 'reads system settings or environment variables'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('envvars')
-			elif p == 'SINK_UNCLASSIFIED':
-				alert_type = 'changes system/environment variables'
-				reason = 'modifies system settings or environment variables'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('envvars')
-			elif p == 'SOURCE_ACCOUNT':
-				alert_type = 'changes system/environment variables'
-				reason = 'modifies system settings or environment variables'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				perms_needed.add('envvars')
-			elif p == 'SOURCE_USER_INPUT':
-				alert_type = 'reads user input'
-				reason = 'reads user input'
-				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			alert = ALERTS[p]
+			alert_type, needs_perm = alert.risk
+			reason = alert.desc or alert_type
+
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			if needs_perm:
+				perms_needed.add(needs_perm)
 
 			# report
 			if reason not in report_data:

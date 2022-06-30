@@ -313,21 +313,21 @@ def analyze_repo_activity(risks, report):
 def analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report):
 	try:
 		print('[+] Checking repo URL...', end='', flush=True)
-		popular_hosting_services = [
+		popular_hosting_services = (
 			'https://github.com/',
 			'https://gitlab.com/',
 			'git+https://github.com/',
 			'git://github.com/',
 			'https://bitbucket.com/',
-		]
+		)
 		repo_url = pm_proxy.get_repo(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		if not repo_url:
 			repo_url = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			if not repo_url or not repo_url.startswith(tuple(popular_hosting_services)):
+			if not repo_url or not repo_url.startswith(popular_hosting_services):
 				repo_url = None
 		if not repo_url:
 			repo_url = pm_proxy.get_download_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			if not repo_url or not repo_url.startswith(tuple(popular_hosting_services)):
+			if not repo_url or not repo_url.startswith(popular_hosting_services):
 				repo_url = None
 		if repo_url:
 			if repo_url.startswith('git+https://'):
@@ -342,7 +342,7 @@ def analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, rep
 			reason = 'no source repo found'
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-		elif not repo_url.startswith(tuple(popular_hosting_services)):
+		elif not repo_url.startswith(popular_hosting_services):
 			reason = f'invalid source repo {repo_url}'
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)

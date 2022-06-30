@@ -43,7 +43,7 @@ def alert_user(alert_type, threat_model, reason, risks):
 			risks[risk_cat].append(item)
 	return risks
 
-def analyze_release_history(pm_proxy, pkg_name, ver_str, pkg_info=None, risks={}, report={}):
+def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		print("\t[+] Checking release history...", end='', flush=True)
 
@@ -63,7 +63,7 @@ def analyze_release_history(pm_proxy, pkg_name, ver_str, pkg_info=None, risks={}
 	finally:
 		return risks, report
 
-def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info=None, risks={}, report={}):
+def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	try:
 		print("\t[+] Checking release time gap...", end='', flush=True)
 
@@ -86,7 +86,7 @@ def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info=None, risks={}, r
 	finally:
 		return risks, report
 
-def analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	try:
 		print("\t[+] Checking package description...", end='', flush=True)
 		descr = pm_proxy.get_description(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
@@ -102,7 +102,7 @@ def analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info=None, ver_info=None,
 	finally:
 		return risks, report
 
-def analyze_version(ver_info, risks={}, report={}):
+def analyze_version(ver_info, risks, report):
 	try:
 		print("[+] Checking version...", end='', flush=True)
 
@@ -129,7 +129,7 @@ def analyze_version(ver_info, risks={}, report={}):
 	finally:
 		return risks, report
 
-def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
+def analyze_cves(pm_name, pkg_name, ver_str, risks, report):
 	try:
 		print("[+] Checking for CVEs...", end='', flush=True)
 		from osv import get_pkgver_vulns
@@ -148,7 +148,7 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
 	finally:
 		return risks, report
 
-def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report):
 	try:
 		print("[+] Checking dependencies...", end='', flush=True)
 		deps = pm_proxy.get_dependencies(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
@@ -164,7 +164,7 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=None, ver_info=None, risk
 	finally:
 		return risks, report
 
-def analyze_downloads(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
+def analyze_downloads(pm_proxy, pkg_name, risks, report):
 	try:
 		print("[+] Checking downloads...", end='', flush=True)
 		ret = pm_proxy.get_downloads(pkg_name)
@@ -178,7 +178,7 @@ def analyze_downloads(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={},
 	finally:
 		return risks, report
 
-def analyze_homepage(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
+def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	try:
 		print("[+] Checking homepage...", end='', flush=True)
 		url = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
@@ -212,7 +212,7 @@ def analyze_homepage(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, 
 	finally:
 		return risks, report
 
-def analyze_repo_descr(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_repo_descr(risks, report):
 	try:
 		print("\t[+] Checking repo description...", end='', flush=True)
 		descr = report['repo']['description']
@@ -222,7 +222,7 @@ def analyze_repo_descr(pkg_name, ver_str=None, pkg_info=None, ver_info=None, ris
 	finally:
 		return risks, report
 
-def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_repo_data(risks, report):
 	try:
 		repo_url = report['repo']['url']
 		print("\t[+] Checking repo data...", end='', flush=True)
@@ -276,7 +276,7 @@ def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risk
 	finally:
 		return risks, report
 
-def analyze_repo_activity(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_repo_activity(risks, report):
 	try:
 		repo_url = report['repo']['url']
 		print("\t[+] Checking repo activity...", end='', flush=True)
@@ -294,7 +294,7 @@ def analyze_repo_activity(pkg_name, ver_str=None, pkg_info=None, ver_info=None, 
 	finally:
 		return risks, report
 
-def analyze_repo_url(pm_proxy, pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report):
 	try:
 		print("[+] Checking repo URL...", end='', flush=True)
 		popular_hosting_services = ['https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/','https://bitbucket.com/']
@@ -333,7 +333,7 @@ def analyze_repo_url(pm_proxy, pkg_name, ver_str=None, pkg_info=None, ver_info=N
 	finally:
 		return risks, report
 
-def analyze_readme(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
+def analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	try:
 		print("[+] Checking readme...", end='', flush=True)
 		readme = pm_proxy.get_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
@@ -349,7 +349,7 @@ def analyze_readme(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, re
 	finally:
 		return risks, report
 
-def analyze_author(pm_proxy, pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report):
 	try:
 		print("[+] Checking author...", end='', flush=True)
 
@@ -406,7 +406,7 @@ def analyze_author(pm_proxy, pkg_name, ver_str=None, pkg_info=None, ver_info=Non
 	finally:
 		return risks, report
 
-def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
+def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 	try:
 		print("[+] Checking files/funcs...", end='', flush=True)
 
@@ -433,7 +433,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks={}, report={
 	finally:
 		return risks, report
 
-def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
+def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 	try:
 		print("[+] Analyzing code...", end='', flush=True)
 		if pm_name == 'pypi':
@@ -574,22 +574,22 @@ def main(pm_enum, pm_name, pkg_name):
 	report = {}
 
 	# analyze metadata
-	risks, report = analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
-	risks, report = analyze_release_history(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_version(ver_info, risks=risks, report=report)
-	risks, report = analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_author(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
-	risks, report = analyze_readme(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_homepage(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_downloads(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_repo_url(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	risks, report = analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
+	risks, report = analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report)
+	risks, report = analyze_version(ver_info, risks, report)
+	risks, report = analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
+	risks, report = analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
+	risks, report = analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
+	risks, report = analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
+	risks, report = analyze_downloads(pm_proxy, pkg_name, risks, report)
+	risks, report = analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	if 'repo' in report and 'url' in report['repo'] and report['repo']['url']:
-		risks, report = analyze_repo_data(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+		risks, report = analyze_repo_data(risks, report)
 		if 'description' in report['repo']:
-			risks, report = analyze_repo_descr(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
-		risks, report = analyze_repo_activity(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
-	risks, report = analyze_cves(pm_name, pkg_name, ver_str=ver_str, risks=risks, report=report)
-	risks, report = analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+			risks, report = analyze_repo_descr(risks, report)
+		risks, report = analyze_repo_activity(risks, report)
+	risks, report = analyze_cves(pm_name, pkg_name, ver_str, risks, report)
+	risks, report = analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 
 	# download package
 	try:
@@ -602,8 +602,8 @@ def main(pm_enum, pm_name, pkg_name):
 		print("FAILED [%s]" % (str(e)))
 
 	if filepath:
-		risks, report = analyze_apis(pm_name, pkg_name, ver_str, filepath, risks=risks, report=report)
-		risks, report = analyze_composition(pm_name, pkg_name, ver_str, filepath, risks=risks, report=report)
+		risks, report = analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report)
+		risks, report = analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report)
 
 	print("=============================================")
 	if not len(risks):
@@ -616,7 +616,7 @@ def main(pm_enum, pm_name, pkg_name):
 	write_json_to_file(filename, report, indent=4)
 	print("=> Complete report: %s" % (filename))
 
-	if pm_name.lower() == 'pypi':
+	if pm_enum == PackageManagerEnum.pypi:
 		print("=> View pre-vetted package report at https://packj.dev/package/PyPi/%s/%s" % (pkg_name, ver_str))
 
 def get_base_pkg_info():

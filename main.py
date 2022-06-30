@@ -540,7 +540,6 @@ def main(pm_enum, pm_name, pkg_name):
 		return
 
 	pm_proxy = get_pm_proxy(pm_enum, cache_dir=None, isolate_pkg_info=False)
-	assert pm_proxy, "%s not supported" % (pm_name)
 
 	ver_str = None
 	if '==' in pkg_name:

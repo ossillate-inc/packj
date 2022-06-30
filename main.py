@@ -3,14 +3,13 @@
 from __future__ import print_function
 import sys
 import os
-import json
 import logging
 
 from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from util.dates import datetime_delta
 from util.email_validity import check_email_address
 from util.files import write_json_to_file, read_from_csv
-from util.enum_util import PackageManagerEnum, LanguageEnum, DistanceAlgorithmEnum, TraceTypeEnum, DataTypeEnum
+from util.enum_util import PackageManagerEnum, LanguageEnum
 from util.formatting import human_format
 from util.repo import git_clone, replace_last
 
@@ -534,7 +533,6 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 		return risks, report
 
 def main(pm, pkg_name):
-	from static_util import astgen
 
 	try:
 		build_threat_model()

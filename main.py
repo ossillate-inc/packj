@@ -25,14 +25,14 @@ if sys.version_info[0] != 3:
 	print("\n*** WARNING *** Please use Python 3! Exiting.")
 	exit(1)
 
-threat_model = {}
+THREAT_MODEL = {}
 
 def build_threat_model(filename='threats.csv'):
-	global threat_model
+	global THREAT_MODEL
 	for line in read_from_csv(filename, skip_header=True):
 		typ = line[0]
 		attr = line[1].strip('\n')
-		threat_model[attr] = typ
+		THREAT_MODEL[attr] = typ
 
 def alert_user(alert_type, threat_model, reason, risks):
 	if alert_type in threat_model:
@@ -44,7 +44,7 @@ def alert_user(alert_type, threat_model, reason, risks):
 			risks[risk_cat].append(item)
 	return risks
 
-def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={}):
+def analyze_release_history(pm_proxy, pkg_name, ver_str, pkg_info=None, risks={}, report={}):
 	try:
 		print("\t[+] Checking release history...", end='', flush=True)
 
@@ -55,7 +55,7 @@ def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={
 		if len(release_history) <= 2:
 			reason = 'only %s versions released' % (len(release_history))
 			alert_type = 'few versions or releases'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
 		print("OK [%d version(s)]" % (len(release_history)))
 		report['num_releases'] = len(release_history)
@@ -64,7 +64,7 @@ def analyze_release_history(pkg_name, ver_str, pkg_info=None, risks={}, report={
 	finally:
 		return risks, report
 
-def analyze_release_time(pkg_name, ver_str, pkg_info=None, risks={}, report={}):
+def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info=None, risks={}, report={}):
 	try:
 		print("\t[+] Checking release time gap...", end='', flush=True)
 
@@ -78,7 +78,7 @@ def analyze_release_time(pkg_name, ver_str, pkg_info=None, risks={}, report={}):
 		if days and days > 180:
 			reason = 'version released after %d days' % (days)
 			alert_type = 'version release after a long gap'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("ALERT [%s]" % ('%d days since last release' % (days) if days else 'first release'))
 		else:
 			print("OK [%s]" % ('%d days since last release' % (days) if days else 'first release'))
@@ -87,14 +87,14 @@ def analyze_release_time(pkg_name, ver_str, pkg_info=None, risks={}, report={}):
 	finally:
 		return risks, report
 
-def analyze_pkg_descr(pkg_name, ver_str, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
 		print("\t[+] Checking package description...", end='', flush=True)
 		descr = pm_proxy.get_description(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not descr:
 			reason = 'no description'
 			alert_type = 'no description'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("ALERT [%s]" % (reason))
 		else:
 			print("OK [%s]" % (descr))
@@ -120,7 +120,7 @@ def analyze_version(ver_info, risks={}, report={}):
 		if not uploaded or days > 365:
 			reason = 'no release date' if not uploaded else '%d days old' % (days)
 			alert_type = 'old package'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("ALERT [%d days old]" % (days))
 		else:
 			print("OK [%d days old]" % (days))
@@ -138,7 +138,7 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks={}, report={}):
 		if vuln_list:
 			alert_type = 'contains known vulnerablities (CVEs)'
 			reason = 'contains %s' % (','.join(vul['id'] for vul in vuln_list))
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("ALERT [%s found]" % (len(vuln_list)))
 		else:
 			vuln_list = []
@@ -156,7 +156,7 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info=None, ver_info=None, risk
 		if deps and len(deps) > 10:
 			alert_type = 'too many dependencies'
 			reason = '%d found' % (len(deps))
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("ALERT [%s]" % (reason))
 		else:
 			print("OK [%s]" % ('%d direct' % (len(deps)) if deps else 'none found'))
@@ -172,40 +172,40 @@ def analyze_downloads(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={},
 		if ret < 1000:
 			reason = 'only %d weekly downloads' % (ret)
 			alert_type = 'few downloads'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 		print("OK [%s weekly]" % (human_format(ret)))
 	except Exception as e:
 		print("FAILED [%s]" % (str(e)))
 	finally:
 		return risks, report
 
-def analyze_homepage(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
+def analyze_homepage(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking homepage...", end='', flush=True)
 		url = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not url:
 			reason = 'no homepage'
 			alert_type = 'invalid or no homepage'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 		else:
 			# check if insecure
 			ret = __parse_url(url)
 			if ret.scheme != 'https':
 				reason = 'insecure webpage'
 				alert_type = 'invalid or no homepage'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
 			# check if an existent webpage
 			valid_site, reason = check_site_exist(url)
 			if not valid_site:
 				alert_type = 'invalid or no homepage'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
 			# check if a popular webpage
 			elif check_domain_popular(url):
 				reason = 'invalid (popular) webpage'
 				alert_type = 'invalid or no homepage'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 		print("OK [%s]" % (url))
 		report["homepage"] = url
 	except Exception as e:
@@ -248,12 +248,12 @@ def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risk
 		if num_forks and num_forks < 5:
 			alert_type = 'few source repo forks'
 			reason = 'only %d forks' % (num_forks)
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
 		if num_stars and num_stars < 10:
 			alert_type = 'few source repo stars'
 			reason = 'only %d stars' % (num_stars)
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
 		print("OK [stars: %d, forks: %d]" % (num_stars, num_forks))
 		report['repo'].update(repo_data)
@@ -268,7 +268,7 @@ def analyze_repo_data(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risk
 		if forked_from:
 			alert_type = 'source repo is a forked copy'
 			reason = 'forked from %s' % (forked_from)
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("OK [forked from %s]" % forked_from)
 		else:
 			print("OK [original, not forked]")
@@ -284,7 +284,7 @@ def analyze_repo_activity(pkg_name, ver_str=None, pkg_info=None, ver_info=None, 
 		reason, repo_data = git_clone(repo_url)
 		if reason:
 			alert_type = 'invalid or no source repo'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("ALERT [%s]" % (reason))
 		elif repo_data:
 			print("OK [commits: %d, contributors: %d, tags: %d]" % \
@@ -295,7 +295,7 @@ def analyze_repo_activity(pkg_name, ver_str=None, pkg_info=None, ver_info=None, 
 	finally:
 		return risks, report
 
-def analyze_repo_url(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_repo_url(pm_proxy, pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking repo URL...", end='', flush=True)
 		popular_hosting_services = ['https://github.com/','https://gitlab.com/','git+https://github.com/','git://github.com/','https://bitbucket.com/']
@@ -320,11 +320,11 @@ def analyze_repo_url(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks
 		if not repo_url:
 			reason = 'no source repo found'
 			alert_type = 'invalid or no source repo'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 		elif not repo_url.startswith(tuple(popular_hosting_services)):
 			reason = 'invalid source repo %s' % (repo_url)
 			alert_type = 'invalid or no source repo'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 		print("OK [%s]" % (repo_url))
 		report["repo"] = {
 			"url" : repo_url,
@@ -334,14 +334,14 @@ def analyze_repo_url(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks
 	finally:
 		return risks, report
 
-def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
+def analyze_readme(pm_proxy, pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking readme...", end='', flush=True)
 		readme = pm_proxy.get_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not readme or len(readme) < 100:
 			reason = 'no readme' if not readme else 'insufficient readme'
 			alert_type = 'no or insufficient readme'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("ALERT [%s]" % (reason))
 		else:
 			print("OK [%d bytes]" % (len(readme)))
@@ -350,7 +350,7 @@ def analyze_readme(pkg_name, ver_str=None, pkg_info=None, risks={}, report={}):
 	finally:
 		return risks, report
 
-def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
+def analyze_author(pm_proxy, pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={}, report={}):
 	try:
 		print("[+] Checking author...", end='', flush=True)
 
@@ -398,7 +398,7 @@ def analyze_author(pkg_name, ver_str=None, pkg_info=None, ver_info=None, risks={
 		if not email or not valid or not valid_with_dns:
 			alert_type = 'invalid or no author email (2FA not enabled)'
 			reason = 'no email' if not email else 'invalid author email' if not valid else 'expired author email domain'
-			risks = alert_user(alert_type, threat_model, reason, risks)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print("ALERT [%s]" % (reason))
 		else:
 			print("OK [%s]" % (email))
@@ -467,57 +467,57 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 			if p == "SOURCE_FILE":
 				alert_type = 'accesses files and dirs'
 				reason = 'reads files and dirs'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('file')
 			elif p == "SINK_FILE":
 				alert_type = 'accesses files and dirs'
 				reason = 'writes to files and dirs'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('file')
 			elif p == "SINK_NETWORK":
 				alert_type = 'communicates with external network'
 				reason = 'sends data over the network'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('network')
 			elif p == "SOURCE_NETWORK":
 				alert_type = 'communicates with external network'
 				reason = 'fetches data over the network'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('network')
 			elif p == "SINK_CODE_GENERATION":
 				alert_type = 'generates new code at runtime'
 				reason = 'generates new code at runtime'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('codegen')
 			elif p == "SINK_PROCESS_OPERATION":
 				alert_type = 'forks or exits OS processes'
 				reason = 'performs a process operation'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('process')
 			elif p == "SOURCE_OBFUSCATION":
 				alert_type = 'accesses obfuscated (hidden) code'
 				reason = 'reads hidden code'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('decode')
 			elif p == "SOURCE_SETTINGS":
 				alert_type = 'accesses system/environment variables'
 				reason = 'reads system settings or environment variables'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('envvars')
 			elif p == "SINK_UNCLASSIFIED":
 				alert_type = 'changes system/environment variables'
 				reason = 'modifies system settings or environment variables'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('envvars')
 			elif p == "SOURCE_ACCOUNT":
 				alert_type = 'changes system/environment variables'
 				reason = 'modifies system settings or environment variables'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 				perms_needed.add('envvars')
 			elif p == "SOURCE_USER_INPUT":
 				alert_type = 'reads user input'
 				reason = 'reads user input'
-				risks = alert_user(alert_type, threat_model, reason, risks)
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
 			# report
 			if reason not in report_data:
@@ -532,7 +532,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks={}, report={}):
 	finally:
 		return risks, report
 
-def main(pm, pkg_name):
+def main(pm_enum, pm_name, pkg_name):
 
 	try:
 		build_threat_model()
@@ -540,8 +540,7 @@ def main(pm, pkg_name):
 		logging.debug("Failed to build threat model: %s!" % (str(e)))
 		return
 
-	global pm_proxy
-	pm_proxy = get_pm_proxy(pm, cache_dir=None, isolate_pkg_info=False)
+	pm_proxy = get_pm_proxy(pm_enum, cache_dir=None, isolate_pkg_info=False)
 	assert pm_proxy, "%s not supported" % (pm_name)
 
 	ver_str = None
@@ -576,15 +575,15 @@ def main(pm, pkg_name):
 	report = {}
 
 	# analyze metadata
-	risks, report = analyze_pkg_descr(pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
-	risks, report = analyze_release_history(pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
+	risks, report = analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	risks, report = analyze_release_history(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_version(ver_info, risks=risks, report=report)
-	risks, report = analyze_release_time(pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
-	risks, report = analyze_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
+	risks, report = analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info=pkg_info, risks=risks, report=report)
+	risks, report = analyze_author(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	risks, report = analyze_readme(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
+	risks, report = analyze_homepage(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
 	risks, report = analyze_downloads(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, risks=risks, report=report)
-	risks, report = analyze_repo_url(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
+	risks, report = analyze_repo_url(pm_proxy, pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 	if 'repo' in report and 'url' in report['repo'] and report['repo']['url']:
 		risks, report = analyze_repo_data(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info, risks=risks, report=report)
 		if 'description' in report['repo']:
@@ -621,33 +620,33 @@ def main(pm, pkg_name):
 	if pm_name.lower() == 'pypi':
 		print("=> View pre-vetted package report at https://packj.dev/package/PyPi/%s/%s" % (pkg_name, ver_str))
 
+def get_base_pkg_info():
+	from options import Options
+	opts = Options(sys.argv[1:])
+	assert opts, "Failed to parse cmdline args!"
+
+	args = opts.args()
+	assert args, "Failed to parse cmdline args!"
+
+	if args.debug:
+		import tempfile
+		_, filename = tempfile.mkstemp(suffix='.log')
+		print("*** Running in debug mode (log: %s) ***" % (filename))
+		logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
+							format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')
+	else:
+		logging.getLogger().setLevel(logging.ERROR)
+
+	pm_name = args.pm_name.lower()
+	if pm_name == 'pypi':
+		return PackageManagerEnum.pypi, pm_name, args.pkg_name
+	if pm_name == 'npm':
+		return PackageManagerEnum.npmjs, pm_name, args.pkg_name
+	raise Exception("Package manager %s is not supported" % (pm_name))
+
 if __name__ == "__main__":
 	try:
-		from options import Options
-		opts = Options(sys.argv[1:])
-		assert opts, "Failed to parse cmdline args!"
-
-		args = opts.args()
-		assert args, "Failed to parse cmdline args!"
-
-		if args.debug:
-			import tempfile
-			name, filename = tempfile.mkstemp(suffix='.log')
-			print("*** Running in debug mode (log: %s) ***" % (filename))
-			logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
-								format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')
-		else:
-			logging.getLogger().setLevel(logging.ERROR)
-
-		pm_name = args.pm_name.lower()
-		if pm_name == 'pypi':
-			pm = PackageManagerEnum.pypi
-		elif pm_name == 'npm':
-			pm = PackageManagerEnum.npmjs
-		else:
-			raise Exception("Package manager %s is not supported" % (pm_name))
-
-		main(pm, args.pkg_name)
-	except Exception as e:
-		print(str(e))
+		main(*get_base_pkg_info())
+	except Exception as e_main:
+		print(str(e_main))
 		exit(1)

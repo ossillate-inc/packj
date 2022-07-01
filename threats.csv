@@ -17,7 +17,7 @@ suspicious,behaves differently across environments
 #
 # vulnerable to code exploits
 #
-vulnerable,contains known vulnerablities (CVEs)
+vulnerable,contains known vulnerabilities (CVEs)
 vulnerable,insecure network communication
 
 #

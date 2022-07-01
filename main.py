@@ -425,7 +425,8 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 				return 'expired author email domain'
 			return None
 
-		if reason := get_alert_reason():
+		reason = get_alert_reason()
+		if reason:
 			alert_type = 'invalid or no author email (2FA not enabled)'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print(msg_alert(reason))
@@ -445,7 +446,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 		elif pm_name == 'npm':
 			language=LanguageEnum.javascript
 		else:
-			raise Exception('Package manager %s not supported!')
+			raise Exception(f'Package manager {pm_name} is not supported!')
 
 		num_files, lang_files, num_funcs, total_loc = parse_package_composition(
 			pkg_name,
@@ -457,7 +458,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 		content = (
 			f'{num_files} files ({lang_files} {lang_file_ext}), '
 			f'{num_funcs} funcs, '
-			f'LoC: {human_format(total_loc)}]'
+			f'LoC: {human_format(total_loc)}'
 		)
 		print(msg_ok(content))
 		report['composition'] = {
@@ -513,7 +514,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.javascript
 			configpath = os.path.join('config','astgen_javascript_smt.config')
 		else:
-			raise Exception('Package manager %s not supported!')
+			raise Exception(f'Package manager {pm_name} is not supported!')
 
 		static = get_static_proxy_for_language(language=language)
 		try:
@@ -547,7 +548,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			else:
 				report_data[reason] += usage
 
-		print(msg_alert(f'needs {len(perms_needed)} perms: {",".join(perms_needed)}]'))
+		print(msg_alert(f'needs {len(perms_needed)} perm(s): {",".join(perms_needed)}'))
 		report['permissions'] = report_data
 	except Exception as e:
 		print(msg_fail(str(e)))
@@ -646,7 +647,7 @@ def main(pm_enum, pm_name, pkg_name):
 	print(f'=> Complete report: {filename}')
 
 	if pm_enum == PackageManagerEnum.pypi:
-		print('=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')
+		print(f'=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')
 
 def get_base_pkg_info():
 	from options import Options

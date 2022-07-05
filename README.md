@@ -14,6 +14,7 @@
 * [Malware found](#malware-found)
 * [Project roadmap](#feature-roadmap)
 * [Team and collaboration](#team)
+* [FAQ](#faq)
 
 # How to use #
 
@@ -221,8 +222,8 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add support for other language ecosystems. Ruby is a work in progress, and will be available in June, 2022.
-* Add functionality to detect several other "risky" code as well as metadata attributes. 
+* Add support for other language ecosystems. Ruby is a work in progress, and will be available in July '22 (first week).
+* Add functionality to detect several other "risky" code as well as metadata attributes.
 * Packj currently only performs static code analysis, we are working on adding support for dynamic analysis (ETA: end of summer)
 
 # Team #
@@ -238,4 +239,12 @@ Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https:
 
 We welcome code contributions. Join our [discord community](https://discord.gg/8hx3yEtF) for discussion and feature requests.
 
+# FAQ #
 
+- _Does it work on obfuscated calls? For example, a base 64 encrypted string that gets decrypted and then passed to a shell?_
+
+This is a very common malicious behavior. Packj detects code obfuscation as well as spawning of shell commands (exec system call). For example, Packj can  flag use of `getattr()` and `eval()` API as they indicate "runtime code generation"; a developer can go and take a deeper look then. See [main.py](https://github.com/ossillate-inc/packj/blob/main/main.py#L486) for details.
+
+- _Does this work at the system call level, where it would detect e.g. any attempt to open ~/.aws/credentials, or does it rely on heuristic analysis of the code itself, which will always be able to be "coded around" by the malware authors?_
+
+Packj currently uses static code analysis to derive permissions (e.g., file/network accesses). Therefore, it can detect open() calls if used by the malware directly (e.g., not obfuscated in a base64 encoded string). But, Packj can also point out such base64 decode calls. Fortunately, malware has to use these APIs (read, open, decode, eval, etc.) for their functionality -- there's no getting around. Having said that, a sophisticated malware can hide itself better, so dynamic analysis must be performed for completeness. We are incorporating strace-based dynamic analysis (containerized) to collect system calls. See [roadmap](#feature-roadmap) for details.

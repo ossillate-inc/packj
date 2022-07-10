@@ -35,44 +35,26 @@ class PypiProxy(PackageManagerProxy):
 		# https://wiki.python.org/moin/PyPIJSON
 		# json api for latest version: http://pypi.python.org/pypi/<package_name>/json
 		# json api for a particular version: http://pypi.python.org/pypi/<package_name>/<version>/json
-		# load cached metadata information
-		pkg_info_dir = self.get_pkg_info_dir(pkg_name=pkg_name)
-		if pkg_info_dir is not None:
-			metadata_fname = self.get_metadata_fname(pkg_name=pkg_name, pkg_version=pkg_version, fmt=self.metadata_format)
-			metadata_file = join(pkg_info_dir, metadata_fname)
-			if exists(metadata_file):
-				logging.warning("get_metadata: using cached metadata_file %s!", metadata_file)
-				if self.metadata_format == 'json':
-					try:
-						return json.load(open(metadata_file, 'r'))
-					except:
-						logging.debug("fail to load metadata_file: %s, regenerating!", metadata_file)
-				else:
-					logging.error("get_metadata: output format %s is not supported!", self.metadata_format)
-					return None
 		# fetch metadata from json api
 		if pkg_version:
-			metadata_url = "https://pypi.python.org/pypi/%s/%s/json" % (pkg_name, pkg_version)
+			metadata_url = f'https://pypi.python.org/pypi/{pkg_name}/{pkg_version}/json'
 		else:
-			metadata_url = "https://pypi.python.org/pypi/%s/json" % pkg_name
+			metadata_url = f'https://pypi.python.org/pypi/{pkg_name}/json'
+
 		try:
-			metadata_content = requests.request('GET', metadata_url)
-			pkg_info = json_loads(metadata_content.text)
+			resp = requests.request('GET', metadata_url)
+			resp.raise_for_status()
+			pkg_info = resp.json()
+			if pkg_info:
+				try:
+					pkg_name = pkg_info['info']['name']
+				except KeyError:
+					pass
 		except Exception as e:
 			logging.debug("fail in get_metadata for pkg %s, ignoring!\n%s", pkg_name, str(e))
-			return None
-		# optionally cache metadata
-		if pkg_info_dir is not None:
-			if not exists(pkg_info_dir):
-				os.makedirs(pkg_info_dir)
-			metadata_fname = self.get_metadata_fname(pkg_name=pkg_name, pkg_version=pkg_version,
-													 fmt=self.metadata_format)
-			metadata_file = join(pkg_info_dir, metadata_fname)
-			if self.metadata_format == 'json':
-				json.dump(pkg_info, open(metadata_file, 'w'), indent=2)
-			else:
-				logging.error("get_metadata: output format %s is not supported!", self.metadata_format)
-		return pkg_info
+			pkg_info = None
+		finally:
+			return pkg_name, pkg_info
 
 	def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
 		from util.dates import datetime_delta, datetime_to_date_str
@@ -183,7 +165,7 @@ class PypiProxy(PackageManagerProxy):
 			logging.error(str(e))
 			return None
 
-	def get_downloads(self, pkg_name):
+	def get_downloads(self, pkg_name, pkg_info):
 		try:
 			BASE_URL = "https://pypistats.org/api/"
 			USER_AGENT = "pypistats/0.11.0"
@@ -207,15 +189,68 @@ class PypiProxy(PackageManagerProxy):
 			logging.error(str(e))
 			return None
 
+	def __get_email_list(self, data):
+		data = data.replace(' ','')
+		if isinstance(data, list):
+			return data
+		elif isinstance(data, str):
+			if ',' in data:
+				return data.split(',')
+			elif ' ' in data:
+				return data.split(' ')
+			elif ';' in data:
+				return data.split(';')
+			else:
+				return [data]
+		else:
+			raise Exception('error parsing author email!')
+
+	def get_maintainers(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
+		try:
+			if not pkg_info:
+				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
+
+			maintainer = pkg_info['info'].get('maintainer', None)
+			maintainer_email = pkg_info['info'].get('maintainer_email', None)
+			if not maintainer_email or maintainer_email == '':
+				return None
+
+			email_list = self.__get_email_list(maintainer_email)
+			if not email_list:
+				return None
+
+			ret = []
+			for email in email_list:
+				ret.append({'email' : email})
+			return ret
+		except Exception as e:
+			logging.error("Failed to get maintainers for PyPI package %s: %s" % (pkg_name, str(e)))
+			return None
+
 	def get_author(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
-			maintainer = pkg_info['info'].get('maintainer', None)
+
 			author = pkg_info['info'].get('author', None)
 			author_email = pkg_info['info'].get('author_email', None)
-			return {'maintainer': maintainer, 'author': author, 'email': author_email}
+
+			if not author_email or author_email == '':
+				maintainer_email = pkg_info['info'].get('maintainer_email', None)
+				if not maintainer_email or maintainer_email == '':
+					return None
+				email_list = self.__get_email_list(maintainer_email)
+			else:
+				email_list = self.__get_email_list(author_email)
+			if not email_list:
+				return None
+
+			ret = []
+			for email in email_list:
+				ret.append({'email' : email})
+			return ret
 		except Exception as e:
-			logging.error(str(e))
+			logging.error("Failed to get author for PyPI package %s: %s" % (pkg_name, str(e)))
 			return None

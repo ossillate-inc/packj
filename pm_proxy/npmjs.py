@@ -39,6 +39,7 @@ class NpmjsProxy(PackageManagerProxy):
 		self.isolate_pkg_info = isolate_pkg_info
 		self.metadata_format = 'json'
 		self.dep_format = 'json'
+		self.name = 'npm'
 
 	def _get_pkg_fname(self, pkg_name, pkg_version=None, suffix='tgz'):
 		if pkg_name.startswith('@'):
@@ -48,7 +49,7 @@ class NpmjsProxy(PackageManagerProxy):
 		else:
 			return '%s-%s.%s' % (pkg_name, pkg_version, suffix)
 
-	def get_downloads(self, pkg_name):
+	def get_downloads(self, pkg_name, pkg_info):
 		try:
 			url = 'https://api.npmjs.org/downloads/point/last-week/' + pkg_name
 			r = requests.get(url)
@@ -60,60 +61,35 @@ class NpmjsProxy(PackageManagerProxy):
 			return None
 
 	def get_metadata(self, pkg_name, pkg_version=None):
-		# load cached metadata information
-		pkg_info_dir = self.get_pkg_info_dir(pkg_name=pkg_name)
-		if pkg_info_dir is not None:
-			metadata_fname = self.get_metadata_fname(pkg_name=pkg_name, pkg_version=pkg_version,
-													 fmt=self.metadata_format)
-			metadata_file = join(pkg_info_dir, metadata_fname)
-			if exists(metadata_file):
-				logging.warning("get_metadata: using cached metadata_file %s!", metadata_file)
-				if self.metadata_format == 'json':
-					try:
-						pkg_info = json.load(open(metadata_file, 'r'))
-						if (len(pkg_info) == 1 and "error" in pkg_info and pkg_info["error"]["summary"] ==
-								"getaddrinfo ENOTFOUND registry.npmjs.us registry.npmjs.us:443"):
-							logging.error("previous fetch of metadata failed, regenerating!")
-						else:
-							return pkg_info
-					except:
-						logging.debug("fail to load metadata_file: %s, regenerating!", metadata_file)
-				else:
-					logging.error("get_metadata: output format %s is not supported!", self.metadata_format)
-					return None
 		# fetch metadata from json api
 		try:
 			metadata_url = "https://registry.npmjs.org/%s" % (pkg_name)
-			metadata_content = requests.request('GET', metadata_url)
-			pkg_info = json_loads(metadata_content.text)
+			resp = requests.request('GET', metadata_url)
+			resp.raise_for_status()
+			pkg_info = resp.json()
+			if pkg_info:
+				try:
+					pkg_name = pkg_info['name']
+				except KeyError:
+					pass
 		except Exception as e:
 			logging.error("fail in get_metadata for pkg %s: %s", pkg_name, str(e))
-			return None
-
-		# optionally cache metadata
-		if pkg_info_dir is not None:
-			if not exists(pkg_info_dir):
-				os.makedirs(pkg_info_dir)
-			metadata_fname = self.get_metadata_fname(pkg_name=pkg_name, pkg_version=pkg_version,
-													 fmt=self.metadata_format)
-			metadata_file = join(pkg_info_dir, metadata_fname)
-			if self.metadata_format == 'json':
-				json.dump(pkg_info, open(metadata_file, 'w'), indent=2)
-			else:
-				logging.error("get_metadata: output format %s is not supported!", self.metadata_format)
-		return pkg_info
+			pkg_info = None
+		finally:
+			return pkg_name, pkg_info
 
 	def get_homepage(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)
-		assert pkg_info and 'homepage' in pkg_info, "package not found!"
-		return pkg_info['homepage']
+		assert pkg_info and isinstance(pkg_info, dict), "invalid metadata!"
+		return pkg_info.get('homepage', None)
 
 	def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
 		from util.dates import datetime_delta, datetime_to_date_str
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)
 		assert pkg_info and 'time' in pkg_info, "package not found!"
+
 		history = {}
 		last_date = None
 		for ver_str, ts in pkg_info['time'].items():
@@ -189,8 +165,8 @@ class NpmjsProxy(PackageManagerProxy):
 			assert pkg_info and 'versions' in pkg_info, "invalid metadata!"
 			if not ver_info:
 				ver_info = self.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
-			assert ver_info, "invalid metadata!"
-			return ver_info['dependencies']
+			assert ver_info and isinstance(ver_info, dict), "invalid ver metadata!"
+			return ver_info.get('dependencies', None)
 		except Exception as e:
 			logging.debug("error parsing %s (%s) dependencies: %s" % (pkg_name, ver_str, str(e)))
 			return None
@@ -198,26 +174,66 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_description(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)
-		assert pkg_info and 'description' in pkg_info, "invalid metadata!"
-		return pkg_info['description']
+		assert pkg_info and isinstance(pkg_info, dict), "invalid metadata!"
+		return pkg_info.get('description', None)
 
 	def get_readme(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			pkg_info = self.get_metadata(pkg_name=pkg_name)
-		assert pkg_info and 'readme' in pkg_info, "invalid metadata!"
-		return pkg_info['readme']
+		assert pkg_info and isinstance(pkg_info, dict), "invalid metadata!"
+		return pkg_info.get('readme', None)
 
-	def get_author(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None, typ='author'):
+	def __parse_dev_list(self, dev_list:str, dev_type:str, data=None):
+		if not dev_list:
+			return None
+		elif isinstance(dev_list, list) and len(dev_list) and isinstance(dev_list[0], dict):
+			pass
+		elif isinstance(dev_list, dict):
+			dev_list = [dev_list]
+		elif isinstance(dev_list, str) and ',' in dev_list:
+			dev_list = dev_list.split(',')
+		else:
+			logging("Failed to parse %s: invalid format!\n%s" % (dev_type, dev_list))
+			return None
+		if not data:
+			data = []
+		for dev in dev_list:
+			if not isinstance(dev, dict):
+				continue
+			data.append({
+				'name' : dev.get('name', None),
+				'email' : dev.get('email', None),
+			})
+		if not len(data):
+			return None
+		return data
+
+	def get_maintainers(self, pkg_name:str, ver_str:str=None, pkg_info:dict=None, ver_info:dict=None):
 		if not ver_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name)
-			if pkg_info is None or 'time' not in pkg_info:
-				return {}
-		if typ == 'author':
-			return ver_info.get('author', None)
-		elif typ == 'maintainers':
-			return pkg_info.get('maintainers', None)
-		elif typ == 'users':
-			return pkg_info.get('users', None)
-		elif typ == 'npmUser':
-			pkg_info.get('_npmUser', None)
-		raise Exception("Invalid dev type %s" % (typ))
+			if not pkg_info:
+				pkg_info = self.get_metadata(pkg_name=pkg_name)
+			assert pkg_info and 'versions' in pkg_info, "invalid metadata!"
+
+			ver_info = self.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+		assert ver_info, "invalid metadata!"
+
+		maintainers = ver_info.get('maintainers', None)
+		return self.__parse_dev_list(maintainers, 'maintainer')
+
+	def get_author(self, pkg_name:str, ver_str:str=None, pkg_info:dict=None, ver_info:dict=None):
+		if not ver_info:
+			if not pkg_info:
+				pkg_info = self.get_metadata(pkg_name=pkg_name)
+			assert pkg_info and 'versions' in pkg_info, "invalid metadata!"
+
+			ver_info = self.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+		assert ver_info, "invalid metadata!"
+
+		authors = ver_info.get('author', None)
+		return self.__parse_dev_list(authors, 'authors')
+
+		#users = ver_info.get('users', None)
+		#data = self.__parse_dev_list(maintainers, 'user', data=data)
+
+		#npm_user = ver_info.get('_npmUser', None)
+		#data = self.__parse_dev_list(maintainers, '_npmUser', data=data)

@@ -58,7 +58,7 @@ def exec_command(cmd, args, cwd=None, ret_stdout=False, env=None, timeout=None):
             try:
                 stdout, error = func_timeout(timeout, pipe.communicate)
             except FunctionTimedOut as ft:
-                logging.error("%s timed out after %d seconds!", cmd, timeout)
+                logging.debug("%s timed out after %d seconds!", cmd, timeout)
                 stdout, error = None, None
         else:
             stdout, error = pipe.communicate()
@@ -69,7 +69,7 @@ def exec_command(cmd, args, cwd=None, ret_stdout=False, env=None, timeout=None):
             return pipe.returncode
 
     except Exception as e:
-        logging.error("%s subprocess failed: %s", cmd, str(e))
+        logging.debug("%s subprocess failed: %s", cmd, str(e))
         return -1
 
 

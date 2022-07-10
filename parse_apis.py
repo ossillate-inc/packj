@@ -5,8 +5,10 @@ def parse_api_usage(pm_name, filepath):
 		apis2perms_filepath = 'config/python_api/apis2perms.csv'
 	elif pm_name == 'npm':
 		apis2perms_filepath = 'config/javascript_api/apis2perms.csv'
+	elif pm_name == 'rubygems':
+		apis2perms_filepath = 'config/rubygems_api/apis2perms.csv'
 	else:
-		raise Exception('%s not supported!' % (pm_name))
+		raise Exception('API parser for %s not supported!' % (pm_name))
 
 	apis2perms = {}
 	for line in read_from_csv(apis2perms_filepath):

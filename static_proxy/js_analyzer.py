@@ -254,7 +254,7 @@ class JsAnalyzer(StaticAnalyzer):
 				}
 				composition["Files"].append(file_details)
 			except Exception as e:
-				logging.error("Failed to parse FILE %s ast details: %s" % (infile, str(e)))
+				logging.debug("Failed to parse FILE %s ast details: %s" % (infile, str(e)))
 
 			if infile not in infiles:
 				continue

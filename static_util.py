@@ -3,14 +3,17 @@ from os.path import exists, join, basename
 from util.enum_util import LanguageEnum
 from static_proxy.py_analyzer import PyAnalyzer
 from static_proxy.js_analyzer import JsAnalyzer
+from static_proxy.ruby_analyzer import RubyAnalyzer
 
 def get_static_proxy_for_language(language):
 	if language == LanguageEnum.python:
 		return PyAnalyzer()
 	elif language == LanguageEnum.javascript:
 		return JsAnalyzer()
+	elif language == LanguageEnum.ruby:
+		return RubyAnalyzer()
 	else:
-		raise Exception("Proxy not available for language: %s" % language)
+		raise Exception("Static proxy not available for language: %s" % language)
 
 def astgen(inpath, outfile, root=None, configpath=None, language=LanguageEnum.python, pkg_name=None, pkg_version=None,
 		   evaluate_smt=False):

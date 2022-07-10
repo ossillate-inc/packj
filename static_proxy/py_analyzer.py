@@ -5,7 +5,6 @@
 import os
 import ast
 import logging
-from collections import Counter
 from os.path import basename
 
 import asttokens

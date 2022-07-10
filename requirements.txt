@@ -1,12 +1,12 @@
 asttokens==2.0.5
 dnspython==2.2.1
-esprima==4.0.0
+esprima==4.0.1
+pyIsEmail==1.4.0
 func_timeout==4.3.5
 github3.py==3.2.0
 GitPython==3.1.27
 networkx==2.2
-protobuf==4.21.1
-pyIsEmail==1.4.0
+protobuf==3.20.1
 python_dateutil==2.8.2
 python_magic==0.4.26
 pytz==2018.3
@@ -14,3 +14,4 @@ rarfile==3.0
 requests==2.18.4
 six==1.11.0
 tldextract==3.1.2
+pyyaml==6.0

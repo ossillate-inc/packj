@@ -56,13 +56,17 @@ def alert_user(alert_type, threat_model, reason, risks):
 			risks[risk_cat].append(item)
 	return risks
 
-def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report):
+def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report, release_history=None):
 	try:
 		print('\t[+] Checking release history...', end='', flush=True)
 
 		# get package release history
-		release_history = pm_proxy.get_release_history(pkg_name, pkg_info=pkg_info)
-		assert release_history, 'no data!'
+		if not release_history:
+			release_history = pm_proxy.get_release_history(pkg_name, pkg_info=pkg_info)
+			assert release_history, 'no data!'
+
+		#import json
+		#print(json.dumps(release_history, indent=4))
 
 		if len(release_history) <= 2:
 			reason = f'only {len(release_history)} versions released'
@@ -74,15 +78,16 @@ def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report):
 	except Exception as e:
 		print(msg_fail(str(e)))
 	finally:
-		return risks, report
+		return risks, report, release_history
 
-def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
+def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report, release_history=None):
 	try:
 		print('\t[+] Checking release time gap...', end='', flush=True)
 
 		# get package release history
-		release_history = pm_proxy.get_release_history(pkg_name, pkg_info=pkg_info)
-		assert release_history, 'no data!'
+		if not release_history:
+			release_history = pm_proxy.get_release_history(pkg_name, pkg_info=pkg_info)
+			assert release_history, 'no data!'
 
 		days = release_history[ver_str]['days_since_last_release']
 
@@ -180,15 +185,16 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	finally:
 		return risks, report
 
-def analyze_downloads(pm_proxy, pkg_name, risks, report):
+def analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		print('[+] Checking downloads...', end='', flush=True)
-		ret = pm_proxy.get_downloads(pkg_name)
+		ret = pm_proxy.get_downloads(pkg_name, pkg_info)
+		assert ret != None, "N/A"
 		if ret < 1000:
 			reason = f'only {ret} weekly downloads'
 			alert_type = 'few downloads'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-		print(msg_ok(f'{human_format(ret)} weekly)'))
+		print(msg_ok(f'{human_format(ret)} weekly'))
 	except Exception as e:
 		print(msg_fail(str(e)))
 	finally:
@@ -376,59 +382,60 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 		print('[+] Checking author...', end='', flush=True)
 
 		# check author/maintainer email
-		author_info = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
-		assert author_info, 'no data!'
+		authors = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
+		assert authors, 'no data!'
+		assert isinstance(authors, list), "invalid format!"
 
-		try:
-			email = author_info['email']
-		except KeyError:
-			email = None
+		# format as a list of emails/names
+		item_list = []
+		for dev in authors:
+			item = dev.get('email', None)
+			if not item:
+				item = dev.get('handle', None)
+			if not item:
+				item = dev.get('name', None)
+			if item:
+				item_list.append(item)	
+		data = ','.join(item_list)
 
-		report['author'] = author_info
-		print(msg_ok(email))
+		report['authors'] = authors
+		print(msg_ok(data))
 	except Exception as e:
 		print(msg_fail(str(e)))
 		return risks, report
 
 	try:
 		print('\t[+] Checking email/domain validity...', end='', flush=True)
-		if email:
-			email = email.replace(' ','')
-			if isinstance(email, list):
-				email_list = email
-			elif isinstance(email, str):
-				if ',' in email:
-					email_list = email.split(',')
-				elif ' ' in email:
-					email_list = email.split(' ')
-				elif ';' in email:
-					email_list = email.split(';')
-				else:
-					email_list = [email]
-			else:
-				raise Exception('parse error!')
-			for item in email_list:
-				try:
-					valid, valid_with_dns = check_email_address(item)
-				except Exception as e:
-					logging.debug('Failed to parse email %s: %s', item, str(e))
-					valid = False
-				if not valid or not valid_with_dns:
-					break
+		for author_info in authors:
+			email = author_info.get('email', None)
+			if not email:
+				break
+			try:
+				valid, valid_with_dns = check_email_address(email)
+			except Exception as e:
+				logging.debug('Failed to parse email %s: %s' % (email, str(e)))
+				valid = False
+			if not valid or not valid_with_dns:
+				break
 
 		def get_alert_reason():
 			if not email:
-				return 'no email'
+				# Rubygems allow devs to hide their emails
+				if pm_proxy.name == 'rubygems':
+					return 'no email (may be hidden)', False
+				else:
+					return 'no email', True
 			if not valid:
-				return 'invalid author email'
+				return 'invalid author email', True
 			if not valid_with_dns:
-				return 'expired author email domain'
-			return None
+				return 'expired author email domain', True
+			return None, True
 
-		reason = get_alert_reason()
+		reason, must_alert = get_alert_reason()
 		if reason:
-			alert_type = 'invalid or no author email (2FA not enabled)'
-			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			if must_alert:
+				alert_type = 'invalid or no author email (2FA not enabled)'
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print(msg_alert(reason))
 		else:
 			print(msg_ok(email))
@@ -445,6 +452,8 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.python
 		elif pm_name == 'npm':
 			language=LanguageEnum.javascript
+		elif pm_name == 'rubygems':
+			language=LanguageEnum.ruby
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 
@@ -510,9 +519,15 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
 			configpath = os.path.join('config','astgen_python_smt.config')
+			system = 'python2'
 		elif pm_name == 'npm':
 			language=LanguageEnum.javascript
 			configpath = os.path.join('config','astgen_javascript_smt.config')
+			system = 'python'
+		elif pm_name == 'rubygems':
+			language=LanguageEnum.ruby
+			configpath = os.path.join('config','astgen_ruby_smt.config')
+			system = 'ruby'
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 
@@ -522,7 +537,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
 		except Exception as e:
 			logging.debug('Failed to parse: %s', str(e))
-			raise Exception('parse error')
+			raise Exception('parse error: is %s installed?' % (system))
 
 		assert os.path.exists(filepath+'.out'), 'parse error!'
 
@@ -572,14 +587,10 @@ def main(pm_enum, pm_name, pkg_name):
 	# get version metadata
 	try:
 		print(f"[+] Fetching '{pkg_name}' from {pm_name}...", end='', flush=True)
-		pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+		pkg_name, pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info, 'package not found!'
 
 		#print(json.dumps(pkg_info, indent=4))
-		try:
-			pkg_name = pkg_info['info']['name']
-		except KeyError:
-			pass
 
 		ver_info = pm_proxy.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		assert ver_info, 'No version info!'
@@ -598,13 +609,13 @@ def main(pm_enum, pm_name, pkg_name):
 
 	# analyze metadata
 	risks, report = analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
-	risks, report = analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report)
+	risks, report, release_history = analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_version(ver_info, risks, report)
-	risks, report = analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
+	risks, report = analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report, release_history)
 	risks, report = analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	risks, report = analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report = analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
-	risks, report = analyze_downloads(pm_proxy, pkg_name, risks, report)
+	risks, report = analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	if 'repo' in report and 'url' in report['repo'] and report['repo']['url']:
 		risks, report = analyze_repo_data(risks, report)
@@ -671,6 +682,8 @@ def get_base_pkg_info():
 		return PackageManagerEnum.pypi, pm_name, args.pkg_name
 	if pm_name == 'npm':
 		return PackageManagerEnum.npmjs, pm_name, args.pkg_name
+	if pm_name == 'rubygems':
+		return PackageManagerEnum.rubygems, pm_name, args.pkg_name
 	raise Exception(f'Package manager {pm_name} is not supported')
 
 if __name__ == '__main__':

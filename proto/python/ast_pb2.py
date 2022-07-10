@@ -8,6 +8,7 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -19,9 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='ast.proto',
   package='proto',
   syntax='proto3',
-  serialized_options=None,
   serialized_pb=_b('\n\tast.proto\x12\x05proto\"N\n\x08\x46ileInfo\x12\x10\n\x08\x66ilename\x18\x01 \x01(\t\x12\x0f\n\x07relpath\x18\x02 \x01(\t\x12\x0c\n\x04\x66ile\x18\x03 \x01(\t\x12\x11\n\tdirectory\x18\x04 \x01(\t\"Q\n\x0eSourceLocation\x12\x0b\n\x03row\x18\x01 \x01(\x05\x12\x0e\n\x06\x63olumn\x18\x02 \x01(\x05\x12\"\n\tfile_info\x18\x03 \x01(\x0b\x32\x0f.proto.FileInfo\"W\n\x0bSourceRange\x12$\n\x05start\x18\x01 \x01(\x0b\x32\x15.proto.SourceLocation\x12\"\n\x03\x65nd\x18\x02 \x01(\x0b\x32\x15.proto.SourceLocation\"\xed\x06\n\x07\x41stNode\x12%\n\x04type\x18\x01 \x01(\x0e\x32\x17.proto.AstNode.NodeType\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tfull_name\x18\x03 \x01(\t\x12\x11\n\tbase_type\x18\x04 \x01(\t\x12\x0e\n\x06module\x18\x05 \x01(\t\x12\r\n\x05value\x18\x06 \x01(\t\x12\x12\n\ndefinition\x18\x07 \x01(\t\x12!\n\targ_nodes\x18\x08 \x03(\x0b\x32\x0e.proto.AstNode\x12\x11\n\targuments\x18\t \x03(\t\x12\x0e\n\x06source\x18\n \x01(\t\x12!\n\x05range\x18\x0b \x01(\x0b\x32\x12.proto.SourceRange\x12\n\n\x02id\x18\x0c \x01(\x05\x12+\n\rfunctionality\x18\r \x01(\x0e\x32\x14.proto.Functionality\x12(\n\x0bsource_type\x18\x0e \x01(\x0e\x32\x11.proto.SourceTypeH\x00\x12$\n\tsink_type\x18\x0f \x01(\x0e\x32\x0f.proto.SinkTypeH\x00\x12(\n\x0b\x64\x61nger_type\x18\x10 \x01(\x0e\x32\x11.proto.DangerTypeH\x00\x12.\n\x0epropagate_type\x18\x11 \x01(\x0e\x32\x14.proto.PropagateTypeH\x00\x12#\n\x0b\x63hild_nodes\x18\x12 \x03(\x0b\x32\x0e.proto.AstNode\x12\x16\n\x0einstantiatable\x18\x13 \x01(\x08\"\xb0\x02\n\x08NodeType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x11\n\rFUNCTION_DECL\x10\x01\x12\x11\n\rVARIABLE_DECL\x10\x02\x12\x0e\n\nCLASS_DECL\x10\x03\x12\x1a\n\x16\x46UNCTION_DECL_REF_EXPR\x10\x0b\x12\x1a\n\x16VARIABLE_DECL_REF_EXPR\x10\x0c\x12\x17\n\x13\x43LASS_DECL_REF_EXPR\x10\r\x12\x13\n\x0fPY_FUNCTION_DEF\x10\x65\x12\x1d\n\x18JS_ASSIGNMENT_EXPRESSION\x10\xc9\x01\x12\x14\n\x0fRB_REGULAR_NODE\x10\xad\x02\x12\x15\n\x10RB_VARIABLE_NODE\x10\xae\x02\x12\x17\n\x12JAVA_IDENTITY_STMT\x10\x91\x03\x12\x16\n\x11PHP_EXPR_VARIABLE\x10\xf5\x03\x42\x18\n\x16\x61\x63\x63urate_functionality\"\x84\x01\n\x0f\x41stLookupConfig\x12\x1c\n\x04\x61pis\x18\x01 \x03(\x0b\x32\x0e.proto.AstNode\x12\x14\n\x0csave_feature\x18\x02 \x01(\x08\x12\x13\n\x0bsmt_formula\x18\x03 \x01(\t\x12\x15\n\rsmt_satisfied\x18\x04 \x01(\x08\x12\x11\n\tfunc_only\x18\x05 \x01(\x08\"\xdd\x01\n\x0cPkgAstResult\x12\x10\n\x08pkg_name\x18\x01 \x01(\t\x12\x13\n\x0bpkg_version\x18\x02 \x01(\t\x12!\n\x08language\x18\x03 \x01(\x0e\x32\x0f.proto.Language\x12\x12\n\ninput_path\x18\x04 \x01(\t\x12&\n\x06\x63onfig\x18\x05 \x01(\x0b\x32\x16.proto.AstLookupConfig\x12#\n\x0b\x61pi_results\x18\x06 \x03(\x0b\x32\x0e.proto.AstNode\x12\"\n\nroot_nodes\x18\x07 \x03(\x0b\x32\x0e.proto.AstNode\"E\n\rPkgAstResults\x12!\n\x04pkgs\x18\x01 \x03(\x0b\x32\x13.proto.PkgAstResult\x12\x11\n\ttimestamp\x18\x02 \x01(\x04*m\n\x08Language\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06PYTHON\x10\x01\x12\x0e\n\nJAVASCRIPT\x10\x02\x12\x08\n\x04RUBY\x10\x03\x12\x08\n\x04JAVA\x10\x04\x12\x07\n\x03PHP\x10\x05\x12\n\n\x06\x43SHARP\x10\x06\x12\x07\n\x03\x43PP\x10\x07\x12\x06\n\x02GO\x10\x08*R\n\rFunctionality\x12\x10\n\x0cUNCLASSIFIED\x10\x00\x12\n\n\x06SOURCE\x10\x01\x12\x08\n\x04SINK\x10\x02\x12\n\n\x06\x44\x41NGER\x10\x03\x12\r\n\tPROPAGATE\x10\x04*\xe1\x02\n\nSourceType\x12\x17\n\x13SOURCE_UNCLASSIFIED\x10\x00\x12\x12\n\x0eSOURCE_ACCOUNT\x10\x01\x12\x14\n\x10SOURCE_BLUETOOTH\x10\x02\x12\x12\n\x0eSOURCE_BROWSER\x10\x03\x12\x13\n\x0fSOURCE_CALENDAR\x10\x04\x12\x12\n\x0eSOURCE_CONTACT\x10\x05\x12\x13\n\x0fSOURCE_DATABASE\x10\x06\x12\x0f\n\x0bSOURCE_FILE\x10\x07\x12\x12\n\x0eSOURCE_NETWORK\x10\x08\x12\x0e\n\nSOURCE_NFC\x10\t\x12\x13\n\x0fSOURCE_SETTINGS\x10\n\x12\x0f\n\x0bSOURCE_SYNC\x10\x0b\x12\x1c\n\x18SOURCE_UNIQUE_IDENTIFIER\x10\x0c\x12\x16\n\x12SOURCE_ENVIRONMENT\x10\x33\x12\x15\n\x11SOURCE_USER_INPUT\x10\x34\x12\x16\n\x12SOURCE_OBFUSCATION\x10\x35*\xf2\x02\n\x08SinkType\x12\x15\n\x11SINK_UNCLASSIFIED\x10\x00\x12\x10\n\x0cSINK_ACCOUNT\x10\x01\x12\x0e\n\nSINK_AUDIO\x10\x02\x12\x10\n\x0cSINK_BROWSER\x10\x03\x12\x11\n\rSINK_CALENDAR\x10\x04\x12\x10\n\x0cSINK_CONTACT\x10\x05\x12\r\n\tSINK_FILE\x10\x06\x12\x0c\n\x08SINK_LOG\x10\x07\x12\x10\n\x0cSINK_NETWORK\x10\x08\x12\x0c\n\x08SINK_NFC\x10\t\x12\x19\n\x15SINK_PHONE_CONNECTION\x10\n\x12\x14\n\x10SINK_PHONE_STATE\x10\x0b\x12\x10\n\x0cSINK_SMS_MMS\x10\x0c\x12\r\n\tSINK_SYNC\x10\r\x12\x0f\n\x0bSINK_SYSTEM\x10\x0e\x12\r\n\tSINK_VOIP\x10\x0f\x12\x18\n\x14SINK_CODE_GENERATION\x10\x33\x12\x1a\n\x16SINK_PROCESS_OPERATION\x10\x34\x12\x11\n\rSINK_DATABASE\x10\x35*,\n\nDangerType\x12\x1e\n\x1a\x44\x41NGER_UNCLASSIFIED_DANGER\x10\x00*\x83\x01\n\rPropagateType\x12\x1a\n\x16PROPAGATE_UNCLASSIFIED\x10\x00\x12\x14\n\x10PROPAGATE_ASSIGN\x10\x01\x12\x12\n\x0ePROPAGATE_CALL\x10\x02\x12\x15\n\x11PROPAGATE_SYSCALL\x10\x03\x12\x15\n\x11PROPAGATE_LIBCALL\x10\x04\x62\x06proto3')
 )
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 _LANGUAGE = _descriptor.EnumDescriptor(
   name='Language',
@@ -31,43 +32,43 @@ _LANGUAGE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='UNKNOWN', index=0, number=0,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PYTHON', index=1, number=1,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='JAVASCRIPT', index=2, number=2,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='RUBY', index=3, number=3,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='JAVA', index=4, number=4,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PHP', index=5, number=5,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='CSHARP', index=6, number=6,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='CPP', index=7, number=7,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='GO', index=8, number=8,
-      serialized_options=None,
+      options=None,
       type=None),
   ],
   containing_type=None,
-  serialized_options=None,
+  options=None,
   serialized_start=1582,
   serialized_end=1691,
 )
@@ -82,27 +83,27 @@ _FUNCTIONALITY = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='UNCLASSIFIED', index=0, number=0,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE', index=1, number=1,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK', index=2, number=2,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='DANGER', index=3, number=3,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PROPAGATE', index=4, number=4,
-      serialized_options=None,
+      options=None,
       type=None),
   ],
   containing_type=None,
-  serialized_options=None,
+  options=None,
   serialized_start=1693,
   serialized_end=1775,
 )
@@ -117,71 +118,71 @@ _SOURCETYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='SOURCE_UNCLASSIFIED', index=0, number=0,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_ACCOUNT', index=1, number=1,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_BLUETOOTH', index=2, number=2,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_BROWSER', index=3, number=3,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_CALENDAR', index=4, number=4,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_CONTACT', index=5, number=5,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_DATABASE', index=6, number=6,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_FILE', index=7, number=7,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_NETWORK', index=8, number=8,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_NFC', index=9, number=9,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_SETTINGS', index=10, number=10,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_SYNC', index=11, number=11,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_UNIQUE_IDENTIFIER', index=12, number=12,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_ENVIRONMENT', index=13, number=51,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_USER_INPUT', index=14, number=52,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SOURCE_OBFUSCATION', index=15, number=53,
-      serialized_options=None,
+      options=None,
       type=None),
   ],
   containing_type=None,
-  serialized_options=None,
+  options=None,
   serialized_start=1778,
   serialized_end=2131,
 )
@@ -196,83 +197,83 @@ _SINKTYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='SINK_UNCLASSIFIED', index=0, number=0,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_ACCOUNT', index=1, number=1,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_AUDIO', index=2, number=2,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_BROWSER', index=3, number=3,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_CALENDAR', index=4, number=4,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_CONTACT', index=5, number=5,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_FILE', index=6, number=6,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_LOG', index=7, number=7,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_NETWORK', index=8, number=8,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_NFC', index=9, number=9,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_PHONE_CONNECTION', index=10, number=10,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_PHONE_STATE', index=11, number=11,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_SMS_MMS', index=12, number=12,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_SYNC', index=13, number=13,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_SYSTEM', index=14, number=14,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_VOIP', index=15, number=15,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_CODE_GENERATION', index=16, number=51,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_PROCESS_OPERATION', index=17, number=52,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SINK_DATABASE', index=18, number=53,
-      serialized_options=None,
+      options=None,
       type=None),
   ],
   containing_type=None,
-  serialized_options=None,
+  options=None,
   serialized_start=2134,
   serialized_end=2504,
 )
@@ -287,11 +288,11 @@ _DANGERTYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='DANGER_UNCLASSIFIED_DANGER', index=0, number=0,
-      serialized_options=None,
+      options=None,
       type=None),
   ],
   containing_type=None,
-  serialized_options=None,
+  options=None,
   serialized_start=2506,
   serialized_end=2550,
 )
@@ -306,27 +307,27 @@ _PROPAGATETYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='PROPAGATE_UNCLASSIFIED', index=0, number=0,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PROPAGATE_ASSIGN', index=1, number=1,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PROPAGATE_CALL', index=2, number=2,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PROPAGATE_SYSCALL', index=3, number=3,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PROPAGATE_LIBCALL', index=4, number=4,
-      serialized_options=None,
+      options=None,
       type=None),
   ],
   containing_type=None,
-  serialized_options=None,
+  options=None,
   serialized_start=2553,
   serialized_end=2684,
 )
@@ -398,59 +399,59 @@ _ASTNODE_NODETYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='UNKNOWN', index=0, number=0,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='FUNCTION_DECL', index=1, number=1,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='VARIABLE_DECL', index=2, number=2,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='CLASS_DECL', index=3, number=3,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='FUNCTION_DECL_REF_EXPR', index=4, number=11,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='VARIABLE_DECL_REF_EXPR', index=5, number=12,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='CLASS_DECL_REF_EXPR', index=6, number=13,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PY_FUNCTION_DEF', index=7, number=101,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='JS_ASSIGNMENT_EXPRESSION', index=8, number=201,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='RB_REGULAR_NODE', index=9, number=301,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='RB_VARIABLE_NODE', index=10, number=302,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='JAVA_IDENTITY_STMT', index=11, number=401,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PHP_EXPR_VARIABLE', index=12, number=501,
-      serialized_options=None,
+      options=None,
       type=None),
   ],
   containing_type=None,
-  serialized_options=None,
+  options=None,
   serialized_start=820,
   serialized_end=1124,
 )
@@ -470,35 +471,35 @@ _FILEINFO = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='relpath', full_name='proto.FileInfo.relpath', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='file', full_name='proto.FileInfo.file', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='directory', full_name='proto.FileInfo.directory', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -522,28 +523,28 @@ _SOURCELOCATION = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='column', full_name='proto.SourceLocation.column', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='file_info', full_name='proto.SourceLocation.file_info', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -567,21 +568,21 @@ _SOURCERANGE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='end', full_name='proto.SourceRange.end', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -605,133 +606,133 @@ _ASTNODE = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='name', full_name='proto.AstNode.name', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='full_name', full_name='proto.AstNode.full_name', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='base_type', full_name='proto.AstNode.base_type', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='module', full_name='proto.AstNode.module', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto.AstNode.value', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='definition', full_name='proto.AstNode.definition', index=6,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='arg_nodes', full_name='proto.AstNode.arg_nodes', index=7,
       number=8, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='arguments', full_name='proto.AstNode.arguments', index=8,
       number=9, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='source', full_name='proto.AstNode.source', index=9,
       number=10, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='range', full_name='proto.AstNode.range', index=10,
       number=11, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='id', full_name='proto.AstNode.id', index=11,
       number=12, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='functionality', full_name='proto.AstNode.functionality', index=12,
       number=13, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='source_type', full_name='proto.AstNode.source_type', index=13,
       number=14, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='sink_type', full_name='proto.AstNode.sink_type', index=14,
       number=15, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='danger_type', full_name='proto.AstNode.danger_type', index=15,
       number=16, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='propagate_type', full_name='proto.AstNode.propagate_type', index=16,
       number=17, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='child_nodes', full_name='proto.AstNode.child_nodes', index=17,
       number=18, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='instantiatable', full_name='proto.AstNode.instantiatable', index=18,
       number=19, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
@@ -739,7 +740,7 @@ _ASTNODE = _descriptor.Descriptor(
   enum_types=[
     _ASTNODE_NODETYPE,
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -766,42 +767,42 @@ _ASTLOOKUPCONFIG = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='save_feature', full_name='proto.AstLookupConfig.save_feature', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='smt_formula', full_name='proto.AstLookupConfig.smt_formula', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='smt_satisfied', full_name='proto.AstLookupConfig.smt_satisfied', index=3,
       number=4, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='func_only', full_name='proto.AstLookupConfig.func_only', index=4,
       number=5, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -825,56 +826,56 @@ _PKGASTRESULT = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='pkg_version', full_name='proto.PkgAstResult.pkg_version', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='language', full_name='proto.PkgAstResult.language', index=2,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='input_path', full_name='proto.PkgAstResult.input_path', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='config', full_name='proto.PkgAstResult.config', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='api_results', full_name='proto.PkgAstResult.api_results', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='root_nodes', full_name='proto.PkgAstResult.root_nodes', index=6,
       number=7, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -898,21 +899,21 @@ _PKGASTRESULTS = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='timestamp', full_name='proto.PkgAstResults.timestamp', index=1,
       number=2, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -966,7 +967,6 @@ DESCRIPTOR.enum_types_by_name['SourceType'] = _SOURCETYPE
 DESCRIPTOR.enum_types_by_name['SinkType'] = _SINKTYPE
 DESCRIPTOR.enum_types_by_name['DangerType'] = _DANGERTYPE
 DESCRIPTOR.enum_types_by_name['PropagateType'] = _PROPAGATETYPE
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 FileInfo = _reflection.GeneratedProtocolMessageType('FileInfo', (_message.Message,), dict(
   DESCRIPTOR = _FILEINFO,

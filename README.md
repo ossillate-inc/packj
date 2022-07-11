@@ -235,9 +235,9 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add support for other language ecosystems. Ruby is a work in progress, and will be available in July '22 (first week).
+* Add support for other language ecosystems. Rust is a work in progress, and will be available in July '22 (last week).
 * Add functionality to detect several other "risky" code as well as metadata attributes.
-* Packj currently only performs static code analysis, we are working on adding support for dynamic analysis (ETA: end of summer)
+* Packj currently only performs static code analysis, we are working on adding support for dynamic analysis (WIP, ETA: end of summer)
 
 # Team #
 
@@ -253,6 +253,10 @@ Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https:
 We welcome code contributions. Join our [discord community](https://discord.gg/8hx3yEtF) for discussion and feature requests.
 
 # FAQ #
+
+- _What Package Managers (Registries) are supported?_
+
+Packj tool can currently vet NPM, PyPI, and RubyGems packages for "risky" attributes. We are adding support for Rust.
 
 - _Does it work on obfuscated calls? For example, a base 64 encrypted string that gets decrypted and then passed to a shell?_
 

@@ -654,7 +654,8 @@ def main(pm_enum, pm_name, pkg_name):
 		)
 		report['risks'] = risks
 	filename = f'{pm_name}-{pkg_name}-{ver_str}.json'
-	write_json_to_file(filename, report, indent=4)
+	filepath = os.path.join('/tmp', filename)
+	write_json_to_file(filepath, report, indent=4)
 	print(f'=> Complete report: {filename}')
 
 	if pm_enum == PackageManagerEnum.pypi:

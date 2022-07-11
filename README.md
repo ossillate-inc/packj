@@ -22,7 +22,7 @@ Packj accepts two input args:
 * name of the registry or package manager, pypi, npm, or rubygems.
 * name of the package to be vetted
 
-Packj supports vetting of PyPI and NPM packages. It performs static code analysis and checks for several metadata attributes such as release timestamps, author email, downloads, dependencies. Packages with expired email domains, large release time gap, sensitive APIs, etc. are flagged as risky for [security reasons](#risky-attributes).
+Packj supports vetting of PyPI, NPM, and RubyGems packages. It performs static code analysis and checks for several metadata attributes such as release timestamps, author email, downloads, dependencies. Packages with expired email domains, large release time gap, sensitive APIs, etc. are flagged as risky for [security reasons](#risky-attributes).
 
 Packj also analyzes public repo code as well as metadata (e.g., stars, forks). By comparing the repo description and package title, you can be sure if the package indeed has been created from the repo to mitigate any `starjacking` attacks.
 

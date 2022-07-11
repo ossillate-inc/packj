@@ -19,18 +19,22 @@
 # How to use #
 
 Packj accepts two input args:
-* name of the registry or package manager, pypi or npm
+* name of the registry or package manager, pypi, npm, or rubygems.
 * name of the package to be vetted
-
-**NOTE** 
-* Packj has only been tested on Linux. 
-* You will have to install dependencies first using `pip install -r requirements.txt`
-* Requires Python3. API analysis will fail if used with Python2.
 
 Packj supports vetting of PyPI and NPM packages. It performs static code analysis and checks for several metadata attributes such as release timestamps, author email, downloads, dependencies. Packages with expired email domains, large release time gap, sensitive APIs, etc. are flagged as risky for [security reasons](#risky-attributes).
 
+Packj also analyzes public repo code as well as metadata (e.g., stars, forks). By comparing the repo description and package title, you can be sure if the package indeed has been created from the repo to mitigate any `starjacking` attacks.
+
+## Containerized
+
+The best way to use Packj is to run it inside Docker (or Podman). You can use the latest Docker image.
+
+`docker run --mount type=bind,source=/tmp,target=/tmp ossillate/packj:latest`
+
+
 ```
-$ python3 main.py npm browserify
+$ docker run --mount type=bind,source=/tmp,target=/tmp ossillate/packj:latest npm browserify
 [+] Fetching 'browserify' from npm...OK [ver 17.0.0]
 [+] Checking version...ALERT [598 days old]
 [+] Checking release history...OK [484 version(s)]
@@ -50,7 +54,7 @@ $ python3 main.py npm browserify
 [+] Checking files/funcs...OK [429 files (383 .js), 744 funcs, LoC: 9.7K]
 =============================================
 [+] 5 risk(s) found, package is undesirable!
-=> Complete report: npm-browserify-17.0.0.json
+=> Complete report: /tmp/npm-browserify-17.0.0.json
 {
     "undesirable": [
         "old package: 598 days old",
@@ -62,42 +66,10 @@ $ python3 main.py npm browserify
 }
 ```
 
-Packj also analyzes public repo code as well as metadata (e.g., stars, forks).
-
-```
-$ python3 main.py npm eslint
-[+] Fetching 'eslint' from npm...OK [ver 8.16.0]
-[+] Checking version...OK [10 days old]
-[+] Checking release history...OK [305 version(s)]
-[+] Checking release time gap...OK [15 days since last release]
-[+] Checking author...OK [nicholas+npm@nczconsulting.com]
-	[+] Checking email/domain validity...OK [nicholas+npm@nczconsulting.com]
-[+] Checking readme...OK [18234 bytes]
-[+] Checking homepage...OK [https://eslint.org]
-[+] Checking downloads...OK [23.8M weekly]
-[+] Checking repo_url URL...OK [https://github.com/eslint/eslint]
-	[+] Checking repo data...OK [stars: 20669, forks: 3689]
-	[+] Checking repo activity...OK [commits: 8447, contributors: 1013, tags: 302]
-[+] Checking for CVEs...OK [none found]
-[+] Checking dependencies...ALERT [35 found]
-[+] Downloading package 'eslint' (ver 8.16.0) from npm...OK [490.14 KB]
-[+] Analyzing code...ALERT [needs 2 perms: codegen,file]
-[+] Checking files/funcs...OK [395 files (390 .js), 1022 funcs, LoC: 76.3K]
-=============================================
-[+] 2 risk(s) found, package is undesirable!
-{
-    "undesirable": [
-        "generates new code at runtime", 
-        "reads files and dirs: ['package/lib/cli-engine/load-rules.js:37', 'package/lib/cli-engine/file-enumerator.js:142']"
-    ]
-}
-=> Complete report: npm-eslint-8.16.0.json
-```
-
 Specific package versions to be vetted could be specified using `==`. Please refer to the example below
 
 ```
-$ python3 main.py pypi requests==2.18.4
+$ docker run --mount type=bind,source=/tmp,target=/tmp ossillate/packj:latest pypi requests==2.18.4
 [+] Fetching 'requests' from pypi...OK [ver 2.18.4]
 [+] Checking version...ALERT [1750 days old]
 [+] Checking release history...OK [142 version(s)]
@@ -129,9 +101,50 @@ $ python3 main.py pypi requests==2.18.4
         "contains CVE-2018-18074,CVE-2018-18074"
     ]
 }
-=> Complete report: pypi-requests-2.18.4.json
+=> Complete report: /tmp/pypi-requests-2.18.4.json
 => View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
 ````
+
+## Non-containerized
+
+Alternatively, you can install Python/Ruby dependencies locally and test it.
+
+**NOTE** 
+* Packj has only been tested on Linux.
+* Requires Python3 and Ruby. API analysis will fail if used with Python2.
+* You will have to install Python and Ruby dependencies before using the tool:
+	- `pip install -r requirements.txt`
+	- `gem install google-protobuf:3.21.2 rubocop:1.31.1`
+
+```
+$ python3 main.py npm eslint
+[+] Fetching 'eslint' from npm...OK [ver 8.16.0]
+[+] Checking version...OK [10 days old]
+[+] Checking release history...OK [305 version(s)]
+[+] Checking release time gap...OK [15 days since last release]
+[+] Checking author...OK [nicholas+npm@nczconsulting.com]
+	[+] Checking email/domain validity...OK [nicholas+npm@nczconsulting.com]
+[+] Checking readme...OK [18234 bytes]
+[+] Checking homepage...OK [https://eslint.org]
+[+] Checking downloads...OK [23.8M weekly]
+[+] Checking repo_url URL...OK [https://github.com/eslint/eslint]
+	[+] Checking repo data...OK [stars: 20669, forks: 3689]
+	[+] Checking repo activity...OK [commits: 8447, contributors: 1013, tags: 302]
+[+] Checking for CVEs...OK [none found]
+[+] Checking dependencies...ALERT [35 found]
+[+] Downloading package 'eslint' (ver 8.16.0) from npm...OK [490.14 KB]
+[+] Analyzing code...ALERT [needs 2 perms: codegen,file]
+[+] Checking files/funcs...OK [395 files (390 .js), 1022 funcs, LoC: 76.3K]
+=============================================
+[+] 2 risk(s) found, package is undesirable!
+{
+    "undesirable": [
+        "generates new code at runtime", 
+        "reads files and dirs: ['package/lib/cli-engine/load-rules.js:37', 'package/lib/cli-engine/file-enumerator.js:142']"
+    ]
+}
+=> Complete report: npm-eslint-8.16.0.json
+```
 
 # How it works
 

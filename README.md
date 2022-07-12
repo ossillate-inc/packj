@@ -28,9 +28,9 @@ Packj also analyzes public repo code as well as metadata (e.g., stars, forks). B
 
 ## Containerized
 
-The best way to use Packj is to run it inside Docker (or Podman). You can use the latest Docker image.
+The best way to use Packj is to run it inside Docker (or Podman) container. You can pull our latest image from DockerHub to get started.
 
-`docker run --mount type=bind,source=/tmp,target=/tmp ossillate/packj:latest`
+`docker pull ossillate/packj:latest`
 
 
 ```
@@ -143,7 +143,7 @@ $ python3 main.py npm eslint
         "reads files and dirs: ['package/lib/cli-engine/load-rules.js:37', 'package/lib/cli-engine/file-enumerator.js:142']"
     ]
 }
-=> Complete report: npm-eslint-8.16.0.json
+=> Complete report: /tmp/npm-eslint-8.16.0.json
 ```
 
 # How it works
@@ -233,6 +233,10 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 - PackagingCon'21 [talk](https://www.youtube.com/watch?v=PHfN-NrUCoo) and [slides](https://speakerdeck.com/ashishbijlani/mitigating-open-source-software-supply-chain-attacks)
 - Academic [dissertation](https://cyfi.ece.gatech.edu/publications/DUAN-DISSERTATION-2019.pdf) on open-source software security and the [paper](https://www.ndss-symposium.org/wp-content/uploads/ndss2021_1B-1_23055_paper.pdf) from our group at Georgia Tech that started this research.
 
+### Upcoming talks ###
+- BlackHat USA'22 Arsenal talk [Detecting typo-squatting, backdoored, abandoned, and other "risky" open-source packages using Packj](https://www.blackhat.com/us-22/arsenal/schedule/#detecting-typo-squatting-backdoored-abandoned-and-other-risky-open-source-packages-using-packj-28075)
+- Open Source Summit, Europe'22 talk [Scoring dependencies to detect “weak links” in your open-source software supply chain](https://osseu2022.sched.com/overview/type/SupplyChainSecurityCon)
+
 # Feature roadmap #
 
 * Add support for other language ecosystems. Rust is a work in progress, and will be available in July '22 (last week).
@@ -243,20 +247,13 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://ossillate.com/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators.
 
-- [Dr. Ashish Bijlani](https://github.com/ashishbijlani)
-- [Devdutt Patnaik](https://github.com/DevP17)
-- [Ajinkya Rajput](https://github.com/the-elves)
-- [Lucas Zhang](https://github.com/LucasZhang58)
-- [Shubham Thakur](https://github.com/sbmthakur)
-- [Dr. Ruian Duan](https://github.com/lingfennan)
-
 We welcome code contributions. Join our [discord community](https://discord.gg/8hx3yEtF) for discussion and feature requests.
 
 # FAQ #
 
 - _What Package Managers (Registries) are supported?_
 
-Packj tool can currently vet NPM, PyPI, and RubyGems packages for "risky" attributes. We are adding support for Rust.
+Packj can currently vet NPM, PyPI, and RubyGems packages for "risky" attributes. We are adding support for Rust.
 
 - _Does it work on obfuscated calls? For example, a base 64 encrypted string that gets decrypted and then passed to a shell?_
 

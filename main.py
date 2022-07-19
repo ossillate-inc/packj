@@ -656,7 +656,7 @@ def main(pm_enum, pm_name, pkg_name):
 	filename = f'{pm_name}-{pkg_name}-{ver_str}.json'
 	filepath = os.path.join('/tmp', filename)
 	write_json_to_file(filepath, report, indent=4)
-	print(f'=> Complete report: {filename}')
+	print(f'=> Complete report: {filepath}')
 
 	if pm_enum == PackageManagerEnum.pypi:
 		print(f'=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')

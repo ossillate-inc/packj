@@ -3,6 +3,7 @@ dnspython==2.2.1
 esprima==4.0.1
 pyIsEmail==1.4.0
 func_timeout==4.3.5
+python-gitlab==2.10.1
 github3.py==3.2.0
 GitPython==3.1.27
 networkx==2.2
@@ -11,7 +12,7 @@ python_dateutil==2.8.2
 python_magic==0.4.26
 pytz==2018.3
 rarfile==3.0
-requests==2.18.4
+requests==2.25.0
 six==1.11.0
 tldextract==3.1.2
 pyyaml==6.0

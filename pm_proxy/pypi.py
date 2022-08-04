@@ -99,6 +99,13 @@ class PypiProxy(PackageManagerProxy):
 			for dist in pkg_info['releases'][ver_str]:
 				if dist['packagetype'] == 'bdist_wheel':
 					return {'tag':ver_str, 'type':'bdist_wheel', 'url':dist['url'], 'uploaded':dist['upload_time']}
+		elif 'urls' in pkg_info and pkg_info['urls']:
+				for dist in pkg_info['urls']:
+						if dist['packagetype'] == 'sdist':
+								return {'tag':ver_str, 'url':dist['url'], 'type':'sdist', 'uploaded':dist['upload_time']}
+				for dist in pkg_info['urls']:
+						if dist['packagetype'] == 'bdist_wheel':
+								return {'tag':ver_str, 'type':'bdist_wheel', 'url':dist['url'], 'uploaded':dist['upload_time']}
 		return None
 
 	def get_description(self, pkg_name, ver_str=None, pkg_info=None):

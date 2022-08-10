@@ -19,7 +19,7 @@ from util.repo import git_clone, replace_last
 
 from parse_apis import parse_api_usage
 from parse_composition import parse_package_composition
-from pm_util import get_pm_proxy
+from pm_util import get_pm_enum, get_pm_install_cmd, get_pm_proxy
 from static_util import get_static_proxy_for_language
 from static_proxy.static_base import Language2Extensions
 from parse_repo import fetch_repo_data
@@ -135,7 +135,7 @@ def analyze_version(ver_info, risks, report):
 			raise Exception('parse error')
 
 		# check if the latest release is too old (unmaintained package)
-		days_old =  f'{days} days old'
+		days_old = f'{days} days old'
 		if not uploaded or days > 365:
 			reason = 'no release date' if not uploaded else days_old
 			alert_type = 'old package'
@@ -248,7 +248,7 @@ def analyze_repo_data(risks, report):
 	try:
 		repo_url = report['repo']['url']
 		print('\t[+] Checking repo data...', end='', flush=True)
-		err, repo_data  = fetch_repo_data(repo_url)
+		err, repo_data	= fetch_repo_data(repo_url)
 		assert repo_data, err
 
 		try:
@@ -484,7 +484,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 
 class Risk(tuple, Enum):
 	FILE_IO = 'accesses files and dirs', 'file'
-	USER_IO = 'reads user input', None  # should this really be None?
+	USER_IO = 'reads user input', None	# should this really be None?
 	NET = 'communicates with external network', 'network'
 	CODE = 'generates new code at runtime', 'codegen'
 	PROC = 'forks or exits OS processes', 'process'
@@ -570,7 +570,10 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 	finally:
 		return risks, report
 
-def main(pm_enum, pm_name, pkg_name):
+def sandbox(pm_enum, pm_name, pkg_name, ver_str):
+	print('This feature is coming soon!')
+
+def audit(pm_enum, pm_name, pkg_name, ver_str):
 
 	try:
 		build_threat_model()
@@ -579,10 +582,6 @@ def main(pm_enum, pm_name, pkg_name):
 		return
 
 	pm_proxy = get_pm_proxy(pm_enum, cache_dir=None, isolate_pkg_info=False)
-
-	ver_str = None
-	if '==' in pkg_name:
-		pkg_name, ver_str = pkg_name.split('==')
 
 	# get version metadata
 	try:
@@ -672,24 +671,26 @@ def get_base_pkg_info():
 	if args.debug:
 		import tempfile
 		_, filename = tempfile.mkstemp(suffix='.log')
-		print(f'*** Running in debug mode (log: {filename}) ***')
+		print(f'\n*** NOTE: Running in debug mode (log: {filename}) ***\n')
 		logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
 							format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')
 	else:
 		logging.getLogger().setLevel(logging.ERROR)
 
+	if not args.ver_str:
+		logging.debug(f'No version specified. Using latest version of {args.pkg_name}')
+
 	pm_name = args.pm_name.lower()
-	if pm_name == 'pypi':
-		return PackageManagerEnum.pypi, pm_name, args.pkg_name
-	if pm_name == 'npm':
-		return PackageManagerEnum.npmjs, pm_name, args.pkg_name
-	if pm_name == 'rubygems':
-		return PackageManagerEnum.rubygems, pm_name, args.pkg_name
-	raise Exception(f'Package manager {pm_name} is not supported')
+	pm_enum = get_pm_enum(pm_name)
+	return args.cmd, (pm_enum, pm_name, args.pkg_name, args.ver_str)
 
 if __name__ == '__main__':
 	try:
-		main(*get_base_pkg_info())
+		cmd, ret = get_base_pkg_info()
+		if cmd == "audit":
+			audit(*ret)
+		else:
+			sandbox(*ret)
 	except Exception as e_main:
 		print(str(e_main))
 		exit(1)

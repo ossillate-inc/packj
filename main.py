@@ -575,7 +575,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 def sandbox(pm_enum, pm_name, pkg_name, ver_str):
 	print('This feature is coming soon!')
 
-def trace_installation(pm_enum, pkg_name, ver_str, trace_dir, risks, report):
+def trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report):
 	try:
 		print('[+] Installing package and tracing code...', end='', flush=True)
 
@@ -594,7 +594,8 @@ def trace_installation(pm_enum, pkg_name, ver_str, trace_dir, risks, report):
 
 		# install package under strace and collect system call traces
 		install_cmd = get_pm_install_cmd(pm_enum, pkg_name, ver_str)
-		_, trace_filepath = tempfile.mkstemp(prefix='trace_', dir=trace_dir, suffix='.log')
+		_, trace_filepath = tempfile.mkstemp(prefix='trace_', dir=report_dir, suffix='.log')
+
 		strace_cmd = f'{strace_bin} -f -e trace=network,file,process -ttt -T -o {trace_filepath } {install_cmd}'
 		exec_command("strace", strace_cmd.split())
 
@@ -602,8 +603,12 @@ def trace_installation(pm_enum, pkg_name, ver_str, trace_dir, risks, report):
 		if not os.path.exists(trace_filepath):
 			raise Exception('no trace generated!')
 
-		summary = parse_trace_file(trace_filepath, trace_dir)
-		print(msg_ok(f'found {list(summary.keys())} syscalls'))
+		summary = parse_trace_file(trace_filepath, report_dir)
+		assert summary, "parse error!"
+
+		# consolidate
+		out = ','.join([f'{len(summary[k])} {k}' for k in summary.keys()])
+		print(msg_ok(f'found {out} syscalls'))
 	except Exception as e:
 		print(msg_fail(str(e)))
 	finally:
@@ -611,7 +616,7 @@ def trace_installation(pm_enum, pkg_name, ver_str, trace_dir, risks, report):
 
 def audit(pm_enum, pm_name, pkg_name, ver_str, extra_args):
 
-	trace_dir, host_volume, container_mountpoint = extra_args
+	report_dir, host_volume, container_mountpoint, install_trace = extra_args
 
 	# get user threat model
 	try:
@@ -628,12 +633,9 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, extra_args):
 		pkg_name, pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info, 'package not found!'
 
-		#print(json.dumps(pkg_info, indent=4))
-
 		ver_info = pm_proxy.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		assert ver_info, 'No version info!'
 
-		#print(json.dumps(ver_info, indent=4))
 		if not ver_str:
 			ver_str = ver_info['tag']
 
@@ -682,9 +684,9 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, extra_args):
 		risks, report = analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report)
 		risks, report = analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report)
 
-	# perform dynamic analysis
-	if trace_dir:
-		trace_installation(pm_enum, pkg_name, ver_str, trace_dir, risks, report)
+	# perform dynamic analysis if requested
+	if install_trace:
+		trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report)
 
 	print('=============================================')
 
@@ -700,7 +702,7 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, extra_args):
 		report['risks'] = risks
 
 	# generate final report
-	_, filepath = tempfile.mkstemp(prefix=f'report_{pm_name}-{pkg_name}-{ver_str}_', dir=trace_dir, suffix='.json')
+	_, filepath = tempfile.mkstemp(prefix=f'report_', dir=report_dir, suffix='.json')
 	write_json_to_file(filepath, report, indent=4)
 	os.chmod(filepath, 0o444)
 	if not container_mountpoint:
@@ -721,45 +723,64 @@ def get_base_pkg_info():
 	args = opts.args()
 	assert args, 'Failed to parse cmdline args!'
 
+	pkg_name = args.pkg_name
+	ver_str = args.ver_str
+	pm_name = args.pm_name.lower()
+
+	if ver_str:
+		report_dir_suffix = f'_{pm_name}_{pkg_name}_{ver_str}'
+	else:
+		report_dir_suffix = f'_{pm_name}_{pkg_name}_latest'
+
+	pm_enum = get_pm_enum(pm_name)
+
+	host_volume = None
+	container_mountpoint = None
+
+	# XXX expects host volume to be mounted inside container
+	if in_docker():
+		container_mountpoint = '/tmp/packj'
+		host_volume = is_mounted(container_mountpoint)
+		if not host_volume or not os.path.exists(container_mountpoint):
+			print(f'Missing host volume at {container_mountpoint}. Run Docker with "-v /tmp:{container_mountpoint}" argument.')
+			exit(1)
+
+	# create a temp dir to host debug logs, trace logs, and final report
+	try:
+		report_dir = tempfile.mkdtemp(prefix=f'packj_', dir=container_mountpoint, suffix=report_dir_suffix)
+		os.chmod(report_dir, 0o755)
+	except Exception as e:
+		print(f'Failed to create temp dir: {str(e)}!')
+		exit(1)
+
 	if args.debug:
-		_, filename = tempfile.mkstemp(prefix='debug_', dir=trace_dir, suffix='.log')
-		print(f'\n*** NOTE: Running in debug mode (log: {filename}) ***\n')
-		logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
-							format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')
+		try:
+			_, filename = tempfile.mkstemp(prefix='debug_', dir=report_dir, suffix='.log')
+			os.chmod(filename, 0o544)
+			print(f'\n*** NOTE: Running in debug mode (log: {filename}) ***\n')
+			logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
+								format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')
+		except Exception as e:
+			print(f'Failed to create debug log: {str(e)}. Using stdout.')
+			logging.getLogger().setLevel(logging.DEBUG)
+
 	else:
 		logging.getLogger().setLevel(logging.ERROR)
 
-	if not args.ver_str:
-		logging.debug(f'No version specified. Using latest version of {args.pkg_name}')
+	if not ver_str:
+		logging.debug(f'No version specified. Using latest version of {pkg_name}')
 
 	# check if installation trace has been requested
-	trace_dir = None
-	host_volume = None
-	container_mountpoint = None
+	install_trace = False
 	if args.cmd == 'audit' and args.trace:
 		if not in_docker():
 			print(f'*** You\'ve requested package installation trace *** We recommend running in Docker. Continue (N/y): ', end='')
 			stop = input()
 			if stop != 'y':
 				exit(1)
-			trace_dir = tempfile.mkdtemp(prefix=f'packj_')
-		else:
-			# XXX expects host volume to be mounted inside container
-			container_mountpoint = '/tmp/packj'
-			host_volume = is_mounted(container_mountpoint)
-			if not host_volume or not os.path.exists(container_mountpoint):
-				print(f'Missing host volume at {container_mountpoint}. Run Docker with "-v /tmp:{container_mountpoint}" argument.')
-				exit(1)
-			try:
-				trace_dir = tempfile.mkdtemp(prefix=f'packj_', dir=container_mountpoint)
-				os.chmod(trace_dir, 0o755)
-			except Exception as e:
-				print(f'Failed to create {trace_dir}: {str(e)}!')
-				exit(1)
+		install_trace = True
 
-	pm_name = args.pm_name.lower()
-	pm_enum = get_pm_enum(pm_name)
-	return args.cmd, (pm_enum, pm_name, args.pkg_name, args.ver_str), (trace_dir, host_volume, container_mountpoint)
+	return args.cmd, (pm_enum, pm_name, pkg_name, ver_str), (report_dir, host_volume, container_mountpoint, install_trace)
 
 if __name__ == '__main__':
 	import traceback

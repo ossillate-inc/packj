@@ -113,9 +113,13 @@ def parse_trace_file(input_file, tempdir):
 	infile.close()
 	strace_stream.close()
 
-	_, summary_filepath = tempfile.mkstemp(prefix='packj_', dir=tempdir, suffix=f'_trace_summary.json')
-	with open(summary_filepath, mode='w+') as f:
-		f.write(json.dumps(summary, indent=4))
+	try:
+		_, summary_filepath = tempfile.mkstemp(prefix='summary_', dir=tempdir, suffix='.json')
+		with open(summary_filepath, mode='w+') as f:
+			f.write(json.dumps(summary, indent=4))
+		os.chmod(summary_filepath, 0o444)
+	except Exception as e:
+		logging.debug(f'Failed to generate trace summary file: {str(e)}')
 
 	return summary
 

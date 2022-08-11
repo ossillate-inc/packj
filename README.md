@@ -29,13 +29,13 @@ Packj also analyzes public repo code as well as metadata (e.g., stars, forks). B
 
 ## Containerized
 
-The best way to use Packj is to run it inside Docker (or Podman) container. You can pull our latest image from DockerHub to get started.
+The best way to use Packj is to run it inside Docker (or Podman) container. **Remember** to always pull our latest image from DockerHub to get started.
 
 `docker pull ossillate/packj:latest`
 
 
 ```
-$ docker run --mount type=bind,source=/tmp,target=/tmp ossillate/packj:latest npm browserify
+$ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit npm browserify
 [+] Fetching 'browserify' from npm...OK [ver 17.0.0]
 [+] Checking version...ALERT [598 days old]
 [+] Checking release history...OK [484 version(s)]
@@ -67,10 +67,12 @@ $ docker run --mount type=bind,source=/tmp,target=/tmp ossillate/packj:latest np
 }
 ```
 
-Specific package versions to be vetted could be specified using `==`. Please refer to the example below
+**NOTE** that `-v /tmp:/tmp/packj` is needed for containerized runs under Docker so that final report is available under `/tmp` on the host. 
+
+Specific package versions to be vetted could also be specified. Please refer to the example below
 
 ```
-$ docker run --mount type=bind,source=/tmp,target=/tmp ossillate/packj:latest pypi requests==2.18.4
+$ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit pypi requests 2.18.4
 [+] Fetching 'requests' from pypi...OK [ver 2.18.4]
 [+] Checking version...ALERT [1750 days old]
 [+] Checking release history...OK [142 version(s)]
@@ -118,7 +120,7 @@ Alternatively, you can install Python/Ruby dependencies locally and test it.
 	- `gem install google-protobuf:3.21.2 rubocop:1.31.1`
 
 ```
-$ python3 main.py npm eslint
+$ python3 main.py audit npm eslint
 [+] Fetching 'eslint' from npm...OK [ver 8.16.0]
 [+] Checking version...OK [10 days old]
 [+] Checking release history...OK [305 version(s)]
@@ -187,7 +189,7 @@ Packj can be customized to minimize noise and reduce alert fatigue by simply com
 We found over 40 malicious packages on PyPI using this tool. A number of them been taken down. Refer to an example below:
 
 ```
-$ python3 main.py pypi krisqian
+$ python3 main.py audit pypi krisqian
 [+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
 [+] Checking version...OK [256 days old]
 [+] Checking release history...OK [7 version(s)]

@@ -6,11 +6,11 @@ func_timeout==4.3.5
 python-gitlab==2.10.1
 github3.py==3.2.0
 GitPython==3.1.27
-networkx==2.2
+networkx==2.7
 protobuf==3.20.1
 python_dateutil==2.8.2
 python_magic==0.4.26
-pytz==2018.3
+pytz==2020.1
 rarfile==3.0
 requests==2.25.0
 six==1.11.0

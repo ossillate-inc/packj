@@ -48,6 +48,18 @@ def md5_digest_last_64bits_int(s):
     return int(md5_digest_last_64bits_str(s), 16)
 
 
+def is_mounted(path):
+	with open('/proc/self/mountinfo') as file:
+		line = file.readline().strip()
+		while line:
+			if f'{ path }' in line:
+				return line.split()[3]
+			line = file.readline().strip()
+	return None
+
+def in_docker():
+	return is_mounted('/docker/containers/')
+
 def exec_command(cmd, args, cwd=None, ret_stdout=False, env=None, timeout=None):
     """
     Executes shell command
@@ -63,7 +75,7 @@ def exec_command(cmd, args, cwd=None, ret_stdout=False, env=None, timeout=None):
         else:
             stdout, error = pipe.communicate()
         if ret_stdout:
-            return stdout
+            return stdout, error
         else:
             logging.debug("stdout: %s", stdout)
             return pipe.returncode

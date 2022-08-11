@@ -7,6 +7,7 @@ from enum import Enum
 import sys
 import os
 import logging
+import tempfile
 from typing import Optional
 
 from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
@@ -16,6 +17,7 @@ from util.files import write_json_to_file, read_from_csv
 from util.enum_util import PackageManagerEnum, LanguageEnum
 from util.formatting import human_format
 from util.repo import git_clone, replace_last
+from util.job_util import exec_command, in_docker, is_mounted
 
 from parse_apis import parse_api_usage
 from parse_composition import parse_package_composition
@@ -23,6 +25,7 @@ from pm_util import get_pm_enum, get_pm_install_cmd, get_pm_proxy
 from static_util import get_static_proxy_for_language
 from static_proxy.static_base import Language2Extensions
 from parse_repo import fetch_repo_data
+from parse_strace import parse_trace_file
 
 # sys.version_info[0] is the major version number. sys.version_info[1] is minor
 if sys.version_info[0] != 3:
@@ -512,7 +515,6 @@ ALERTS = {
 	'SOURCE_USER_INPUT': Alert(Risk.USER_IO),
 }
 
-
 def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 	try:
 		print('[+] Analyzing code...', end='', flush=True)
@@ -573,8 +575,45 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 def sandbox(pm_enum, pm_name, pkg_name, ver_str):
 	print('This feature is coming soon!')
 
-def audit(pm_enum, pm_name, pkg_name, ver_str):
+def trace_installation(pm_enum, pkg_name, ver_str, trace_dir, risks, report):
+	try:
+		print('[+] Installing package and tracing code...', end='', flush=True)
 
+		# look for strace binary
+		check_strace_cmd = ['which', 'strace']
+		stdout, error = exec_command("strace", check_strace_cmd, ret_stdout=True)
+		if error:
+			raise Exception(f'{error}')
+
+		# check that we collected the correct binary path
+		strace_bin = stdout.strip().decode()
+		if strace_bin == '':
+			raise Exception('"strace" not installed!')
+		if not os.path.exists(strace_bin):
+			raise Exception(f'{strace_bin} not found!')
+
+		# install package under strace and collect system call traces
+		install_cmd = get_pm_install_cmd(pm_enum, pkg_name, ver_str)
+		_, trace_filepath = tempfile.mkstemp(prefix='trace_', dir=trace_dir, suffix='.log')
+		strace_cmd = f'{strace_bin} -f -e trace=network,file,process -ttt -T -o {trace_filepath } {install_cmd}'
+		exec_command("strace", strace_cmd.split())
+
+		# check if the trace file is generated
+		if not os.path.exists(trace_filepath):
+			raise Exception('no trace generated!')
+
+		summary = parse_trace_file(trace_filepath, trace_dir)
+		print(msg_ok(f'found {list(summary.keys())} syscalls'))
+	except Exception as e:
+		print(msg_fail(str(e)))
+	finally:
+		return risks, report
+
+def audit(pm_enum, pm_name, pkg_name, ver_str, extra_args):
+
+	trace_dir, host_volume, container_mountpoint = extra_args
+
+	# get user threat model
 	try:
 		build_threat_model()
 	except Exception as e:
@@ -638,11 +677,18 @@ def audit(pm_enum, pm_name, pkg_name, ver_str):
 	except Exception as e:
 		print(msg_fail(str(e)))
 
+	# perform static analysis
 	if filepath:
 		risks, report = analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report)
 		risks, report = analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report)
 
+	# perform dynamic analysis
+	if trace_dir:
+		trace_installation(pm_enum, pkg_name, ver_str, trace_dir, risks, report)
+
 	print('=============================================')
+
+	# aggregate risks
 	if not risks:
 		print('[+] No risks found!')
 		report['risks'] = None
@@ -652,11 +698,18 @@ def audit(pm_enum, pm_name, pkg_name, ver_str):
 			f'package is {", ".join(risks.keys())}!'
 		)
 		report['risks'] = risks
-	filename = f'{pm_name}-{pkg_name}-{ver_str}.json'
-	filepath = os.path.join('/tmp', filename)
-	write_json_to_file(filepath, report, indent=4)
-	print(f'=> Complete report: {filepath}')
 
+	# generate final report
+	_, filepath = tempfile.mkstemp(prefix=f'report_{pm_name}-{pkg_name}-{ver_str}_', dir=trace_dir, suffix='.json')
+	write_json_to_file(filepath, report, indent=4)
+	os.chmod(filepath, 0o444)
+	if not container_mountpoint:
+		print(f'=> Complete report: {filepath}')
+	else:
+		report_path = filepath.replace(container_mountpoint, host_volume)
+		print(f'=> Complete report: {report_path}')
+
+	# report link
 	if pm_enum == PackageManagerEnum.pypi:
 		print(f'=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')
 
@@ -669,8 +722,7 @@ def get_base_pkg_info():
 	assert args, 'Failed to parse cmdline args!'
 
 	if args.debug:
-		import tempfile
-		_, filename = tempfile.mkstemp(suffix='.log')
+		_, filename = tempfile.mkstemp(prefix='debug_', dir=trace_dir, suffix='.log')
 		print(f'\n*** NOTE: Running in debug mode (log: {filename}) ***\n')
 		logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
 							format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')
@@ -680,17 +732,44 @@ def get_base_pkg_info():
 	if not args.ver_str:
 		logging.debug(f'No version specified. Using latest version of {args.pkg_name}')
 
+	# check if installation trace has been requested
+	trace_dir = None
+	host_volume = None
+	container_mountpoint = None
+	if args.cmd == 'audit' and args.trace:
+		if not in_docker():
+			print(f'*** You\'ve requested package installation trace *** We recommend running in Docker. Continue (N/y): ', end='')
+			stop = input()
+			if stop != 'y':
+				exit(1)
+			trace_dir = tempfile.mkdtemp(prefix=f'packj_')
+		else:
+			# XXX expects host volume to be mounted inside container
+			container_mountpoint = '/tmp/packj'
+			host_volume = is_mounted(container_mountpoint)
+			if not host_volume or not os.path.exists(container_mountpoint):
+				print(f'Missing host volume at {container_mountpoint}. Run Docker with "-v /tmp:{container_mountpoint}" argument.')
+				exit(1)
+			try:
+				trace_dir = tempfile.mkdtemp(prefix=f'packj_', dir=container_mountpoint)
+				os.chmod(trace_dir, 0o755)
+			except Exception as e:
+				print(f'Failed to create {trace_dir}: {str(e)}!')
+				exit(1)
+
 	pm_name = args.pm_name.lower()
 	pm_enum = get_pm_enum(pm_name)
-	return args.cmd, (pm_enum, pm_name, args.pkg_name, args.ver_str)
+	return args.cmd, (pm_enum, pm_name, args.pkg_name, args.ver_str), (trace_dir, host_volume, container_mountpoint)
 
 if __name__ == '__main__':
+	import traceback
 	try:
-		cmd, ret = get_base_pkg_info()
-		if cmd == "audit":
-			audit(*ret)
+		cmd, args, extra_args = get_base_pkg_info()
+		if cmd == 'audit':
+			audit(*args, extra_args)
 		else:
-			sandbox(*ret)
+			sandbox(*args)
 	except Exception as e_main:
+		print(traceback.format_exc())
 		print(str(e_main))
 		exit(1)

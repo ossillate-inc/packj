@@ -19,23 +19,33 @@
 
 # How to use #
 
-Packj accepts two input args:
-* name of the registry or package manager, pypi, npm, or rubygems.
-* name of the package to be vetted
+Packj accepts the following input args:
+* subcommand name, `audit` or `sandbox`
+* name of the registry or package manager (e.g., pypi, npm, or rubygems)
+* name of the package (e.g., requests, browserify, overcommit)
+* optionally, package version string (e.g., 17.0.0)
 
-Packj supports vetting of PyPI, NPM, and RubyGems packages. It performs static code analysis and checks for several metadata attributes such as release timestamps, author email, downloads, dependencies. Packages with expired email domains, large release time gap, sensitive APIs, etc. are flagged as risky for [security reasons](#risky-attributes).
+## Auditing a package ##
+
+Packj can audit PyPI, NPM, and RubyGems packages. It performs:
+- static code analysis to check entire package code for use of filesystem, network, and process APIs (e.g., `connect`, `exec`),
+- metadata analysis to check for attributes such as release timestamps, author email, downloads, dependencies, and 
+- optionally, dynamic analysis to check package runtime behavior by installing the package. 
+
+Packages with expired email domains, large release time gap, sensitive APIs, etc. are flagged as risky for [security reasons](#risky-attributes).
 
 Packj also analyzes public repo code as well as metadata (e.g., stars, forks). By comparing the repo description and package title, you can be sure if the package indeed has been created from the repo to mitigate any `starjacking` attacks.
 
+**NOTE** Dynamic tracing requires `--trace` option. We recommend to only use it for containerized runs (see usage below) as it installs a package, which could be malicious.
+
 ## Containerized
 
-The best way to use Packj is to run it inside Docker (or Podman) container. **Remember** to always pull our latest image from DockerHub to get started.
+The best way to use Packj is to run it inside Docker (or Podman) container. **Remember** to always pull our latest image from DockerHub to get started: `docker pull ossillate/packj:latest`
 
-`docker pull ossillate/packj:latest`
-
+**NOTE** that `-v /tmp:/tmp/packj` is needed for containerized runs under Docker so that final report is available under `/tmp` on the host. 
 
 ```
-$ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit npm browserify
+$ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit --trace npm browserify
 [+] Fetching 'browserify' from npm...OK [ver 17.0.0]
 [+] Checking version...ALERT [598 days old]
 [+] Checking release history...OK [484 version(s)]
@@ -53,9 +63,10 @@ $ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit npm browserify
 [+] Downloading package 'browserify' (ver 17.0.0) from npm...OK [163.83 KB]
 [+] Analyzing code...ALERT [needs 3 perms: process,file,codegen]
 [+] Checking files/funcs...OK [429 files (383 .js), 744 funcs, LoC: 9.7K]
+[+] Installing package and tracing code...OK [found ['process', 'files', 'network'] syscalls]
 =============================================
 [+] 5 risk(s) found, package is undesirable!
-=> Complete report: /tmp/npm-browserify-17.0.0.json
+=> Complete report: /tmp/packj_54rbjhgm/report_npm-browserify-17.0.0_hlr1rhcz.json
 {
     "undesirable": [
         "old package: 598 days old",
@@ -66,8 +77,6 @@ $ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit npm browserify
     ]
 }
 ```
-
-**NOTE** that `-v /tmp:/tmp/packj` is needed for containerized runs under Docker so that final report is available under `/tmp` on the host. 
 
 Specific package versions to be vetted could also be specified. Please refer to the example below
 
@@ -114,7 +123,7 @@ Alternatively, you can install Python/Ruby dependencies locally and test it.
 
 **NOTE** 
 * Packj has only been tested on Linux.
-* Requires Python3 and Ruby. API analysis will fail if used with Python2.
+* Requires Strace, Python3, Ruby. API analysis will fail if used with Python2.
 * You will have to install Python and Ruby dependencies before using the tool:
 	- `pip install -r requirements.txt`
 	- `gem install google-protobuf:3.21.2 rubocop:1.31.1`
@@ -155,6 +164,7 @@ $ python3 main.py audit npm eslint
 - To perform API analysis, the package is downloaded from the registry using their APIs into a temp dir. Then, packj performs static code analysis to detect API usage. API analysis is based on [MalOSS](https://github.com/osssanitizer/maloss), a research project from our group at Georgia Tech.
 - Vulnerabilities (CVEs) are checked by pulling info from OSV database at [OSV](https://osv.dev)
 - Python PyPI and NPM package downloads are fetched from [pypistats](https://pypistats.org) and [npmjs](https://api.npmjs.org/downloads)
+- Dynamic analysis is performed by installing the package under `strace` tool, which uses `ptrace` system calls underneath.
 - All risks detected are aggregated and reported 
 
 # Risky attributes #

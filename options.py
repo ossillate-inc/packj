@@ -28,10 +28,10 @@ class Options():
 					help="Package name (e.g., react, torch, overcommit)", action="store")
 			p.add_argument(dest="ver_str", \
 					help="Package version (e.g., 0.0.1), default: latest", nargs='?', const=None, action="store")
+			p.add_argument("-d", "--debug", dest="debug", \
+					help="Enable debugging", action="store_true")
 
 		# Audit optional args
-		parser_audit.add_argument("-d", "--debug", dest="debug", \
-				help="Enable debugging", action="store_true")
 		parser_audit.add_argument("-t", "--trace", dest="trace", \
 				help="Install package and collect dynamic/runtime trace", action="store_true")
 

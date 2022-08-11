@@ -23,7 +23,7 @@ Packj accepts the following input args:
 * subcommand name, `audit` or `sandbox`
 * name of the registry or package manager (e.g., pypi, npm, or rubygems)
 * name of the package (e.g., requests, browserify, overcommit)
-* optionally, package version string (e.g., 17.0.0)
+* optionally, package version string (e.g., 17.0.0). By default, the latest is picked.
 
 ## Auditing a package ##
 
@@ -252,9 +252,9 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add support for other language ecosystems. Rust is a work in progress, and will be available in July '22 (last week).
+* Add support for other language ecosystems. Rust is a work in progress, and will be available in August '22 (last week).
 * Add functionality to detect several other "risky" code as well as metadata attributes.
-* Packj currently only performs static code analysis, we are working on adding support for dynamic analysis (WIP, ETA: end of summer)
+* Add support for sandboxed installation of packages (WIP, ETA: end of summer)
 
 # Team #
 

@@ -715,27 +715,21 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, extra_args):
 	if pm_enum == PackageManagerEnum.pypi:
 		print(f'=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')
 
-def get_base_pkg_info():
+def get_report_dir_suffix(pm_name, pkg_name, ver_str):
+	if not ver_str:
+		logging.debug(f'No version specified. Using latest version of {pkg_name}')
+		ver_str = 'latest'
+	if pkg_name.startswith('@'):
+		pkg_name = pkg_name.lstrip('@').replace('/', '-')
+	return f'_{pm_name}_{pkg_name}_{ver_str}'
+
+def parse_request_args():
 	from options import Options
 	opts = Options(sys.argv[1:])
 	assert opts, 'Failed to parse cmdline args!'
 
 	args = opts.args()
 	assert args, 'Failed to parse cmdline args!'
-
-	pkg_name = args.pkg_name
-	ver_str = args.ver_str
-	pm_name = args.pm_name.lower()
-
-	if ver_str:
-		report_dir_suffix = f'_{pm_name}_{pkg_name}_{ver_str}'
-	else:
-		report_dir_suffix = f'_{pm_name}_{pkg_name}_latest'
-
-	pm_enum = get_pm_enum(pm_name)
-
-	host_volume = None
-	container_mountpoint = None
 
 	# XXX expects host volume to be mounted inside container
 	if in_docker():
@@ -744,15 +738,24 @@ def get_base_pkg_info():
 		if not host_volume or not os.path.exists(container_mountpoint):
 			print(f'Missing host volume at {container_mountpoint}. Run Docker with "-v /tmp:{container_mountpoint}" argument.')
 			exit(1)
+	else:
+		host_volume = None
+		container_mountpoint = None
+
+	# pm enum ID
+	pm_name = args.pm_name.lower()
+	pm_enum = get_pm_enum(pm_name)
 
 	# create a temp dir to host debug logs, trace logs, and final report
 	try:
+		report_dir_suffix = get_report_dir_suffix(pm_name, args.pkg_name, args.ver_str)
 		report_dir = tempfile.mkdtemp(prefix=f'packj_', dir=container_mountpoint, suffix=report_dir_suffix)
 		os.chmod(report_dir, 0o755)
 	except Exception as e:
 		print(f'Failed to create temp dir: {str(e)}!')
 		exit(1)
 
+	# enable debugging if requested
 	if args.debug:
 		try:
 			_, filename = tempfile.mkstemp(prefix='debug_', dir=report_dir, suffix='.log')
@@ -763,12 +766,8 @@ def get_base_pkg_info():
 		except Exception as e:
 			print(f'Failed to create debug log: {str(e)}. Using stdout.')
 			logging.getLogger().setLevel(logging.DEBUG)
-
 	else:
 		logging.getLogger().setLevel(logging.ERROR)
-
-	if not ver_str:
-		logging.debug(f'No version specified. Using latest version of {pkg_name}')
 
 	# check if installation trace has been requested
 	install_trace = False
@@ -780,12 +779,12 @@ def get_base_pkg_info():
 				exit(1)
 		install_trace = True
 
-	return args.cmd, (pm_enum, pm_name, pkg_name, ver_str), (report_dir, host_volume, container_mountpoint, install_trace)
+	return args.cmd, (pm_enum, pm_name, args.pkg_name, args.ver_str), (report_dir, host_volume, container_mountpoint, install_trace)
 
 if __name__ == '__main__':
 	import traceback
 	try:
-		cmd, args, extra_args = get_base_pkg_info()
+		cmd, args, extra_args = parse_request_args()
 		if cmd == 'audit':
 			audit(*args, extra_args)
 		else:

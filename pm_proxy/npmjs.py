@@ -57,7 +57,7 @@ class NpmjsProxy(PackageManagerProxy):
 			res = r.json()
 			return int(res['downloads'])
 		except Exception as e:
-			logging.error("Error fetching downloads: %s" % (str(e)))
+			logging.debug("Error fetching downloads: %s" % (str(e)))
 			return None
 
 	def get_metadata(self, pkg_name, pkg_version=None):
@@ -73,7 +73,7 @@ class NpmjsProxy(PackageManagerProxy):
 				except KeyError:
 					pass
 		except Exception as e:
-			logging.error("fail in get_metadata for pkg %s: %s", pkg_name, str(e))
+			logging.debug("fail in get_metadata for pkg %s: %s", pkg_name, str(e))
 			pkg_info = None
 		finally:
 			return pkg_name, pkg_info

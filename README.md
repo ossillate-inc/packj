@@ -30,7 +30,7 @@ Packj accepts the following input args:
 Packj can audit PyPI, NPM, and RubyGems packages. It performs:
 - static code analysis to check entire package code for use of filesystem, network, and process APIs (e.g., `connect`, `exec`),
 - metadata analysis to check for attributes such as release timestamps, author email, downloads, dependencies, and 
-- optionally, dynamic analysis to check package runtime behavior by installing the package. 
+- optionally, dynamic analysis to check the runtime behavior of the package (and all dependencies) by installing them analysing traces for system calls (e.g., `open()`, `fork()`). 
 
 Packages with expired email domains, large release time gap, sensitive APIs, etc. are flagged as risky for [security reasons](#risky-attributes).
 
@@ -274,6 +274,11 @@ Packj can currently vet NPM, PyPI, and RubyGems packages for "risky" attributes.
 
 This is a very common malicious behavior. Packj detects code obfuscation as well as spawning of shell commands (exec system call). For example, Packj can  flag use of `getattr()` and `eval()` API as they indicate "runtime code generation"; a developer can go and take a deeper look then. See [main.py](https://github.com/ossillate-inc/packj/blob/main/main.py#L486) for details.
 
+- _What techniques does Packj employ to detect risky/malicious packages?_
+Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive detection of malware. Static analysis parses package into  syntactical code components (e.g., functions, statements), which are analyzed for usage of sensitive language APIs (e.g., `JavaScript https.get` followed by `eval` that is typically used to download and execute malicious code). However, as the code is analyzed without execution during static analysis, Packj also performs dynamic analysis to capture runtime behavior of the package (and all dependencies). Finally, metadata analysis is carried out to check for several "risky" attributes (e.g., expired author email that implies lack of 2FA, lack of public source code repo or missing published version). Full list of the attributes we track can be viewed at [threats.csv](https://github.com/ossillate-inc/packj/blob/main/threats.csv)
+
 - _Does this work at the system call level, where it would detect e.g. any attempt to open ~/.aws/credentials, or does it rely on heuristic analysis of the code itself, which will always be able to be "coded around" by the malware authors?_
 
-Packj currently uses static code analysis to derive permissions (e.g., file/network accesses). Therefore, it can detect open() calls if used by the malware directly (e.g., not obfuscated in a base64 encoded string). But, Packj can also point out such base64 decode calls. Fortunately, malware has to use these APIs (read, open, decode, eval, etc.) for their functionality -- there's no getting around. Having said that, a sophisticated malware can hide itself better, so dynamic analysis must be performed for completeness. We are incorporating strace-based dynamic analysis (containerized) to collect system calls. See [roadmap](#feature-roadmap) for details.
+Packj currently uses static analysis to analyze entire package code (programmatic behavior) and derive permissions needed (e.g., if the package accesses files or needs network access to communicate with a server). Therefore, it can detect `open()` or `connect()` calls if used by the malware directly (e.g., not obfuscated in a `base64` encoded string). But, Packj can also point out `base64` decode calls that are commonly leveraged to obfuscate malicious code. Fortunately, malware **has to** use these APIs (open, connect, decode, eval, etc.) for their functionality -- there's no getting around.
+
+Having said that, a sophisticated malware can hide itself better to defeat our static analysis. Therefore, for comprehensive detection, Packj also performs dynamic analysis by installing the package under `strace` and monitoring it's runtime behavior. Collected traces are then analyzed for sensitive system calls (e.g., read files, spawn processes, network connections). Again, malware **has to** use these system calls in order to access system resources such as files/network stack.

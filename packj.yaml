@@ -2,144 +2,133 @@
 # Audit policies
 #
 audit:
-	#
-	# alert categories
-	#
-	alerts:
-		#
-		# alert category: malicious packages (publicly known and unknown)
-		#
-		malicious:
-			backdoor:
-				- reason: package installs a backdoor:
-				- enabled: true
-			typo-squatting or repo-jacking package:
-				- reason: package impersonates another popular package to propagate malware
-				- enabled: true
-			cryptominer:
-				- reason: package is a cryptominer
-				- enabled: true
-		#
-		# alert category: suspicious packages (potentially malicious)
-		#
-		suspicious:
-			inconsistent with repo source:
-				- reason: package code inconsistent with the public repo source code
-				- enabled: true
-			overwrites system binaries:
-				- reason: package code inconsistent with the public repo source code
-				- enabled: true
+  alerts:
+    #
+    # category: malicious packages (publicly known and unknown)
+    #
+    malicious:
+      backdoor:
+        - reason: package installs a backdoor
+        - enabled: true
+      typo-squatting or repo-jacking package:
+        - reason: package impersonates another popular package to propagate malware
+        - enabled: true
+      cryptominer:
+        - reason: package is a cryptominer
+        - enabled: true
+    #
+    # alert category: suspicious packages (potentially malicious)
+    #
+    suspicious:
+      inconsistent with repo source:
+        - reason: package code inconsistent with the public repo source code
+        - enabled: true
+      overwrites system binaries:
+        - reason: package code inconsistent with the public repo source code
+        - enabled: true
 
-		#
-		# alert category: packages vulnerable to code exploits
-		#
-		vulnerable:
-			contains known vulnerabilities:
-				- reason: known vulnerabilities (CVEs) in package code could be exploited
-				- enabled: true
-				#- threshold: 7
-			insecure network communication:
-				- reason: package code uses insecure network communication (not https)
-				- enabled: true
+    #
+    # alert category: packages vulnerable to code exploits
+    #
+    vulnerable:
+      contains known vulnerabilities:
+        - reason: known vulnerabilities (CVEs) in package code could be exploited
+        - enabled: true
+          #- threshold: 7
+      insecure network communication:
+        - reason: package code uses insecure network communication (not https)
+        - enabled: true
 
-		#
-		# packages with undesirable or "risky" attributes
-		#
-		undesirable:
-			package is old or abandoned:
-				- reason: old or abandoned packages receive no security updates and are risky
+    #
+    # packages with undesirable or "risky" attributes
+    #
+    undesirable:
+      package is old or abandoned:
+        - reason: old or abandoned packages receive no security updates and are risky
 
-			invalid or no author email:
-				- reason: a package with lack of or invalid author email suggests 2FA not enabled
-				- enabled: true
+      invalid or no author email:
+        - reason: a package with lack of or invalid author email suggests 2FA not enabled
+        - enabled: true
 
-			invalid or no homepage:
-				- reason: a package with no or invalid homepage may not be preferable
-				- enabled: false
+      invalid or no homepage:
+        - reason: a package with no or invalid homepage may not be preferable
+        - enabled: false
 
-			no source repo:
-				- reason: lack of public source repo may suggest malicious intention
-				- enabled: true
+      no source repo:
+        - reason: lack of public source repo may suggest malicious intention
+        - enabled: true
 
-			fewer downloads:
-				- reason: a package with few downloads may not be preferable
-				- threshold: 1000
-				- enabled: true
+      fewer downloads:
+        - reason: a package with few downloads may not be preferable
+        - threshold: 1000
+        - enabled: true
 
-			no or insufficient readme:
-				- reason: a package with lack of documentation may not be preferable
-				- enabled: false
+      no or insufficient readme:
+        - reason: a package with lack of documentation may not be preferable
+        - enabled: true
 
-			fewer versions or releases:
-				- reason: few versions suggest unstable or inactive project
-				- threshold: 5
-				- enabled: false
+      fewer versions or releases:
+        - reason: few versions suggest unstable or inactive project
+        - threshold: 5
+        - enabled: true
 
-			too many dependencies:
-				- reason: too many dependencies increase attack surface
-				- threshold: 50
-				- enabled: false
+      too many dependencies:
+        - reason: too many dependencies increase attack surface
+        - threshold: 50
+        - enabled: true
 
-			version release after a long gap:
-				- reason: a release after a long time may indicate account hijacking
-				- threshold: 180
-				- enabled: true
+      version release after a long gap:
+        - reason: a release after a long time may indicate account hijacking
+        - threshold: 180
+        - enabled: true
 
-			contains custom installation hooks:
-				- reason: custom installation hooks may download or execute malicious code
-				- enabled: true
+      contains custom installation hooks:
+        - reason: custom installation hooks may download or execute malicious code
+        - enabled: true
 
-			#
-			# type: repo stats
-			#
-			few source repo stars:
-				- reason: a package with few repo stars may not be preferable
-				- threshold: 50
-				- enabled: false
+      #
+      # type: repo stats
+      #
+      few source repo stars:
+        - reason: a package with few repo stars may not be preferable
+        - threshold: 50
+        - enabled: false
 
-			few source repo forks:
-				- reason: a package with few repo forks may not be preferable
-				- threshold: 5
-				- enabled: false
+      few source repo forks:
+        - reason: a package with few repo forks may not be preferable
+        - threshold: 5
+        - enabled: false
 
-			forked source repo:
-				- reason: a forked copy of a popular package may contain malicious code
-				- enabled: false
+      forked source repo:
+        - reason: a forked copy of a popular package may contain malicious code
+        - enabled: true
 
-			#
-			# type: APIs and permissions
-			#
-			generates new code:
-				- reason: package generates at runtime, which could be malicious
-				- enabled: true
-				- threshold: new
-			forks or exits OS processes:
-				- enabled: true
-				- threshold: new
-			accesses obfuscated (hidden) code:
-				- enabled: true
-				- threshold: new
-			accesses environment variables:
-				- enabled: true
-				- threshold: new
-			changes system/environment variables:
-				- enabled: true
-				- threshold: new
-			accesses files and dirs:
-				- enabled: true
-				- threshold: new
-			communicates with external network:
-				- enabled: true
-				- threshold: new
-			reads user input:
-				- enabled: true
-				- threshold: new
-
-sandbox:
-    rules:
-		fs-policy:
-          hide: "/tmp /mnt"
-          allow: ". / /bin /usr/bin"
-        egress-policy:
-          allow: "127.0.0.53 151.101.64.223 151.101.1.63 151.101.65.63 151.101.129.63 151.101.193.63 146.75.28.223 google.com"
-          block: "0.0.0.0"
+      #
+      # type: APIs and permissions
+      #
+      generates new code:
+        - reason: package generates new code at runtime, which could be malicious
+        - enabled: true
+        - threshold: new
+      forks or exits OS processes:
+        - reason: package spawns new operating system processes, which could be malicious
+        - enabled: true
+        - threshold: new
+      accesses obfuscated (hidden) code:
+        - enabled: true
+        - threshold: new
+      accesses environment variables:
+        - enabled: true
+        - threshold: new
+      changes system/environment variables:
+        - enabled: true
+        - threshold: new
+      accesses files and dirs:
+        - enabled: true
+        - threshold: new
+      communicates with external network:
+        - enabled: true
+        - threshold: new
+      reads user input:
+        - enabled: true
+        - threshold: new

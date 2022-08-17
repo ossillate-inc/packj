@@ -38,11 +38,23 @@ msg_fail = msg_factory('FAILED [{0}]')
 msg_ok = msg_factory('OK [{0}]')
 msg_alert = msg_factory('ALERT [{0}]')
 
-def build_threat_model(filename='threats.csv'):
-	for line in read_from_csv(filename, skip_header=True):
-		typ = line[0]
-		attr = line[1].strip('\n')
-		THREAT_MODEL[attr] = typ
+def build_threat_model(filename='packj.yaml'):
+	try:
+		with open(filename) as f:
+			config_data = yaml.safe_load(f)
+
+		if 'audit' in config_data and 'alerts' in config_data['audit'] and config_data['audit']['alerts']:
+			for category,category_data in config_data['audit']['alerts'].items():
+				for sub_category, sub_data in category_data.items():
+					for item in sub_data:
+						if item.get('enabled', None) == True:
+							THREAT_MODEL[sub_category] = category
+							break
+	except Exception as e:
+		raise Exception(f'Failed to parse {filename}: {str(e)}')
+
+	if len(THREAT_MODEL) == 0:
+		raise Exception("No threat items in {filename} has been enabled")
 
 def alert_user(alert_type, threat_model, reason, risks):
 	if alert_type in threat_model:
@@ -68,7 +80,7 @@ def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report, release
 
 		if len(release_history) <= 2:
 			reason = f'only {len(release_history)} versions released'
-			alert_type = 'few versions or releases'
+			alert_type = 'fewer versions or releases'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
 		print(msg_ok(f'{len(release_history)} version(s)'))
@@ -136,7 +148,7 @@ def analyze_version(ver_info, risks, report):
 		days_old = f'{days} days old'
 		if not uploaded or days > 365:
 			reason = 'no release date' if not uploaded else days_old
-			alert_type = 'old package'
+			alert_type = 'package is old or abandoned'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print(msg_alert(days_old))
 		else:
@@ -190,7 +202,7 @@ def analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report):
 		assert ret != None, "N/A"
 		if ret < 1000:
 			reason = f'only {ret} weekly downloads'
-			alert_type = 'few downloads'
+			alert_type = 'fewer downloads'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 		print(msg_ok(f'{human_format(ret)} weekly'))
 	except Exception as e:
@@ -432,7 +444,7 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 		reason, must_alert = get_alert_reason()
 		if reason:
 			if must_alert:
-				alert_type = 'invalid or no author email (2FA not enabled)'
+				alert_type = 'invalid or no author email'
 				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 			print(msg_alert(reason))
 		else:
@@ -487,7 +499,7 @@ class Risk(tuple, Enum):
 	CODE = 'generates new code at runtime', 'codegen'
 	PROC = 'forks or exits OS processes', 'process'
 	HIDDEN = 'accesses obfuscated (hidden) code', 'decode'
-	ENV_READ = 'accesses environment variables', 'envvars'
+	ENV_READ = 'accesses system/environment variables', 'envvars'
 	ENV_WRITE = 'changes system/environment variables', 'envvars'
 
 @dataclass
@@ -675,7 +687,7 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, report_dir, extra_args):
 
 	# perform dynamic analysis if requested
 	if install_trace:
-		trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report)
+		risks, report = trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report)
 
 	print('=============================================')
 

@@ -432,7 +432,7 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 			if not email:
 				# Rubygems allow devs to hide their emails
 				if pm_proxy.name == 'rubygems':
-					return 'no email (may be hidden)', False
+					return 'no email (may be hidden)', True
 				else:
 					return 'no email', True
 			if not valid:

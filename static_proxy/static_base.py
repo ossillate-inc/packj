@@ -61,7 +61,8 @@ class StaticAnalyzer(object):
                 import tempfile
                 analyze_path = tempfile.mkdtemp(prefix='gem-')
                 gem_unpack_cmd = ['gem', 'unpack', inpath, '--target', analyze_path]
-                exec_command("gem unpack", gem_unpack_cmd)
+                stdout, stderr, error = exec_command("gem unpack", gem_unpack_cmd, redirect_mask=3)
+                assert not error, "could not unpack gem!"
                 is_decompress_path = True
             elif get_file_with_meta(inpath) is not None:
                 logging.debug("inpath %s is a compressed file, decompress and analyze it!", inpath)

@@ -63,7 +63,8 @@ class RubyAnalyzer(StaticAnalyzer):
 		if pkg_version is not None:
 			astgen_cmd.extend(['-v', pkg_version])
 		try:
-			exec_command("ruby astgen", astgen_cmd, cwd="static_proxy")
+			stdout, stderr, error = exec_command("ruby astgen", astgen_cmd, cwd="static_proxy", redirect_mask=3)
+			assert not error, "could not generate AST"
 		except Exception as e:
 			logging.debug("Failed to exec %s: %s!" % (astgen_cmd, str(e)))
 			return None

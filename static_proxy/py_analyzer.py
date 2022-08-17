@@ -33,7 +33,8 @@ class PyAnalyzer(StaticAnalyzer):
                 astgen_py2_cmd.extend(['-n', pkg_name])
             if pkg_version is not None:
                 astgen_py2_cmd.extend(['-v', pkg_version])
-            exec_command("python2 astgen", astgen_py2_cmd, cwd="static_proxy")
+            stdout, stderr, error = exec_command("python2 astgen", astgen_py2_cmd, cwd="static_proxy", redirect_mask=3)
+            assert not error, "could not generate AST"
         except Exception as e:
             logging.debug("Failed to analyze for APIs using Python2: %s" % (str(e)))
 

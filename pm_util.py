@@ -1,19 +1,25 @@
 from util.enum_util import PackageManagerEnum, LanguageEnum
 
-def get_pm_install_cmd(pm_enum, pkg_name, ver_str):
+def get_pm_install_cmd(pm_enum, pkg_name, ver_str, quiet=True):
 	if pm_enum == PackageManagerEnum.pypi:
-		base_cmd = f'pip3 install --quiet --no-warn-script-location --disable-pip-version-check '
+		base_cmd = 'pip3 install '
+		quiet_args = '--quiet --no-warn-script-location --disable-pip-version-check '
 		ver_cmd = f'=={ver_str}'
 	elif pm_enum == PackageManagerEnum.npmjs:
-		base_cmd = f'npm install --silent --no-progress --no-update-notifier '
+		base_cmd = f'npm install'
+		quiet_args = ' --silent --no-progress --no-update-notifier '
 		ver_cmd = f'@{ver_str}'
 	elif pm_enum == PackageManagerEnum.rubygems:
-		base_cmd = f'gem install --user --silent '
+		base_cmd = 'gem install --user'
+		quiet_args = ' --silent '
 		ver_cmd = f' -v {ver_str}'
 	else:
 		raise Exception(f'Package manager {pm_enum} is not supported')
 
-	cmd = base_cmd + f'{pkg_name}'
+	cmd = base_cmd
+	if quiet:
+		cmd += quiet_args
+	cmd += f'{pkg_name}'
 	if ver_str:
 		cmd += ver_cmd
 	return cmd

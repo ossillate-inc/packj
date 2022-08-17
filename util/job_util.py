@@ -60,30 +60,45 @@ def is_mounted(path):
 def in_docker():
 	return is_mounted('/docker/containers/')
 
-def exec_command(cmd, args, cwd=None, ret_stdout=False, env=None, timeout=None):
+def exec_command(cmd, args, cwd=None, env=None, timeout=600, redirect_mask:int=0):
     """
     Executes shell command
+    redirect_mask: stdin | stdout | stderr
     """
+    stdout = None
+    stderr = None
+    stdin = None
     try:
-        pipe = Popen(args, stdin=PIPE, stdout=PIPE, cwd=cwd, env=env)
-        if timeout:
+        if redirect_mask & 4:
+            stdin = PIPE
+        if redirect_mask & 2:
+            stdout = PIPE
+        if redirect_mask & 1:
+            stderr = PIPE
+
+        pipe = Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr)
+
+        if stdout or stderr:
             try:
-                stdout, error = func_timeout(timeout, pipe.communicate)
+                if stderr:
+                    stdout, stderr = func_timeout(timeout, pipe.communicate)
+                else:
+                    stdout, stderr = func_timeout(timeout, pipe.communicate)
             except FunctionTimedOut as ft:
-                logging.debug("%s timed out after %d seconds!", cmd, timeout)
-                stdout, error = None, None
-        else:
-            stdout, error = pipe.communicate()
-        if ret_stdout:
-            return stdout, error
-        else:
-            logging.debug("stdout: %s", stdout)
-            return pipe.returncode
+                raise Exception(f'{cmd} timed out after {timeout} seconds!')
+
+        err_code = pipe.returncode
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode().strip()
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode().strip()
 
     except Exception as e:
-        logging.debug("%s subprocess failed: %s", cmd, str(e))
-        return -1
+        logging.debug(f'{cmd} subprocess failed {str(e)}')
+        err_code = -1
 
+    finally:
+        return stdout, stderr, err_code
 
 """
 Utilities for file system

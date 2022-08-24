@@ -1,6 +1,10 @@
 from util.dates import curr_timestamp
 import os
 
+def ipv4_to_ipv6(ip_addr):
+	numbers = list(map(int, ip_addr.split('.')))
+	return '2002:{:02x}{:02x}:{:02x}{:02x}::'.format(*numbers)
+
 def __parse_url(url):
 	try:
 		import six
@@ -125,3 +129,35 @@ def make_request_stream(url, stream_size, headers=None, params=None):
 	except Exception as e:
 		raise Exception("Failed to make request: %s" % (str(e)))
 
+def is_valid_ipv4_address(address):
+   import socket
+   try:
+	   socket.inet_pton(socket.AF_INET, address)
+   except AttributeError:  # no inet_pton here, sorry
+	   try:
+		   socket.inet_aton(address)
+	   except socket.error:
+		   return False
+	   return address.count('.') == 3
+   except socket.error:  # not a valid address
+	   return False
+
+   return True
+
+def get_unix_dns_ips():
+   dns_ips = []
+
+   with open('/etc/resolv.conf') as fp:
+	   for cnt, line in enumerate(fp):
+		   columns = line.split()
+		   if columns[0] == 'nameserver':
+			   ip = columns[1:][0]
+			   if is_valid_ipv4_address(ip):
+				   dns_ips.append(ip)
+
+   return dns_ips
+
+def get_dns_ips():
+   import dns.resolver
+   dns_resolver = dns.resolver.Resolver()
+   return dns_resolver.nameservers

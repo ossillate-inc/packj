@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
 		# sandbox install
 		elif args.cmd == 'sandbox':
-			from install import main
+			from sandbox import main
 			main(args)
 
 	except Exception as e:

@@ -10,7 +10,7 @@ RUN useradd -rm -d /home/ubuntu -s /bin/bash -g ubuntu -u 1001 ubuntu
 
 WORKDIR /home/ubuntu/packj
 
-RUN git clone https://github.com/ossillate-inc/packj /home/ubuntu/packj
+RUN git clone --depth=1 https://github.com/ossillate-inc/packj /home/ubuntu/packj
 RUN chown -R ubuntu:ubuntu /home/ubuntu/packj && pip3 install -r requirements.txt
 
 USER ubuntu

@@ -376,8 +376,10 @@ def run_sandbox(rules, install_cmd):
 		if error or not os.path.exists(sandbox_logfile):
 			if stderr:
 				msg = stderr.replace('./strace: ','')
-			else:
+			elif error:
 				msg = f'installation error ({error})'
+			else:
+				msg = f'log file {sandbox_logfile} does not exist'
 			logging.debug(f'out:\n{msg}')
 			raise Exception(msg)
 

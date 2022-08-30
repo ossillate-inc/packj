@@ -149,7 +149,7 @@ sandbox:
     #
     fs:
       block: ~/, /
-      allow: ., ~/.npm, ~/.local, ~/.ruby, /tmp, /etc, /var, /bin, /usr/include, /usr/local, /usr/bin, /usr/lib, /usr/share, /lib
+      allow: ., ~/.cache, ~/.npm, ~/.local, ~/.ruby, /tmp, /etc, /var, /bin, /usr/include, /usr/local, /usr/bin, /usr/lib, /usr/share, /lib
 
     #
     # Network (allow or block domains/ports)

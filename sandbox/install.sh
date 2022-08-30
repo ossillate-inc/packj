@@ -95,7 +95,7 @@ echo "===============================" >> $logfile
 echo -n "[+] Compiling sandbox library..."
 if [ ! -f $currdir/libsbox.so ]; then
 	cd $currdir
-	LIBSTRACE_PATH=$tmpdir/src make >> $logfile 2>&1
+	LIBSTRACE_PATH=. make >> $logfile 2>&1
 	if [ $? -ne 0 ]; then
 		rm -rf $tmpdir
 		echo "Failed"

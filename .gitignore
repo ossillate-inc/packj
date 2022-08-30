@@ -5,6 +5,7 @@
 
 # Shared objects
 *.so
+*.o
 
 # Node artifact files
 node_modules/

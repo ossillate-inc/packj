@@ -92,16 +92,9 @@ fi
 
 echo "===============================" >> $logfile
 
-echo -n "[+] Compiling sandbox library..."
+echo -n "[+] Checking for sandbox library..."
 if [ ! -f $currdir/libsbox.so ]; then
-	cd $currdir
-	LIBSTRACE_PATH=. make >> $logfile 2>&1
-	if [ $? -ne 0 ]; then
-		rm -rf $tmpdir
-		echo "Failed"
-	else
-		echo "Done"
-	fi
+	echo "FAILED [not available]"
 else
 	echo "OK [available]"
 fi

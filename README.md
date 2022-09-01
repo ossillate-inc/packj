@@ -74,7 +74,7 @@ $ python3 main.py audit npm browserify
 
 ## Sandboxed package installation ##
 
-Packj offers a lightweight sandboxing and isolated environment for `safe installation` of a package. Specifically, it prevents malicious packages from exfilterating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware.
+Packj offers a lightweight sandboxing for `safe installation` of a package. Specifically, it prevents malicious packages from exfiltrating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware.
 
 Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://github.com/ossillate-inc/packj/blob/main/sandbox/README.md).
 

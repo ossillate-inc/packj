@@ -2,7 +2,7 @@
 
 Cybersecurity researchers [found](https://arxiv.org/pdf/2112.10165.pdf) that 93.9% of malicious packages use at least one install script. Packj offers a lightweight sandboxing and isolated environment for `safe installation` of a package. 
 
-The sandbox prevents malicious packages from exfilterating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware.
+The sandbox prevents malicious packages from exfiltrating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware.
 
 ## Contents ##
 

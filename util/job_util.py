@@ -58,6 +58,9 @@ def is_mounted(path):
 			line = file.readline().strip()
 	return None
 
+def in_podman():
+	return os.path.exists('/run/.containerenv')
+
 def in_docker():
 	return is_mounted('/docker/containers/')
 

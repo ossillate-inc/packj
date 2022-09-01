@@ -18,7 +18,7 @@ from util.files import write_json_to_file, read_from_csv
 from util.enum_util import PackageManagerEnum, LanguageEnum
 from util.formatting import human_format
 from util.repo import git_clone, replace_last
-from util.job_util import exec_command, in_docker, is_mounted
+from util.job_util import exec_command, in_docker, in_podman, is_mounted
 
 from audit.parse_apis import parse_api_usage
 from audit.parse_composition import parse_package_composition
@@ -733,7 +733,7 @@ def parse_request_args(args):
 	container_mountpoint = None
 
 	# XXX expects host volume to be mounted inside container
-	if in_docker():
+	if in_docker() or in_podman():
 		container_mountpoint = '/tmp/packj'
 		host_volume = is_mounted(container_mountpoint)
 		if not host_volume or not os.path.exists(container_mountpoint):
@@ -769,8 +769,8 @@ def parse_request_args(args):
 
 	# check if installation trace has been requested
 	if args.trace:
-		if not in_docker():
-			print(f'*** You\'ve requested package installation trace *** We recommend running in Docker. Continue (N/y): ', end='')
+		if not (in_docker() or in_podman()):
+			print(f'*** You\'ve requested package installation trace *** We recommend running in Docker/Podman. Continue (N/y): ', end='')
 			stop = input()
 			if stop != 'y':
 				exit(0)

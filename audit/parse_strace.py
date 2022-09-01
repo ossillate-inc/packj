@@ -9,13 +9,13 @@ import os
 import sys
 import tempfile
 
-from strace_parser.strace import *
-from strace_parser.strace_utils import *
+from audit.strace_parser.strace import *
+from audit.strace_parser.strace_utils import *
 
 #
 # strace usage: strace -f -ttt -T -o strace.log <cmd>
 #
-from strace_parser.syscalls import syscall_table
+from audit.strace_parser.syscalls import syscall_table
 
 def parse_network_activity(summary:dict):
 	port2service = {

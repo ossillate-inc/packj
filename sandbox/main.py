@@ -328,8 +328,7 @@ def run_sandbox(rules, install_cmd):
 		logging.debug(f'Sandboxing installation {install_cmd}')
 
 		# paths to libs/binaries
-		this_file_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-		cwd = os.path.join(this_file_dir, 'sandbox')
+		cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 		install_bin = os.path.join(cwd, 'install.sh')
 
 		# validate paths

@@ -5,6 +5,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from enum import Enum
 import os
+import inspect
 import logging
 import yaml
 import tempfile
@@ -19,13 +20,13 @@ from util.formatting import human_format
 from util.repo import git_clone, replace_last
 from util.job_util import exec_command, in_docker, is_mounted
 
-from parse_apis import parse_api_usage
-from parse_composition import parse_package_composition
-from pm_util import get_pm_enum, get_pm_install_cmd, get_pm_proxy
-from static_util import get_static_proxy_for_language
-from static_proxy.static_base import Language2Extensions
-from parse_repo import fetch_repo_data
-from parse_strace import parse_trace_file
+from audit.parse_apis import parse_api_usage
+from audit.parse_composition import parse_package_composition
+from audit.pm_util import get_pm_enum, get_pm_install_cmd, get_pm_proxy
+from audit.static_util import get_static_proxy_for_language
+from audit.static_proxy.static_base import Language2Extensions
+from audit.parse_repo import fetch_repo_data
+from audit.parse_strace import parse_trace_file
 
 THREAT_MODEL = {}
 
@@ -162,7 +163,7 @@ def analyze_version(ver_info, risks, report):
 def analyze_cves(pm_name, pkg_name, ver_str, risks, report):
 	try:
 		print('[+] Checking for CVEs...', end='', flush=True)
-		from osv import get_pkgver_vulns
+		from audit.osv import get_pkgver_vulns
 		vuln_list = get_pkgver_vulns(pm_name, pkg_name, ver_str)
 		if vuln_list:
 			alert_type = 'contains known vulnerabilities (CVEs)'
@@ -525,17 +526,19 @@ ALERTS = {
 def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 	try:
 		print('[+] Analyzing code...', end='', flush=True)
+		cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+		config_dir= os.path.join(cwd, 'config')
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
-			configpath = os.path.join('config','astgen_python_smt.config')
+			configpath = os.path.join(config_dir,'astgen_python_smt.config')
 			system = 'python2'
 		elif pm_name == 'npm':
 			language=LanguageEnum.javascript
-			configpath = os.path.join('config','astgen_javascript_smt.config')
+			configpath = os.path.join(config_dir,'astgen_javascript_smt.config')
 			system = 'python'
 		elif pm_name == 'rubygems':
 			language=LanguageEnum.ruby
-			configpath = os.path.join('config','astgen_ruby_smt.config')
+			configpath = os.path.join(config_dir,'astgen_ruby_smt.config')
 			system = 'ruby'
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')

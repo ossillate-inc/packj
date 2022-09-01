@@ -6,12 +6,12 @@ import re
 
 from os.path import join, exists, abspath, isdir, isfile, dirname, basename, relpath
 
-import proto.python.ast_pb2 as ast_pb2
-from pm_util import get_pm_proxy_for_language, get_pm_proxy
+import audit.proto.python.ast_pb2 as ast_pb2
+from audit.pm_util import get_pm_proxy_for_language, get_pm_proxy
 from util.enum_util import LanguageEnum
 from util.compress_files import decompress_file, get_file_with_meta
 from util.job_util import read_proto_from_file, write_proto_to_file, exec_command
-from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig, FileInfo, AstNode
+from audit.proto.python.ast_pb2 import PkgAstResults, AstLookupConfig, FileInfo, AstNode
 
 Language2Extensions = {
     LanguageEnum.python: ('.py',),

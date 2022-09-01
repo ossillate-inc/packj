@@ -9,7 +9,7 @@ import dateutil.parser
 from os.path import join, exists
 
 from util.json_wrapper import json_loads
-from pm_proxy.pm_base import PackageManagerProxy
+from audit.pm_proxy.pm_base import PackageManagerProxy
 
 class PypiProxy(PackageManagerProxy):
 	# Build python extensions

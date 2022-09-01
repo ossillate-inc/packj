@@ -7,7 +7,7 @@ from os.path import basename
 
 import asttokens
 
-import proto.python.ast_pb2 as ast_pb2
+import audit.proto.python.ast_pb2 as ast_pb2
 from util.job_util import read_proto_from_file, write_proto_to_file
 from util.job_util import write_dict_to_file
 
@@ -172,8 +172,8 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 
 def py_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=None):
 
-	from static_proxy.static_base import StaticAnalyzer
-	from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
+	from audit.static_proxy.static_base import StaticAnalyzer
+	from audit.proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
 	from util.enum_util import LanguageEnum
 
 	composition = {
@@ -263,7 +263,7 @@ def parse_args(argv):
 
 
 if __name__ == "__main__":
-	from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
+	from audit.proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
 
 	# Parse options
 	args = parse_args(sys.argv[1:])

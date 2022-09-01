@@ -4,6 +4,5 @@
 **/__pycache__
 **/.DS_Store
 **/.*.swp
-**/sandbox/*.o
 **/sandbox/strace
-**/sandbox/libstrace.so
+**/sandbox/*.so

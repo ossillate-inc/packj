@@ -6,11 +6,13 @@ import re
 import yaml
 import site
 import html
+import inspect
 
 from dns import resolver, reversename
 
 rules = None
-with open('strace_parser/rules.yaml') as f:
+cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+with open(os.path.join(cwd, 'rules.yaml')) as f:
     rules = yaml.safe_load(f)
 
 ignore_read = { path for path in rules['ignore_read'] }

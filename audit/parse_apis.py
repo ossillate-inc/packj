@@ -1,14 +1,22 @@
+import os
+import inspect
+
 from util.files import read_from_csv, read_json_from_file
  
 def parse_api_usage(pm_name, filepath):
+	cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+	config_dir= os.path.join(cwd, 'config')
 	if pm_name == 'pypi':
-		apis2perms_filepath = 'config/python_api/apis2perms.csv'
+		api_dir = os.path.join(config_dir, 'python_api')
 	elif pm_name == 'npm':
-		apis2perms_filepath = 'config/javascript_api/apis2perms.csv'
+		api_dir = os.path.join(config_dir, 'javascript_api')
 	elif pm_name == 'rubygems':
-		apis2perms_filepath = 'config/rubygems_api/apis2perms.csv'
+		api_dir = os.path.join(config_dir, 'rubygems_api')
 	else:
 		raise Exception('API parser for %s not supported!' % (pm_name))
+
+	apis2perms_filepath = os.path.join(api_dir, 'apis2perms.csv')
+	assert os.path.exists(apis2perms_filepath), f'{apis2perms_filepath} does not exist'
 
 	apis2perms = {}
 	for line in read_from_csv(apis2perms_filepath):

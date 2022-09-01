@@ -1,9 +1,9 @@
 import logging
 from os.path import exists, join, basename
 from util.enum_util import LanguageEnum
-from static_proxy.py_analyzer import PyAnalyzer
-from static_proxy.js_analyzer import JsAnalyzer
-from static_proxy.ruby_analyzer import RubyAnalyzer
+from audit.static_proxy.py_analyzer import PyAnalyzer
+from audit.static_proxy.js_analyzer import JsAnalyzer
+from audit.static_proxy.ruby_analyzer import RubyAnalyzer
 
 def get_static_proxy_for_language(language):
 	if language == LanguageEnum.python:

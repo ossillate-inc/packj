@@ -1,51 +1,44 @@
 # <img src="https://raw.githubusercontent.com/feathericons/feather/master/icons/package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj flags malicious/risky open-source packages</span> 
 
-*Packj* (pronounced package) is a command line (CLI) tool to vet open-source software packages for "risky" attributes that make them vulnerable to supply chain attacks. This is the tool behind our large-scale security analysis platform [Packj.dev](https://packj.dev) that continuously vets packages and provides free reports.
+*Packj* (pronounced package) is a command line (CLI) tool to mitigate software supply chain attacks. Specifically, it flags malicious and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. This is the tool behind our large-scale security analysis platform [Packj.dev](https://packj.dev) that continuously vets packages and provides free risk assessment reports.
 
 [![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/8hx3yEtF) ![](https://img.shields.io/badge/status-alpha-yellow) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
 
 
 # Contents #
 
-* [How to use ](#how-to-use)
-* [How it works](#how-it-works)
-* [Risky attributes](#risky-attributes)
-* [How to customize](#how-to-customize)
-* [Talks and videos](#resources)
+* [Get started ](#get-started)
 * [Malware found](#malware-found)
+* [Talks and videos](#resources)
 * [Project roadmap](#feature-roadmap)
 * [Team and collaboration](#team)
 * [FAQ](#faq)
 
-# How to use #
+# Get started #
 
-Packj accepts the following input args:
-* subcommand name, `audit` or `sandbox`
-* name of the registry or package manager (e.g., pypi, npm, or rubygems)
-* name of the package (e.g., requests, browserify, overcommit)
-* optionally, package version string (e.g., 17.0.0). By default, the latest is picked.
+Packj offers the following tools: 
+
+* [Audit](#auditing-a-package) - to vet a package for "risky" attributes.
+* [Sandbox](#sandboxed-package-installation) - for safe installation of a package.
+
+```
+$ python3 main.py --help
+usage: main [options] args
+
+options:
+    audit          Audit a package for malware/risky attributes
+    sandbox        Sandbox package installation to mitigate risks
+```
 
 ## Auditing a package ##
 
-Packj can audit PyPI, NPM, and RubyGems packages. It performs:
-- static code analysis to check entire package code for use of filesystem, network, and process APIs (e.g., `connect`, `exec`),
-- metadata analysis to check for attributes such as release timestamps, author email, downloads, dependencies, and 
-- optionally, dynamic analysis to check the runtime behavior of the package (and all dependencies) by installing them analysing traces for system calls (e.g., `open()`, `fork()`). 
+Packj audits open-source software packages for "risky" attributes that make them vulnerable to supply chain attacks. For instance, packages with expired email domains (lacking 2FA), large release time gap, sensitive APIs or access permissions, etc. are flagged as risky. 
 
-Packages with expired email domains, large release time gap, sensitive APIs, etc. are flagged as risky for [security reasons](#risky-attributes).
-
-Packj also analyzes public repo code as well as metadata (e.g., stars, forks). By comparing the repo description and package title, you can be sure if the package indeed has been created from the repo to mitigate any `starjacking` attacks.
-
-**NOTE** Dynamic tracing requires `--trace` option. We recommend to only use it for containerized runs (see usage below) as it installs a package, which could be malicious.
-
-## Containerized
-
-The best way to use Packj is to run it inside Docker (or Podman) container. **Remember** to always pull our latest image from DockerHub to get started: `docker pull ossillate/packj:latest`
-
-**NOTE** that `-v /tmp:/tmp/packj` is needed for containerized runs under Docker so that final report is available under `/tmp` on the host. 
+Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/audit/README.md).
 
 ```
-$ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit --trace npm browserify
+$ python3 main.py audit npm browserify
+
 [+] Fetching 'browserify' from npm...OK [ver 17.0.0]
 [+] Checking version...ALERT [598 days old]
 [+] Checking release history...OK [484 version(s)]
@@ -66,6 +59,7 @@ $ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit --trace npm browser
 [+] Installing package and tracing code...OK [found ['process', 'files', 'network'] syscalls]
 =============================================
 [+] 5 risk(s) found, package is undesirable!
+
 => Complete report: /tmp/packj_54rbjhgm/report_npm-browserify-17.0.0_hlr1rhcz.json
 {
     "undesirable": [
@@ -78,121 +72,63 @@ $ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit --trace npm browser
 }
 ```
 
-Specific package versions to be vetted could also be specified. Please refer to the example below
+## Sandboxed package installation ##
+
+Packj offers a lightweight sandboxing and isolated environment for `safe installation` of a package. Specifically, it prevents malicious packages from exfilterating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware.
+
+Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://github.com/ossillate-inc/packj/sandbox/README.md).
 
 ```
-$ docker run -v /tmp:/tmp/packj ossillate/packj:latest audit pypi requests 2.18.4
-[+] Fetching 'requests' from pypi...OK [ver 2.18.4]
-[+] Checking version...ALERT [1750 days old]
-[+] Checking release history...OK [142 version(s)]
-[+] Checking release time gap...OK [14 days since last release]
-[+] Checking author...OK [me@kennethreitz.org]
-	[+] Checking email/domain validity...OK [me@kennethreitz.org]
-[+] Checking readme...OK [49006 bytes]
-[+] Checking homepage...OK [http://python-requests.org]
-[+] Checking downloads...OK [50M weekly]
-[+] Checking repo_url URL...OK [https://github.com/psf/requests]
-	[+] Checking repo data...OK [stars: 47547, forks: 8758]
-	[+] Checking repo activity...OK [commits: 6112, contributors: 725, tags: 144]
-[+] Checking for CVEs...ALERT [2 found]
-[+] Checking dependencies...OK [9 direct]
-[+] Downloading package 'requests' (ver 2.18.4) from pypi...OK [123.27 KB]
-[+] Analyzing code...ALERT [needs 4 perms: codegen,process,file,network]
-[+] Checking files/funcs...OK [47 files (33 .py), 578 funcs, LoC: 13.9K]
-=============================================
-[+] 6 risk(s) found, package is undesirable, vulnerable!
-{
-    "undesirable": [
-        "old package: 1744 days old",
-        "invalid or no homepage: insecure webpage",
-        "generates new code at runtime",
-        "fetches data over the network", 
-        "reads files and dirs",
-    ], 
-    "vulnerable": [
-        "contains CVE-2018-18074,CVE-2018-18074"
-    ]
-}
-=> Complete report: /tmp/pypi-requests-2.18.4.json
-=> View pre-vetted package report at https://packj.dev/package/PyPi/requests/2.18.4
-````
+$ python3 main.py sandbox gem install overcommit
 
-## Non-containerized
+Fetching: overcommit-0.59.1.gem (100%)
+Install hooks by running `overcommit --install` in your Git repository
+Successfully installed overcommit-0.59.1
+Parsing documentation for overcommit-0.59.1
+Installing ri documentation for overcommit-0.59.1
 
-Alternatively, you can install Python/Ruby dependencies locally and test it.
+#############################
+# Review summarized activity
+#############################
 
-**NOTE** 
-* Packj has only been tested on Linux.
-* Requires Strace, Python3, Ruby. API analysis will fail if used with Python2.
-* You will have to install Python and Ruby dependencies before using the tool:
-	- `pip install -r requirements.txt`
-	- `gem install google-protobuf:3.21.2 rubocop:1.31.1`
+[+] Network connections
+	[+] DNS (1 IPv4 addresses) at port 53 [rule: ALLOW]
+	[+] rubygems.org (4 IPv6 addresses) at port 443 [rule: IPv6 rules not supported]
+	[+] rubygems.org (4 IPv4 addresses) at port 443 [rule: ALLOW]
+[+] Filesystem changes
+/
+└── home
+    └── ubuntu
+        └── .ruby
+            ├── gems
+            │   ├── iniparse-1.5.0 [new: DIR, 15 files, 46.6K bytes]
+            │   ├── rexml-3.2.5 [new: DIR, 77 files, 455.6K bytes]
+            │   ├── overcommit-0.59.1 [new: DIR, 252 files, 432.7K bytes]
+            │   └── childprocess-4.1.0 [new: DIR, 57 files, 141.2K bytes]
+            ├── cache
+            │   ├── iniparse-1.5.0.gem [new: FILE, 16.4K bytes]
+            │   ├── rexml-3.2.5.gem [new: FILE, 93.2K bytes]
+            │   ├── childprocess-4.1.0.gem [new: FILE, 34.3K bytes]
+            │   └── overcommit-0.59.1.gem [new: FILE, 84K bytes]
+            ├── specifications
+            │   ├── rexml-3.2.5.gemspec [new: FILE, 2.7K bytes]
+            │   ├── overcommit-0.59.1.gemspec [new: FILE, 1.7K bytes]
+            │   ├── childprocess-4.1.0.gemspec [new: FILE, 1.8K bytes]
+            │   └── iniparse-1.5.0.gemspec [new: FILE, 1.3K bytes]
+            ├── bin
+            │   └── overcommit [new: FILE, 622 bytes]
+            └── doc
+                ├── iniparse-1.5.0
+                │   └── ri [new: DIR, 119 files, 131.7K bytes]
+                ├── rexml-3.2.5
+                │   └── ri [new: DIR, 836 files, 841K bytes]
+                ├── overcommit-0.59.1
+                │   └── ri [new: DIR, 1046 files, 1.5M bytes]
+                └── childprocess-4.1.0
+                    └── ri [new: DIR, 272 files, 297.8K bytes]
 
+[C]ommit all changes, [Q|q]uit & discard changes, [L|l]ist details:
 ```
-$ python3 main.py audit npm eslint
-[+] Fetching 'eslint' from npm...OK [ver 8.16.0]
-[+] Checking version...OK [10 days old]
-[+] Checking release history...OK [305 version(s)]
-[+] Checking release time gap...OK [15 days since last release]
-[+] Checking author...OK [nicholas+npm@nczconsulting.com]
-	[+] Checking email/domain validity...OK [nicholas+npm@nczconsulting.com]
-[+] Checking readme...OK [18234 bytes]
-[+] Checking homepage...OK [https://eslint.org]
-[+] Checking downloads...OK [23.8M weekly]
-[+] Checking repo_url URL...OK [https://github.com/eslint/eslint]
-	[+] Checking repo data...OK [stars: 20669, forks: 3689]
-	[+] Checking repo activity...OK [commits: 8447, contributors: 1013, tags: 302]
-[+] Checking for CVEs...OK [none found]
-[+] Checking dependencies...ALERT [35 found]
-[+] Downloading package 'eslint' (ver 8.16.0) from npm...OK [490.14 KB]
-[+] Analyzing code...ALERT [needs 2 perms: codegen,file]
-[+] Checking files/funcs...OK [395 files (390 .js), 1022 funcs, LoC: 76.3K]
-=============================================
-[+] 2 risk(s) found, package is undesirable!
-{
-    "undesirable": [
-        "generates new code at runtime", 
-        "reads files and dirs: ['package/lib/cli-engine/load-rules.js:37', 'package/lib/cli-engine/file-enumerator.js:142']"
-    ]
-}
-=> Complete report: /tmp/npm-eslint-8.16.0.json
-```
-
-# How it works
-
-- It first downloads the metadata from the registry using their APIs and analyze it for "risky" attributes.
-- To perform API analysis, the package is downloaded from the registry using their APIs into a temp dir. Then, packj performs static code analysis to detect API usage. API analysis is based on [MalOSS](https://github.com/osssanitizer/maloss), a research project from our group at Georgia Tech.
-- Vulnerabilities (CVEs) are checked by pulling info from OSV database at [OSV](https://osv.dev)
-- Python PyPI and NPM package downloads are fetched from [pypistats](https://pypistats.org) and [npmjs](https://api.npmjs.org/downloads)
-- Dynamic analysis is performed by installing the package under `strace` tool, which uses `ptrace` system calls underneath.
-- All risks detected are aggregated and reported 
-
-# Risky attributes #
-
-The design of Packj is guided by our study of 651 malware samples of documented open-source software supply chain attacks. Specifically, we have empirically identified a number of risky code and metadata attributes that make a package vulnerable to supply chain attacks. 
-
-For instance, we flag inactive or unmaintained packages that no longer receive security fixes. Inspired by Android app runtime permissions, Packj uses a permission-based security model to offer control and code transparency to developers. Packages that invoke sensitive operating system functionality such as file accesses and remote network communication are flagged as risky as this functionality could leak sensitive data.
-
-Some of the attributes we vet for, include
-
-| Attribute        |  Type    | Description                                              |  Reason                                                    |
-|       :---:      |   :-:    |     :-:                                                  |   :-:                                                      |
-|  Release date    | Metadata | Version release date to flag old or abandonded packages  | Old or unmaintained packages do not receive security fixes |
-|  OS or lang APIs | Code     | Use of sensitive APIs, such as `exec` and `eval`         | Malware uses APIs from the operating system or language runtime to perform sensitive operations (e.g., read SSH keys) |
-|  Contributors' email | Metadata | Email addresses of the contributors | Incorrect or invalid of email addresses suggest lack of 2FA |
-|  Source repo | Metadata | Presence and validity of public source repo | Absence of a public repo means no easy way to audit or review the source code publicly |
-
-Full list of the attributes we track can be viewed at [packj.yaml](https://github.com/ossillate-inc/packj/blob/main/packj.yaml)
-
-These attributes have been identified as risky by several other researchers [[1](https://arxiv.org/pdf/2112.10165.pdf), [2](https://www.usenix.org/system/files/sec19-zimmermann.pdf), [3](https://www.ndss-symposium.org/wp-content/uploads/ndss2021_1B-1_23055_paper.pdf)] as well. 
-
-# How to customize #
-
-Packj has been developed with a goal to assist developers in identifying and reviewing potential supply chain risks in packages. 
-
-However, since the degree of perceived security risk from an untrusted package depends on the specific security requirements, Packj can be customized according to your threat model. For instance, a package with no 2FA may be perceived to pose greater security risks to some developers, compared to others who may be more willing to use such packages for the functionality offered. Given the volatile nature of the problem, providing customized and granular risk measurement is one of our goals.
-
-Packj can be customized to minimize noise and reduce alert fatigue by simply commenting out unwanted attributes in [packj.yaml](https://github.com/ossillate-inc/packj/blob/main/packj.yaml)
 
 # Malware found #
 
@@ -262,7 +198,7 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://ossillate.com/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators.
 
-We welcome code contributions. Join our [discord community](https://discord.gg/8hx3yEtF) for discussion and feature requests.
+We welcome code contributions with open arms. Please join our [discord community](https://discord.gg/8hx3yEtF) for discussion and feature requests.
 
 # FAQ #
 
@@ -272,15 +208,8 @@ Packj can currently vet NPM, PyPI, and RubyGems packages for "risky" attributes.
 
 - _What techniques does Packj employ to detect risky/malicious packages?_
 
-Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive detection of malware. Static analysis parses package into  syntactical code components (e.g., functions, statements), which are analyzed for usage of sensitive language APIs (e.g., `JavaScript https.get` followed by `eval` that is typically used to download and execute malicious code). However, as the code is analyzed without execution during static analysis, Packj also performs dynamic analysis to capture runtime behavior of the package (and all dependencies). Finally, metadata analysis is carried out to check for several "risky" attributes (e.g., expired author email that implies lack of 2FA, lack of public source code repo or missing published version). Full list of the attributes we track can be viewed at [packj.yaml](https://github.com/ossillate-inc/packj/blob/main/packj.yaml
-)
-
-- _Does this work at the system call level, where it would detect e.g. any attempt to open ~/.aws/credentials, or does it rely on heuristic analysis of the code itself, which will always be able to be "coded around" by the malware authors?_
-
-Packj currently uses static analysis to analyze entire package code (programmatic behavior) and derive permissions needed (e.g., if the package accesses files or needs network access to communicate with a server). Therefore, it can detect `open()` or `connect()` calls if used by the malware directly (e.g., not obfuscated in a `base64` encoded string). But, Packj can also point out `base64` decode calls that are commonly leveraged to obfuscate malicious code. Fortunately, malware **has to** use these APIs (open, connect, decode, eval, etc.) for their functionality -- there's no getting around.
-
-Having said that, a sophisticated malware can hide itself better to defeat our static analysis. Therefore, for comprehensive detection, Packj also performs dynamic analysis by installing the package under `strace` and monitoring it's runtime behavior. Collected traces are then analyzed for sensitive system calls (e.g., read files, spawn processes, network connections). Again, malware **has to** use these system calls in order to access system resources such as files/network stack.
+Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive auditing. Static analysis alone is not sufficient to flag sophisticated malware that can hide itself better using code obfuscation. Dynamic analysis is performed by installing the package under `strace` and monitoring it's runtime behavior. Please read more at [Audit README](https://github.com/ossillate-inc/packj/audit/README.md).
 
 - _Does it work on obfuscated calls? For example, a base 64 encrypted string that gets decrypted and then passed to a shell?_
 
-This is a very common malicious behavior. Packj detects code obfuscation as well as spawning of shell commands (exec system call). For example, Packj can  flag use of `getattr()` and `eval()` API as they indicate "runtime code generation"; a developer can go and take a deeper look then. See [main.py](https://github.com/ossillate-inc/packj/blob/main/main.py#L488) for details.
+This is a very common malicious behavior. Packj detects code obfuscation as well as spawning of shell commands (exec system call). For example, Packj can  flag use of `getattr()` and `eval()` API as they indicate "runtime code generation"; a developer can go and take a deeper look then. See [main.py](https://github.com/ossillate-inc/packj/blob/audit/main.py#L488) for details.

@@ -1,4 +1,5 @@
 import os
+import inspect
 import logging
 from os.path import join
 
@@ -7,8 +8,8 @@ from util.enum_util import LanguageEnum
 
 from .static_base import StaticAnalyzer
 
-from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
-from proto.python.module_pb2 import ModuleStatic
+from audit.proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
+from audit.proto.python.module_pb2 import ModuleStatic
 from util.job_util import write_dict_to_file
 
 logging.getLogger().setLevel(logging.ERROR)
@@ -53,9 +54,14 @@ class RubyAnalyzer(StaticAnalyzer):
 			if infile not in infiles:
 				continue
 
+		cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+		astgen_bin = os.path.join(cwd, 'astgen.rb')
+		assert os.path.exists(astgen_bin), f'{astgen_bin} does not exist'
+
 		# create binary config from text format
 		self._pb_text_to_bin(proto=configpb, infile=configpath, outfile=configpath_bin)
-		astgen_cmd = ['ruby', '-W0', 'astgen.rb', '-c', configpath_bin, '-i', analyze_path, '-o', outfile]
+		astgen_cmd = ['ruby', '-W0', astgen_bin, '-c', configpath_bin, '-i', analyze_path, '-o', outfile]
+
 		if root is not None:
 			astgen_cmd.extend(['-b', root])
 		if pkg_name is not None:
@@ -63,7 +69,7 @@ class RubyAnalyzer(StaticAnalyzer):
 		if pkg_version is not None:
 			astgen_cmd.extend(['-v', pkg_version])
 		try:
-			stdout, stderr, error = exec_command("ruby astgen", astgen_cmd, cwd="static_proxy", redirect_mask=3)
+			stdout, stderr, error = exec_command('ruby astgen', astgen_cmd, redirect_mask=3)
 			assert not error, "could not generate AST"
 		except Exception as e:
 			logging.debug("Failed to exec %s: %s!" % (astgen_cmd, str(e)))

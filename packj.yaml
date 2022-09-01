@@ -144,20 +144,23 @@ sandbox:
     #   ~/ represents home dir
     #   . represents cwd dir
     #
-    # TODO: customize as per your threat model
     # NOTE: only ONE 'allow' and 'block' lines are allowed
     #
     fs:
+      # TODO: customize as per your threat model
+
+      # block access to home dir and all other locations (except the ones below)
       block: ~/, /
       allow: ., ~/.cache, ~/.npm, ~/.local, ~/.ruby, /tmp, /etc, /var, /bin, /usr/include, /usr/local, /usr/bin, /usr/lib, /usr/share, /lib
 
     #
     # Network (allow or block domains/ports)
     #
-    # TODO: customize as per your threat model
     # NOTE: only ONE 'allow' and 'block' lines are allowed
     #
     network:
+
+      # TODO: customize as per your threat model
 
       # block all external network communication (except the ones below)
       block: 0.0.0.0

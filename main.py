@@ -20,12 +20,12 @@ if __name__ == '__main__':
 
 		# audit request
 		if args.cmd == 'audit':
-			from audit import main
+			from audit.main import main
 			main(args)
 
 		# sandbox install
 		elif args.cmd == 'sandbox':
-			from sandbox import main
+			from sandbox.main import main
 			main(args)
 
 	except Exception as e:

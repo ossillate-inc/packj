@@ -13,8 +13,7 @@ import requests
 
 from util.job_util import exec_command
 from util.json_wrapper import json_loads
-from pm_proxy.pm_base import PackageManagerProxy
-
+from audit.pm_proxy.pm_base import PackageManagerProxy
 
 class NpmjsProxy(PackageManagerProxy):
 	# npm-scripts: How npm handles the "scripts" field

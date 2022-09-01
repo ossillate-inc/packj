@@ -9,15 +9,15 @@ from os.path import basename
 
 import asttokens
 
-import proto.python.ast_pb2 as ast_pb2
+import audit.proto.python.ast_pb2 as ast_pb2
 from util.job_util import read_proto_from_file, write_proto_to_file, exec_command
 from util.job_util import write_dict_to_file
 from util.enum_util import LanguageEnum
 from .static_base import StaticAnalyzer
-from proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
+from audit.proto.python.ast_pb2 import PkgAstResults, AstLookupConfig
 
-from static_proxy.astgen_py3 import py3_astgen
-from static_proxy.astgen_py import py_astgen
+from audit.static_proxy.astgen_py3 import py3_astgen
+from audit.static_proxy.astgen_py import py_astgen
 
 class PyAnalyzer(StaticAnalyzer):
     def __init__(self):

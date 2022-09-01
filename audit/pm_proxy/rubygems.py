@@ -9,7 +9,7 @@ import dateutil.parser
 from os.path import exists, join
 
 from util.job_util import exec_command
-from pm_proxy.pm_base import PackageManagerProxy
+from audit.pm_proxy.pm_base import PackageManagerProxy
 
 class RubygemsProxy(PackageManagerProxy):
 	# Provide a standard and simplified way to build and package Ruby C and Java extensions using Rake as glue.

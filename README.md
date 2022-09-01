@@ -34,7 +34,7 @@ options:
 
 Packj audits open-source software packages for "risky" attributes that make them vulnerable to supply chain attacks. For instance, packages with expired email domains (lacking 2FA), large release time gap, sensitive APIs or access permissions, etc. are flagged as risky. 
 
-Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/audit/README.md).
+Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/blob/main/audit/README.md).
 
 ```
 $ python3 main.py audit npm browserify
@@ -76,7 +76,7 @@ $ python3 main.py audit npm browserify
 
 Packj offers a lightweight sandboxing and isolated environment for `safe installation` of a package. Specifically, it prevents malicious packages from exfilterating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware.
 
-Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://github.com/ossillate-inc/packj/sandbox/README.md).
+Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://github.com/ossillate-inc/packj/blob/main/sandbox/README.md).
 
 ```
 $ python3 main.py sandbox gem install overcommit
@@ -208,7 +208,7 @@ Packj can currently vet NPM, PyPI, and RubyGems packages for "risky" attributes.
 
 - _What techniques does Packj employ to detect risky/malicious packages?_
 
-Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive auditing. Static analysis alone is not sufficient to flag sophisticated malware that can hide itself better using code obfuscation. Dynamic analysis is performed by installing the package under `strace` and monitoring it's runtime behavior. Please read more at [Audit README](https://github.com/ossillate-inc/packj/audit/README.md).
+Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive auditing. Static analysis alone is not sufficient to flag sophisticated malware that can hide itself better using code obfuscation. Dynamic analysis is performed by installing the package under `strace` and monitoring it's runtime behavior. Please read more at [Audit README](https://github.com/ossillate-inc/packj/blob/main/audit/README.md).
 
 - _Does it work on obfuscated calls? For example, a base 64 encrypted string that gets decrypted and then passed to a shell?_
 

@@ -37,7 +37,7 @@ Packj audits open-source software packages for "risky" attributes that make them
 Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/blob/main/audit/README.md).
 
 ```
-$ python3 main.py audit npm browserify
+$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace npm browserify
 
 [+] Fetching 'browserify' from npm...OK [ver 17.0.0]
 [+] Checking version...ALERT [598 days old]

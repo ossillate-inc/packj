@@ -6,10 +6,43 @@ The sandbox prevents malicious packages from exfiltrating sensitive data, access
 
 ## Contents ##
 
+* [How to install](#how-to-install)
 * [How to use](#how-to-use)
 * [How it works](#how-it-works)
 * [How to customize](#how-to-customize)
 * [FAQ](#faq)
+
+## How to install ##
+
+Sandbox relies on [strace](https://github.com/strace/strace), a popular tool to trace program execution. Therefore, as a first step, you need to build `strace` as a library. **NOTE** this needs to be done even if you have `strace` installed as a package on your system.
+
+```
+#
+# Clone repo
+#
+git clone https://github.com/ossillate-inc/packj
+
+#
+# Install prerequisites (e.g., on an Ubuntu system)
+#
+sudo apt install autoconf build-essential
+
+#
+# Download strace source and build a shared library
+#
+cd packj/sandbox && ./install.sh
+
+Setting up Packj sandbox tool....may take up to 5 mins
+[+] Checking for strace executable...OK [not found]
+	[+] Clonning strace...Done
+	[+] Unpacking strace (est: 2mins)...Done
+	[+] Configuring strace (est: 2mins)...Done
+	[+] Compiling strace library...Done
+	[+] Creating strace executable...Done
+[+] Compiling sandbox library...Done
+==================================
+Setup ready! Run main.py located in the parent dir.
+```
 
 ## How to use ##
 

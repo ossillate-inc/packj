@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-
 from dataclasses import dataclass
 from enum import Enum
 import os
@@ -27,6 +25,7 @@ from audit.static_util import get_static_proxy_for_language
 from audit.static_proxy.static_base import Language2Extensions
 from audit.parse_repo import fetch_repo_data
 from audit.parse_strace import parse_trace_file
+from audit.report import generate_report
 
 THREAT_MODEL = {}
 
@@ -692,8 +691,6 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, report_dir, extra_args):
 	if install_trace:
 		risks, report = trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report)
 
-	print('=============================================')
-
 	# aggregate risks
 	if not risks:
 		print('[+] No risks found!')
@@ -706,14 +703,8 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, report_dir, extra_args):
 		report['risks'] = risks
 
 	# generate final report
-	_, filepath = tempfile.mkstemp(prefix=f'report_', dir=report_dir, suffix='.json')
-	write_json_to_file(filepath, report, indent=4)
-	os.chmod(filepath, 0o444)
-	if not container_mountpoint:
-		print(f'=> Complete report: {filepath}')
-	else:
-		report_path = filepath.replace(container_mountpoint, host_volume)
-		print(f'=> Complete report: {report_path}')
+	args = (container_mountpoint, report_dir)
+	generate_report(report, args, suffix='.json')
 
 	# report link
 	if pm_enum == PackageManagerEnum.pypi:

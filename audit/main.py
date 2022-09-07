@@ -703,7 +703,7 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, report_dir, extra_args):
 		report['risks'] = risks
 
 	# generate final report
-	args = (container_mountpoint, report_dir)
+	args = (container_mountpoint, report_dir, host_volume)
 	generate_report(report, args, suffix='.json')
 
 	# report link

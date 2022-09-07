@@ -69,7 +69,7 @@ def create_html_report(report, filepath):
 
 def generate_report(report, args, suffix='.json'):
 
-	container_mountpoint, report_dir = args
+	container_mountpoint, report_dir, host_volume = args
 
 	print('=============================================')
 

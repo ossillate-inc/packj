@@ -45,6 +45,7 @@ audit:
     undesirable:
       package is old or abandoned:
         - reason: old or abandoned packages receive no security updates and are risky
+        - enabled: true
 
       invalid or no author email:
         - reason: a package with lack of or invalid author email suggests 2FA not enabled

@@ -152,7 +152,7 @@ sandbox:
 
       # block access to home dir and all other locations (except the ones below)
       block: ~/, /
-      allow: ., ~/.cache, ~/.npm, ~/.local, ~/.ruby, /tmp, /etc, /var, /bin, /usr/include, /usr/local, /usr/bin, /usr/lib, /usr/share, /lib
+      allow: ., ~/.cache, ~/.npm, ~/.local, ~/.ruby, /tmp, /proc, /etc, /var, /bin, /usr/include, /usr/local, /usr/bin, /usr/lib, /usr/share, /lib
 
     #
     # Network (allow or block domains/ports)
@@ -167,4 +167,4 @@ sandbox:
       block: 0.0.0.0
 
       # For installing PyPI, Rubygems, and NPM packages
-      allow: pythonhosted.org:443, pypi.org:443, rubygems.org:443, npmjs.com:443
+      allow: pythonhosted.org:443, pypi.org:443, rubygems.org:443, npmjs.org:443, npmjs.com:443

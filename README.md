@@ -190,9 +190,8 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add support for other language ecosystems. Rust is a work in progress, and will be available in August '22 (last week).
+* Add support for other language ecosystems. Rust is a work in progress, and will be available in September '22 (last week).
 * Add functionality to detect several other "risky" code as well as metadata attributes.
-* Add support for sandboxed installation of packages (WIP, ETA: end of summer)
 
 # Team #
 

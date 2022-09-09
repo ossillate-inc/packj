@@ -39,7 +39,7 @@ class Options():
 					help="Package manager CLI tool (e.g., pip, gem, npm)", action="store")
 		parser_sandbox.add_argument(dest="install_kw", choices=['install'], \
 					help="'install' keyword (expected second arg)", action="store")
-		parser_sandbox.add_argument(dest="install_args", nargs='+', \
+		parser_sandbox.add_argument(dest="install_args", nargs=argparse.REMAINDER, \
 					help="Install args (e.g., package name, version, other args)", action="store")
 
 		# parse args now

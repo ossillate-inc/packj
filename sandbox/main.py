@@ -340,7 +340,19 @@ def run_sandbox(rules, install_cmd):
 		if not os.path.exists(libstrace_path):
 			raise Exception(f'{libstrace_path} not found. Re-run {install_bin}')
 
-		libsbox_path = os.path.join(cwd,'libsbox.so')
+		sbox_path = os.path.join(cwd, 'sandbox.o')
+		if not os.path.exists(sbox_path):
+			raise Exception(f'{sbox_path} not found. Clone the repo again.')
+
+		# rebuild if sbox binary was updated
+		libsbox_path = os.path.join(cwd, 'libsbox.so')
+		if not os.path.exists(libsbox_path) or os.path.getmtime(sbox_path) > os.path.getmtime(libsbox_path):
+			logging.debug(f'{libsbox_path} not found or out of sync. Executing "make" to rebuild.')
+			stdout, stderr, error = exec_command('make', ['make'], cwd=cwd, redirect_mask=3)
+			if error:
+				logging.debug(f'"make" failed:\n{stdout}\n{stderr}')
+				raise Exception(f'"make" failed. Re-run {install_bin}')
+
 		if not os.path.exists(libsbox_path):
 			raise Exception(f'{libsbox_path} not found. Re-run {install_bin}')
 

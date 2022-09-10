@@ -34,10 +34,15 @@ options:
 
 Packj audits open-source software packages for "risky" attributes that make them vulnerable to supply chain attacks. For instance, packages with expired email domains (lacking 2FA), large release time gap, sensitive APIs or access permissions, etc. are flagged as risky. 
 
-Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/blob/main/audit/README.md).
+Auditing the following is supported:
+
+- multiple packages: `python3 main.py -p pypi:requests rubygems:overcommit`
+- dependency files: `python3 main.py -f npm:package.json pypi:requirements.txt`
+
+Audit can also be performed in Docker/Podman containers. Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/blob/main/audit/README.md).
 
 ```
-$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace npm browserify
+$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace -p npm:browserify
 
 [+] Fetching 'browserify' from npm...OK [ver 17.0.0]
 [+] Checking version...ALERT [598 days old]
@@ -135,7 +140,7 @@ Installing ri documentation for overcommit-0.59.1
 We found over 40 malicious packages on PyPI using this tool. A number of them been taken down. Refer to an example below:
 
 ```
-$ python3 main.py audit pypi krisqian
+$ python3 main.py audit pypi:krisqian
 [+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
 [+] Checking version...OK [256 days old]
 [+] Checking release history...OK [7 version(s)]

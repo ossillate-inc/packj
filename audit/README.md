@@ -15,12 +15,18 @@ Packj audits open-source software packages for "risky" attributes that make them
 Packj supports PyPI, NPM, and RubyGems package registries. To audit a package, you need to provide the folowing command line arguments:
 
 ```
-python3 main.py audit <pm-name> <pkg-name> [<ver-str> <--trace>]
+python3 main.py audit [-t] (-p PACKAGES [PACKAGES ...] | -f DEPFILES [DEPFILES ...])
 
-options:
-  pm_name      Package manager (e.g., pypi, npm, rubygems)
-  pkg_name     Package name (e.g., requests, browserify, overcommit)
-  ver_str      Package version (e.g., 0.0.1), default: latest
+optional arguments:
+  -t, --trace           Install package(s) and collect dynamic/runtime traces
+
+required arguments (mutually exclusive):
+
+  -p PACKAGES [PACKAGES ...], --packages PACKAGES [PACKAGES ...]
+                        Audit packages (e.g., npm:browserify pypi:requests), optionally version (e.g., rubygems:overcommit:1.0)
+
+  -f DEPFILES [DEPFILES ...], --depfiles DEPFILES [DEPFILES ...]
+                        Audit dependencies (e.g., npm:./package.json pypi:~/packj/requirements.txt)
 ```
 
 Under the covers, Packj performs the following analyses:
@@ -37,7 +43,7 @@ The best way to use Packj is to run it inside Docker (or Podman) container. **Re
 **NOTE** that `-v /tmp:/tmp/packj` is needed for containerized runs under Docker so that final report is available under `/tmp` on the host. 
 
 ```
-$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace npm browserify
+$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace -p npm:browserify
 [+] Fetching 'browserify' from npm...OK [ver 17.0.0]
 [+] Checking version...ALERT [598 days old]
 [+] Checking release history...OK [484 version(s)]
@@ -73,7 +79,7 @@ $ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace npm bro
 Specific package versions to be vetted could also be specified. Please refer to the example below
 
 ```
-$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit pypi requests 2.18.4
+$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit -p pypi:requests:2.18.4
 [+] Fetching 'requests' from pypi...OK [ver 2.18.4]
 [+] Checking version...ALERT [1750 days old]
 [+] Checking release history...OK [142 version(s)]
@@ -121,7 +127,7 @@ Alternatively, you can install Python/Ruby dependencies locally and test it.
 	- `gem install google-protobuf:3.21.2 rubocop:1.31.1`
 
 ```
-$ python3 main.py audit npm eslint
+$ python3 main.py audit -p npm:eslint
 [+] Fetching 'eslint' from npm...OK [ver 8.16.0]
 [+] Checking version...OK [10 days old]
 [+] Checking release history...OK [305 version(s)]

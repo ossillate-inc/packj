@@ -3,11 +3,13 @@
 #
 import json
 import logging
+import re
 import os
 import requests
 import dateutil.parser
 from os.path import join, exists
 
+from util.files import read_file_lines
 from util.json_wrapper import json_loads
 from audit.pm_proxy.pm_base import PackageManagerProxy
 
@@ -55,6 +57,32 @@ class PypiProxy(PackageManagerProxy):
 			pkg_info = None
 		finally:
 			return pkg_name, pkg_info
+
+	def __parse_string_for_dep_info(self, line):
+		try:
+			ver_match = re.search(r'(.*)(==|>=|<=)(.*)', line)
+			if ver_match is not None:
+				return ver_match.group(1), ver_match.group(3)
+			else:
+				return (line, None)
+		except Exception as e:
+			logging.debug("Failed to parse PyPI dep %s: %s" % (line, str(e)))
+			return None
+
+	def parse_deps_file(self, deps_file):
+		try:
+			dep_list = []
+			for line in read_file_lines(deps_file):
+				if line == '':
+					continue
+				dep = self.__parse_string_for_dep_info(line)
+				assert dep, "failed"
+
+				dep_list.append(dep)
+			return dep_list
+		except Exception as e:
+			logging.debug("Failed to parse PyPI deps file %s: %s" % (line, str(e)))
+			return None
 
 	def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
 		from util.dates import datetime_delta, datetime_to_date_str

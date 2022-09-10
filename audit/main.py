@@ -12,7 +12,7 @@ from typing import Optional
 from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from util.dates import datetime_delta
 from util.email_validity import check_email_address
-from util.files import write_json_to_file, read_from_csv
+from util.files import write_json_to_file, read_from_csv, read_file_lines
 from util.enum_util import PackageManagerEnum, LanguageEnum
 from util.formatting import human_format
 from util.repo import git_clone, replace_last
@@ -624,11 +624,10 @@ def trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report):
 	finally:
 		return risks, report
 
-def audit(pm_enum, pm_name, pkg_name, ver_str, report_dir, extra_args):
+def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 
+	pm_enum, pm_name, pm_proxy = pm_args
 	host_volume, container_mountpoint, install_trace = extra_args
-
-	pm_proxy = get_pm_proxy(pm_enum, cache_dir=None, isolate_pkg_info=False)
 
 	# get version metadata
 	try:
@@ -669,6 +668,7 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, report_dir, extra_args):
 	risks, report = analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 
 	# download package
+	filepath = None
 	try:
 		print(
 			f"[+] Downloading package '{pkg_name}' (ver {ver_str}) from {pm_name}...",
@@ -710,13 +710,11 @@ def audit(pm_enum, pm_name, pkg_name, ver_str, report_dir, extra_args):
 	if pm_enum == PackageManagerEnum.pypi:
 		print(f'=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')
 
-def get_report_dir_suffix(pm_name, pkg_name, ver_str):
-	if not ver_str:
-		logging.debug(f'No version specified. Using latest version of {pkg_name}')
-		ver_str = 'latest'
-	if pkg_name.startswith('@'):
-		pkg_name = pkg_name.lstrip('@').replace('/', '-')
-	return f'_{pm_name}_{pkg_name}_{ver_str}'
+def __get_pm_args(pm_name):
+	pm_name = pm_name.lower()
+	pm_enum = get_pm_enum(pm_name)
+	pm_proxy = get_pm_proxy(pm_enum, cache_dir=None, isolate_pkg_info=False)
+	return pm_enum, pm_name, pm_proxy
 
 def parse_request_args(args):
 	install_trace = False
@@ -728,17 +726,46 @@ def parse_request_args(args):
 		container_mountpoint = '/tmp/packj'
 		host_volume = is_mounted(container_mountpoint)
 		if not host_volume or not os.path.exists(container_mountpoint):
-			print(f'Missing host volume at {container_mountpoint}. Run Docker with "-v /tmp:{container_mountpoint}" argument.')
+			print(f'Missing host volume at {container_mountpoint}. Run Docker/Podman with "-v /tmp:{container_mountpoint}" argument.')
 			exit(1)
 
-	# pm enum ID
-	pm_name = args.pm_name.lower()
-	pm_enum = get_pm_enum(pm_name)
+	import inspect
+	# build list of packages to audit
+	audit_pkg_list = []
+	for item in args.depfiles:
+		try:
+			assert ':' in item, f'invalid dep file: {item}. Expected <pm>:<file> (e.g., npm:package.json)'
+
+			pm_name, deps_filepath = item.split(':')
+			assert os.path.exists(deps_filepath), f'file does not exist'
+
+			pm_enum, pm_name, pm_proxy = __get_pm_args(pm_name)
+
+			dep_list = pm_proxy.parse_deps_file(deps_filepath)
+			assert dep_list, "parse error"
+
+			# iterate and build list of packages
+			for pkg_name, ver_str in dep_list:
+				audit_pkg_list.append(((pm_enum, pm_name, pm_proxy), pkg_name, ver_str))
+		except Exception as e:
+			print(f'Failed to parse file "{item}" for dependencies: {str(e)}. Ignoring')
+
+	for item in args.packages:
+		try:
+			components = item.split(':')
+			assert len(components) >= 2 and len(components) <= 3, f'Invalid request: {item}. Expected <pm>:<pkg>[:<ver>] (e.g., npm:react)'
+ 
+			if len(components) == 2: item += ':'
+			pm_name, pkg_name, ver_str = item.split(':')
+			pm_enum, pm_name, pm_proxy = __get_pm_args(pm_name)
+
+			audit_pkg_list.append(((pm_enum, pm_name, pm_proxy), pkg_name, ver_str))
+		except Exception as e:
+			print(f'Failed to parse input "{item}" {str(e)}. Ignoring')
 
 	# create a temp dir to host debug logs, trace logs, and final report
 	try:
-		report_dir_suffix = get_report_dir_suffix(pm_name, args.pkg_name, args.ver_str)
-		report_dir = tempfile.mkdtemp(prefix=f'packj_', dir=container_mountpoint, suffix=report_dir_suffix)
+		report_dir = tempfile.mkdtemp(prefix=f'packj_audit_', dir=container_mountpoint)
 		os.chmod(report_dir, 0o755)
 	except Exception as e:
 		print(f'Failed to create temp dir: {str(e)}!')
@@ -767,7 +794,7 @@ def parse_request_args(args):
 				exit(0)
 		install_trace = True
 
-	return (pm_enum, pm_name, args.pkg_name, args.ver_str), report_dir, (host_volume, container_mountpoint, install_trace)
+	return audit_pkg_list, report_dir, (host_volume, container_mountpoint, install_trace)
 
 def main(args):
 
@@ -775,5 +802,8 @@ def main(args):
 	build_threat_model()
 
 	# collect package info
-	pkg_info, report_dir, cmd_args = parse_request_args(args)
-	audit(*pkg_info, report_dir, cmd_args)
+	audit_pkg_list, report_dir, cmd_args = parse_request_args(args)
+	for pkg_info in audit_pkg_list:
+		print('=============================================')
+		audit(*pkg_info, report_dir, cmd_args)
+	print('=============================================')

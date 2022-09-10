@@ -11,8 +11,6 @@ import tempfile
 import dateutil.parser
 import requests
 
-from util.job_util import exec_command
-from util.json_wrapper import json_loads
 from audit.pm_proxy.pm_base import PackageManagerProxy
 
 class NpmjsProxy(PackageManagerProxy):
@@ -47,6 +45,18 @@ class NpmjsProxy(PackageManagerProxy):
 			return '%s-*.%s' % (pkg_name, suffix)
 		else:
 			return '%s-%s.%s' % (pkg_name, pkg_version, suffix)
+
+	def parse_deps_file(self, deps_file):
+		try:
+			with open(deps_file) as f:
+				pkg_data = json.load(f)
+			dep_list = []
+			for pkg_name, ver_str in pkg_data['dependencies'].items():
+				dep_list.append((pkg_name, ver_str.replace('^', '').replace('~', '')))
+			return dep_list
+		except Exception as e:
+			logging.debug("Failed to parse NPM deps file %s: %s" % (line, str(e)))
+			return None
 
 	def get_downloads(self, pkg_name, pkg_info):
 		try:

@@ -31,6 +31,10 @@ class PackageManagerProxy(object):
 		# read the metadata and get (major) versions of the specified package
 		pass
 
+	def parse_deps_file(self, deps_file):
+		# parse dependencies list in a file
+		pass
+
 	def get_author(self, pkg_name):
 		# read the metadata and get author name and email of the specified package
 		pass

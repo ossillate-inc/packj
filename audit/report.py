@@ -71,8 +71,6 @@ def generate_report(report, args, suffix='.json'):
 
 	container_mountpoint, report_dir, host_volume = args
 
-	print('=============================================')
-
 	_, filepath = tempfile.mkstemp(prefix=f'report_', dir=report_dir, suffix=suffix)
 	if suffix == '.json':
 		write_json_to_file(filepath, report, indent=4)

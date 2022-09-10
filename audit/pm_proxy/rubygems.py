@@ -3,6 +3,7 @@
 #
 import json
 import logging
+import re
 import os
 import requests
 import dateutil.parser
@@ -32,6 +33,37 @@ class RubygemsProxy(PackageManagerProxy):
 		logging.error("failed to download pkg %s ver %s", pkg_name, pkg_version)
 		return None
 
+	def __parse_string_for_dep_info(self, line):
+		try:
+			name_re = re.search(r".* ", pkg)
+			name = name_re.group(0).replace(' ', '')
+
+			version_re = re.search(r"\((.*?)\)", pkg)
+			version = version_re.group(0).replace('(', '').replace(')', '')
+
+			return (name, version)
+		except Exception as e:
+			logging.debug("Failed to parse Gem dep %s: %s" % (pkg, str(ne)))
+			return None
+
+	def parse_deps_file(self, deps_file):
+		try:
+			cmd = ['ruby', 'parse_gemfile.rb']
+			stdout, stderr, error = exec_command("parse deps", cmd, redirect_mask=0)
+			if error or not stdout:
+				logging.debug(f'deps parse error:\n{stdout}\n{stderr}')
+				raise Exception(f'deps parse error {error}!')
+
+			dep_list = []
+			for line in stdout.decode('utf-8').split('\n'):
+				dep = self.__parse_string_for_dep_info(line)
+				if dep:
+					dep_list.append(dep)
+			return dep_list
+		except Exception as e:
+			logging.debug("Failed to parse RubyGems deps file %s: %s" % (line, str(e)))
+			return None
+
 	def get_metadata(self, pkg_name, pkg_version=None):
 		# rubygems API: https://guides.rubygems.org/rubygems-org-api/
 		# e.g. curl https://rubygems.org/api/v1/gems/rails.json
@@ -59,8 +91,8 @@ class RubygemsProxy(PackageManagerProxy):
 		if not ver_str:
 			ver_str = pkg_info['version']
 		ver_info = {
-			'tag'      : ver_str,
-			'url'      : pkg_info.get('gem_uri', None),
+			'tag'	   : ver_str,
+			'url'	   : pkg_info.get('gem_uri', None),
 			'uploaded' : pkg_info.get('version_created_at', None),
 			'digest'   : pkg_info.get('sha', None),
 			'yanked'   : pkg_info.get('yanked', None),

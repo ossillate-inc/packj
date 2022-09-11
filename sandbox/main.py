@@ -199,9 +199,6 @@ def dump_net_events(net_events, details=False):
 def dump_file_attributes(prefix, name, is_root, details=None, host_path=None, sandbox_path=None, fs_changes=None):
 
 	args = {'details':details, 'fs_changes':fs_changes}
-	if details:
-		print(name+prefix)
-		return False, args
 
 	# sandbox FS absolute path
 	if not sandbox_path:
@@ -259,6 +256,9 @@ def dump_file_attributes(prefix, name, is_root, details=None, host_path=None, sa
 			elif md5_diff:
 				node += f' [{Fore.RED}modified{Style.RESET_ALL} {file_type}:]'
 	print(node)
+
+	if details:
+		return False, args
 
 	# traverse deeper
 	if new and host_path not in fs_changes:
@@ -414,7 +414,7 @@ def review_events(fs_events, fs_tree_root, net_events, details=False):
 			review_type = 'summarized' if not details else 'detailed'
 
 			header = '\n#############################\n'
-			header += f'# Review {review_type} activity'
+			header += f'# Review changes [{review_type}]'
 			header += '\n#############################\n'
 
 			print(header)

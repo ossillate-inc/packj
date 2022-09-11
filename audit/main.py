@@ -9,6 +9,8 @@ import yaml
 import tempfile
 from typing import Optional
 
+from colorama import Fore, Style
+
 from util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from util.dates import datetime_delta
 from util.email_validity import check_email_address
@@ -29,14 +31,24 @@ from audit.report import generate_report
 
 THREAT_MODEL = {}
 
-def msg_factory(fmt_str):
-	def run(content):
-		return fmt_str.format(content)
-	return run
-
-msg_fail = msg_factory('FAILED [{0}]')
-msg_ok = msg_factory('OK [{0}]')
-msg_alert = msg_factory('ALERT [{0}]')
+def msg_info(x, end='\n', flush=True, indent=0):
+	while indent > 0:
+		x = '   ' + x
+		indent -= 1
+	if end != '\n':
+		while len(x) < 40:
+			x += '.'
+		print(f'{Style.BRIGHT}[+]{Style.RESET_ALL} {x}', end=end, flush=flush)
+	else:
+		print(x, end=end, flush=flush)
+def msg_ok(x):
+	if len(x) > 50:
+		x = ''.join(x[0:46]) + ' ...'
+	msg_info(f'{Style.BRIGHT}{Fore.GREEN}PASS{Style.RESET_ALL} [{Fore.BLUE}{x}{Style.RESET_ALL}]')
+def msg_fail(x):
+	msg_info(f'{Style.BRIGHT}{Fore.YELLOW}FAIL{Style.RESET_ALL} [{x}]')
+def msg_alert(x):
+	msg_info(f'{Style.BRIGHT}{Fore.RED}RISK{Style.RESET_ALL} [{x}]')
 
 def build_threat_model(filename='packj.yaml'):
 	try:
@@ -68,7 +80,7 @@ def alert_user(alert_type, threat_model, reason, risks):
 
 def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report, release_history=None):
 	try:
-		print('\t[+] Checking release history...', end='', flush=True)
+		msg_info('Checking release history...', end='', flush=True, indent=1)
 
 		# get package release history
 		if not release_history:
@@ -76,23 +88,23 @@ def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report, release
 			assert release_history, 'no data!'
 
 		#import json
-		#print(json.dumps(release_history, indent=4))
+		#msg_info(json.dumps(release_history, indent=4))
 
 		if len(release_history) <= 2:
 			reason = f'only {len(release_history)} versions released'
 			alert_type = 'fewer versions or releases'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
-		print(msg_ok(f'{len(release_history)} version(s)'))
+		msg_ok(f'{len(release_history)} version(s)')
 		report['num_releases'] = len(release_history)
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report, release_history
 
 def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report, release_history=None):
 	try:
-		print('\t[+] Checking release time gap...', end='', flush=True)
+		msg_info('Checking release time gap...', end='', flush=True, indent=1)
 
 		# get package release history
 		if not release_history:
@@ -107,33 +119,33 @@ def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report, r
 			reason = f'version released after {days} days'
 			alert_type = 'version release after a long gap'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(release_info))
+			msg_alert(release_info)
 		else:
-			print(msg_ok(release_info))
+			msg_ok(release_info)
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	try:
-		print('\t[+] Checking package description...', end='', flush=True)
+		msg_info('Checking package description...', end='', flush=True, indent=1)
 		descr = pm_proxy.get_description(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not descr:
 			reason = 'no description'
 			alert_type = 'no description'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(reason))
+			msg_alert(reason)
 		else:
-			print(msg_ok(descr))
+			msg_ok(descr)
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_version(ver_info, risks, report):
 	try:
-		print('[+] Checking version...', end='', flush=True)
+		msg_info('Checking version...', end='', flush=True)
 
 		assert ver_info, 'no data!'
 
@@ -150,18 +162,18 @@ def analyze_version(ver_info, risks, report):
 			reason = 'no release date' if not uploaded else days_old
 			alert_type = 'package is old or abandoned'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(days_old))
+			msg_alert(days_old)
 		else:
-			print(msg_ok(days_old))
+			msg_ok(days_old)
 		report['version'] = ver_info
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_cves(pm_name, pkg_name, ver_str, risks, report):
 	try:
-		print('[+] Checking for CVEs...', end='', flush=True)
+		msg_info('Checking for CVEs...', end='', flush=True)
 		from audit.osv import get_pkgver_vulns
 		vuln_list = get_pkgver_vulns(pm_name, pkg_name, ver_str)
 		if vuln_list:
@@ -169,50 +181,50 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks, report):
 			vulnerabilities = ','.join(vul['id'] for vul in vuln_list)
 			reason = f'contains {vulnerabilities}'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(f'{len(vuln_list)} found'))
+			msg_alert(f'{len(vuln_list)} found')
 		else:
 			vuln_list = []
-			print(msg_ok('none found'))
+			msg_ok('none found')
 		report['vulnerabilities'] = vuln_list
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report):
 	try:
-		print('[+] Checking dependencies...', end='', flush=True)
+		msg_info('Checking dependencies...', end='', flush=True)
 		deps = pm_proxy.get_dependencies(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
 		if deps and len(deps) > 10:
 			alert_type = 'too many dependencies'
 			reason = f'{len(deps)} found'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(reason))
+			msg_alert(reason)
 		else:
-			print(msg_ok(f'{len(deps)} direct' if deps else 'none found'))
+			msg_ok(f'{len(deps)} direct' if deps else 'none found')
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
-		print('[+] Checking downloads...', end='', flush=True)
+		msg_info('Checking downloads...', end='', flush=True)
 		ret = pm_proxy.get_downloads(pkg_name, pkg_info)
 		assert ret != None, "N/A"
 		if ret < 1000:
 			reason = f'only {ret} weekly downloads'
 			alert_type = 'fewer downloads'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-		print(msg_ok(f'{human_format(ret)} weekly'))
+		msg_ok(f'{human_format(ret)} weekly')
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	try:
-		print('[+] Checking homepage...', end='', flush=True)
+		msg_info('Checking homepage...', end='', flush=True)
 		url = pm_proxy.get_homepage(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not url:
 			reason = 'no homepage'
@@ -237,27 +249,27 @@ def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 				reason = 'invalid (popular) webpage'
 				alert_type = 'invalid or no homepage'
 				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-		print(msg_ok(url))
+		msg_ok(url)
 		report['homepage'] = url
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_repo_descr(risks, report):
 	try:
-		print('\t[+] Checking repo description...', end='', flush=True)
+		msg_info('Checking repo description...', end='', flush=True, indent=1)
 		descr = report['repo']['description']
-		print(msg_ok(descr))
+		msg_ok(descr)
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_repo_data(risks, report):
 	try:
 		repo_url = report['repo']['url']
-		print('\t[+] Checking repo data...', end='', flush=True)
+		msg_info('Checking repo data...', end='', flush=True, indent=1)
 		err, repo_data	= fetch_repo_data(repo_url)
 		assert repo_data, err
 
@@ -286,49 +298,49 @@ def analyze_repo_data(risks, report):
 			reason = f'only {num_stars} stars'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 
-		print(msg_ok(f'stars: {num_stars}, forks: {num_forks}'))
+		msg_ok(f'stars: {num_stars}, forks: {num_forks}')
 		report['repo'].update(repo_data)
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 
 	if not repo_data:
 		return risks, report
 
 	try:
-		print('\t[+] Checking if repo is a forked copy...', end='', flush=True)
+		msg_info('Checking if repo is a forked copy...', end='', flush=True, indent=1)
 		if forked_from:
 			alert_type = 'source repo is a forked copy'
 			reason = f'forked from {forked_from}'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(reason))
+			msg_alert(reason)
 		else:
-			print(msg_ok('original, not forked'))
+			msg_ok('original, not forked')
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_repo_activity(risks, report):
 	try:
 		repo_url = report['repo']['url']
-		print('\t[+] Checking repo activity...', end='', flush=True)
+		msg_info('Checking repo activity...', end='', flush=True, indent=1)
 		reason, repo_data = git_clone(repo_url)
 		if reason:
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(reason))
+			msg_alert(reason)
 		elif repo_data:
 			commits, contributors, tags = tuple(repo_data[k] for k in ('commits', 'contributors', 'tags'))
-			print(msg_ok(f'commits: {commits}, contributors: {contributors}, tags: {tags}'))
+			msg_ok(f'commits: {commits}, contributors: {contributors}, tags: {tags}')
 			report['repo'].update(repo_data)
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report):
 	try:
-		print('[+] Checking repo URL...', end='', flush=True)
+		msg_info('Checking repo URL...', end='', flush=True)
 		popular_hosting_services = (
 			'https://github.com/',
 			'https://gitlab.com/',
@@ -362,34 +374,34 @@ def analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, rep
 			reason = f'invalid source repo {repo_url}'
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-		print(msg_ok(repo_url))
+		msg_ok(repo_url)
 		report['repo'] = {
 			'url' : repo_url,
 		}
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	try:
-		print('[+] Checking readme...', end='', flush=True)
+		msg_info('Checking readme...', end='', flush=True)
 		readme = pm_proxy.get_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		if not readme or len(readme) < 100:
 			reason = 'no readme' if not readme else 'insufficient readme'
 			alert_type = 'no or insufficient readme'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(reason))
+			msg_alert(reason)
 		else:
-			print(msg_ok(f'{len(readme)} bytes'))
+			msg_ok(f'{len(readme)} bytes')
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report):
 	try:
-		print('[+] Checking author...', end='', flush=True)
+		msg_info('Checking author...', end='', flush=True)
 
 		# check author/maintainer email
 		authors = pm_proxy.get_author(pkg_name, ver_str=ver_str, pkg_info=pkg_info, ver_info=ver_info)
@@ -409,13 +421,13 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 		data = ','.join(item_list)
 
 		report['authors'] = authors
-		print(msg_ok(data))
+		msg_ok(data)
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 		return risks, report
 
 	try:
-		print('\t[+] Checking email/domain validity...', end='', flush=True)
+		msg_info('Checking email/domain validity...', end='', flush=True, indent=1)
 		for author_info in authors:
 			email = author_info.get('email', None)
 			if not email:
@@ -446,17 +458,17 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 			if must_alert:
 				alert_type = 'invalid or no author email'
 				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			print(msg_alert(reason))
+			msg_alert(reason)
 		else:
-			print(msg_ok(email))
+			msg_ok(email)
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 	try:
-		print('[+] Checking files/funcs...', end='', flush=True)
+		msg_info('Checking files/funcs...', end='', flush=True)
 
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
@@ -479,7 +491,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 			f'{num_funcs} funcs, '
 			f'LoC: {human_format(total_loc)}'
 		)
-		print(msg_ok(content))
+		msg_ok(content)
 		report['composition'] = {
 			'num_files' : num_files,
 			'num_funcs' : num_funcs,
@@ -487,7 +499,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 			'Loc'		: total_loc,
 		}
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
@@ -524,7 +536,7 @@ ALERTS = {
 
 def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 	try:
-		print('[+] Analyzing code...', end='', flush=True)
+		msg_info('Analyzing code...', end='', flush=True)
 		cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 		config_dir= os.path.join(cwd, 'config')
 		if pm_name == 'pypi':
@@ -554,7 +566,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 
 		perms = parse_api_usage(pm_name, filepath+'.out')
 		if not perms:
-			print(msg_ok('no perms found'))
+			msg_ok('no perms found')
 			return risks, report
 
 		report_data = {}
@@ -574,16 +586,16 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			else:
 				report_data[reason] += usage
 
-		print(msg_alert(f'needs {len(perms_needed)} perm(s): {",".join(perms_needed)}'))
+		msg_alert(f'needs {len(perms_needed)} perm(s): {",".join(perms_needed)}')
 		report['permissions'] = report_data
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
 def trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report):
 	try:
-		print('[+] Installing package and tracing code...', end='', flush=True)
+		msg_info('Installing package and tracing code...', end='', flush=True)
 
 		# look for strace binary
 		check_strace_cmd = ['which', 'strace']
@@ -618,9 +630,9 @@ def trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report):
 
 		# consolidate
 		out = ','.join([f'{len(summary[k])} {k}' for k in summary.keys()])
-		print(msg_ok(f'found {out} syscalls'))
+		msg_ok(f'found {out} syscalls')
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
@@ -631,7 +643,7 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 
 	# get version metadata
 	try:
-		print(f"[+] Fetching '{pkg_name}' from {pm_name}...", end='', flush=True)
+		msg_info(f"Fetching '{pkg_name}' from {pm_name}...", end='', flush=True)
 		pkg_name, pkg_info = pm_proxy.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info, 'package not found!'
 
@@ -641,9 +653,9 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 		if not ver_str:
 			ver_str = ver_info['tag']
 
-		print(msg_ok(f'ver {ver_str}'))
+		msg_ok(f'ver {ver_str}')
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 		exit(1)
 
 	risks = {}
@@ -670,17 +682,17 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 	# download package
 	filepath = None
 	try:
-		print(
-			f"[+] Downloading package '{pkg_name}' (ver {ver_str}) from {pm_name}...",
+		msg_info(
+			f"Downloading package from {pm_name}...",
 			end='',
 			flush=True
 		)
 		filepath, size = download_file(ver_info['url'])
-		print(msg_ok(f'{float(size)/1024:.2f} KB'))
+		msg_ok(f'{float(size)/1024:.2f} KB')
 	except KeyError:
-		print(msg_fail('URL missing'))
+		msg_fail('URL missing')
 	except Exception as e:
-		print(msg_fail(str(e)))
+		msg_fail(str(e))
 
 	# perform static analysis
 	if filepath:
@@ -693,11 +705,11 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 
 	# aggregate risks
 	if not risks:
-		print('[+] No risks found!')
+		msg_info('No risks found!')
 		report['risks'] = None
 	else:
-		print(
-			f'[+] {sum(len(v) for v in risks.values())} risk(s) found, '
+		msg_info(
+			f'{sum(len(v) for v in risks.values())} risk(s) found, '
 			f'package is {", ".join(risks.keys())}!'
 		)
 		report['risks'] = risks
@@ -708,7 +720,7 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 
 	# report link
 	if pm_enum == PackageManagerEnum.pypi:
-		print(f'=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')
+		msg_info(f'=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')
 
 def __get_pm_args(pm_name):
 	pm_name = pm_name.lower()
@@ -726,7 +738,7 @@ def parse_request_args(args):
 		container_mountpoint = '/tmp/packj'
 		host_volume = is_mounted(container_mountpoint)
 		if not host_volume or not os.path.exists(container_mountpoint):
-			print(f'Missing host volume at {container_mountpoint}. Run Docker/Podman with "-v /tmp:{container_mountpoint}" argument.')
+			msg_info(f'Missing host volume at {container_mountpoint}. Run Docker/Podman with "-v /tmp:{container_mountpoint}" argument.')
 			exit(1)
 
 	import inspect
@@ -748,7 +760,7 @@ def parse_request_args(args):
 			for pkg_name, ver_str in dep_list:
 				audit_pkg_list.append(((pm_enum, pm_name, pm_proxy), pkg_name, ver_str))
 		except Exception as e:
-			print(f'Failed to parse file "{item}" for dependencies: {str(e)}. Ignoring')
+			msg_info(f'Failed to parse file "{item}" for dependencies: {str(e)}. Ignoring')
 
 	for item in args.packages:
 		try:
@@ -761,14 +773,14 @@ def parse_request_args(args):
 
 			audit_pkg_list.append(((pm_enum, pm_name, pm_proxy), pkg_name, ver_str))
 		except Exception as e:
-			print(f'Failed to parse input "{item}" {str(e)}. Ignoring')
+			msg_info(f'Failed to parse input "{item}" {str(e)}. Ignoring')
 
 	# create a temp dir to host debug logs, trace logs, and final report
 	try:
 		report_dir = tempfile.mkdtemp(prefix=f'packj_audit_', dir=container_mountpoint)
 		os.chmod(report_dir, 0o755)
 	except Exception as e:
-		print(f'Failed to create temp dir: {str(e)}!')
+		msg_info(f'Failed to create temp dir: {str(e)}!')
 		exit(1)
 
 	# enable debugging if requested
@@ -780,7 +792,7 @@ def parse_request_args(args):
 			logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
 								format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')
 		except Exception as e:
-			print(f'Failed to create debug log: {str(e)}. Using stdout.')
+			msg_info(f'Failed to create debug log: {str(e)}. Using stdout.')
 			logging.getLogger().setLevel(logging.DEBUG)
 	else:
 		logging.getLogger().setLevel(logging.ERROR)
@@ -804,6 +816,6 @@ def main(args):
 	# collect package info
 	audit_pkg_list, report_dir, cmd_args = parse_request_args(args)
 	for pkg_info in audit_pkg_list:
-		print('=============================================')
+		msg_info('=============================================')
 		audit(*pkg_info, report_dir, cmd_args)
-	print('=============================================')
+	msg_info('=============================================')

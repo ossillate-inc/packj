@@ -49,11 +49,12 @@ Setup ready! Run main.py located in the parent dir.
 Packj supports PyPI, NPM, and RubyGems package registries. To safely install a package, you need to provide the folowing command line arguments:
 
 ```
-$ python3 main.py sandbox <pm-tool> install <pkg-name> [<ver-str> <other args>]
+$ python3 main.py sandbox <pm-tool> install <pkg-name> [<other args>]
 
 arguments:
   pm_tool       Package manager CLI tool (e.g., pip3, gem, npm)
-  pkg_name      Install args (e.g., package name, version, other args)
+  pkg_name      Name of the package to be installed (e.g., torch, express, byebug)
+  other_args    Additional args (e.g., version str, other args)
 ```
 
 ## How it works ##

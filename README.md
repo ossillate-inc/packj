@@ -44,27 +44,29 @@ Audit can also be performed in Docker/Podman containers. Please find details on 
 ```
 $ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace -p npm:browserify
 
-[+] Fetching 'browserify' from npm...OK [ver 17.0.0]
-[+] Checking version...ALERT [598 days old]
-[+] Checking release history...OK [484 version(s)]
-[+] Checking release time gap...OK [68 days since last release]
-[+] Checking author...OK [mail@substack.net]
-	[+] Checking email/domain validity...ALERT [expired author email domain]
-[+] Checking readme...OK [26838 bytes]
-[+] Checking homepage...OK [https://github.com/browserify/browserify#readme]
-[+] Checking downloads...OK [2.2M weekly]
-[+] Checking repo_url URL...OK [https://github.com/browserify/browserify]
-	[+] Checking repo data...OK [stars: 14077, forks: 1236]
-	[+] Checking repo activity...OK [commits: 2290, contributors: 207, tags: 413]
-[+] Checking for CVEs...OK [none found]
-[+] Checking dependencies...ALERT [48 found]
-[+] Downloading package 'browserify' (ver 17.0.0) from npm...OK [163.83 KB]
-[+] Analyzing code...ALERT [needs 3 perms: process,file,codegen]
-[+] Checking files/funcs...OK [429 files (383 .js), 744 funcs, LoC: 9.7K]
-[+] Installing package and tracing code...OK [found ['process', 'files', 'network'] syscalls]
+[+] Fetching 'browserify' from npm..........PASS [ver 17.0.0]
+[+]    Checking package description.........PASS [browser-side require() the node way]
+[+]    Checking release history.............PASS [484 version(s)]
+[+] Checking version........................RISK [702 days old]
+[+]    Checking release time gap............PASS [68 days since last release]
+[+] Checking author.........................PASS [mail@substack.net]
+[+]    Checking email/domain validity.......RISK [expired author email domain]
+[+] Checking readme.........................PASS [26838 bytes]
+[+] Checking homepage.......................PASS [https://github.com/browserify/browserify#readme]
+[+] Checking downloads......................PASS [2M weekly]
+[+] Checking repo URL.......................PASS [https://github.com/browserify/browserify]
+[+]    Checking repo data...................PASS [stars: 14189, forks: 1244]
+[+]    Checking if repo is a forked copy....PASS [original, not forked]
+[+]    Checking repo description............PASS [browser-side require() the node.js way]
+[+]    Checking repo activity...............PASS [commits: 2290, contributors: 207, tags: 413]
+[+] Checking for CVEs.......................PASS [none found]
+[+] Checking dependencies...................RISK [48 found]
+[+] Downloading package from npm............PASS [163.83 KB]
+[+] Analyzing code..........................RISK [needs 3 perm(s): decode,codegen,file]
+[+] Checking files/funcs....................PASS [429 files (383 .js), 744 funcs, LoC: 9.7K]
+[+] Installing package and tracing code.....PASS [found 5 process,1130 files,22 network syscalls]
 =============================================
 [+] 5 risk(s) found, package is undesirable!
-
 => Complete report: /tmp/packj_54rbjhgm/report_npm-browserify-17.0.0_hlr1rhcz.json
 {
     "undesirable": [

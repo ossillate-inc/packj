@@ -27,7 +27,7 @@ from audit.static_util import get_static_proxy_for_language
 from audit.static_proxy.static_base import Language2Extensions
 from audit.parse_repo import fetch_repo_data
 from audit.parse_strace import parse_trace_file
-from audit.report import generate_report
+from audit.report import generate_package_report, generate_summary
 
 THREAT_MODEL = {}
 
@@ -138,6 +138,7 @@ def analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 			msg_alert(reason)
 		else:
 			msg_ok(descr)
+		report['description'] = descr
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -641,6 +642,10 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 	pm_enum, pm_name, pm_proxy = pm_args
 	host_volume, container_mountpoint, install_trace = extra_args
 
+	msg_info('===============================================')
+	msg_info(f'Auditing {pm_name} package {pkg_name} (ver: {ver_str if ver_str else "latest"})')
+	msg_info('===============================================')
+
 	# get version metadata
 	try:
 		msg_info(f"Fetching '{pkg_name}' from {pm_name}...", end='', flush=True)
@@ -656,10 +661,14 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 		msg_ok(f'ver {ver_str}')
 	except Exception as e:
 		msg_fail(str(e))
-		exit(1)
+		return None
 
 	risks = {}
-	report = {}
+	report = {
+		'pm_name' : pm_name,
+		'pkg_name' : pkg_name,
+		'pkg_ver' : ver_str,
+	}
 
 	# analyze metadata
 	risks, report = analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
@@ -716,11 +725,12 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 
 	# generate final report
 	args = (container_mountpoint, report_dir, host_volume)
-	generate_report(report, args, suffix='.json')
+	generate_package_report(report, args)
 
 	# report link
 	if pm_enum == PackageManagerEnum.pypi:
 		msg_info(f'=> View pre-vetted package report at https://packj.dev/package/PyPi/{pkg_name}/{ver_str}')
+	return report
 
 def __get_pm_args(pm_name):
 	pm_name = pm_name.lower()
@@ -813,9 +823,16 @@ def main(args):
 	# get user threat model
 	build_threat_model()
 
-	# collect package info
+	# parse input
 	audit_pkg_list, report_dir, cmd_args = parse_request_args(args)
+
+	# audit each package
+	reports = []
 	for pkg_info in audit_pkg_list:
-		msg_info('=============================================')
-		audit(*pkg_info, report_dir, cmd_args)
+		report = audit(*pkg_info, report_dir, cmd_args)
+		if report:
+			reports.append(report)
+
+	# generate summarized report
 	msg_info('=============================================')
+	generate_summary(reports, report_dir, cmd_args)

@@ -73,7 +73,8 @@ class PypiProxy(PackageManagerProxy):
 		try:
 			dep_list = []
 			for line in read_file_lines(deps_file):
-				if line == '':
+				line = line.replace(' ','')
+				if line == '' or line.startswith('#'):
 					continue
 				dep = self.__parse_string_for_dep_info(line)
 				assert dep, "failed"

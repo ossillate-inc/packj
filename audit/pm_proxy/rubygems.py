@@ -56,6 +56,9 @@ class RubygemsProxy(PackageManagerProxy):
 
 			dep_list = []
 			for line in stdout.decode('utf-8').split('\n'):
+				line = line.replace(' ','')
+				if line == '' or line.startswith('#'):
+					continue
 				dep = self.__parse_string_for_dep_info(line)
 				if dep:
 					dep_list.append(dep)

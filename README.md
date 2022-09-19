@@ -70,7 +70,7 @@ $ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace -p npm:
 => Complete report: /tmp/packj_54rbjhgm/report_npm-browserify-17.0.0_hlr1rhcz.json
 {
     "undesirable": [
-        "old package: 598 days old",
+        "old package: 702 days old",
         "invalid or no author email: expired author email domain",
         "generates new code at runtime", 
         "reads files and dirs",

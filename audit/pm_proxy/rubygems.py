@@ -5,6 +5,7 @@ import json
 import logging
 import re
 import os
+import inspect
 import requests
 import dateutil.parser
 from os.path import exists, join
@@ -30,32 +31,35 @@ class RubygemsProxy(PackageManagerProxy):
 			return '%s-*.%s' % (pkg_name, suffix)
 		else:
 			return '%s-%s*.%s' % (pkg_name, pkg_version, suffix)
-		logging.error("failed to download pkg %s ver %s", pkg_name, pkg_version)
+		logging.debug("failed to download pkg %s ver %s", pkg_name, pkg_version)
 		return None
 
 	def __parse_string_for_dep_info(self, line):
 		try:
-			name_re = re.search(r".* ", pkg)
-			name = name_re.group(0).replace(' ', '')
+			name_re = re.search(r"(.*)\(", line)
+			assert name_re, "No name match found"
+			name = name_re.group(0).replace('(', '')
 
-			version_re = re.search(r"\((.*?)\)", pkg)
+			version_re = re.search(r"\((.*?)\)", line)
+			assert version_re, "No version match found"
 			version = version_re.group(0).replace('(', '').replace(')', '')
 
 			return (name, version)
 		except Exception as e:
-			logging.debug("Failed to parse Gem dep %s: %s" % (pkg, str(ne)))
+			logging.debug("Failed to parse Gem dep %s: %s" % (line, str(e)))
 			return None
 
 	def parse_deps_file(self, deps_file):
 		try:
-			cmd = ['ruby', 'parse_gemfile.rb']
-			stdout, stderr, error = exec_command("parse deps", cmd, redirect_mask=0)
+			cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+			cmd = ['ruby', 'parse_gemfile.rb', os.path.abspath(deps_file)]
+			stdout, stderr, error = exec_command("parse deps", cmd, cwd=cwd, redirect_mask=3)
 			if error or not stdout:
 				logging.debug(f'deps parse error:\n{stdout}\n{stderr}')
 				raise Exception(f'deps parse error {error}!')
 
 			dep_list = []
-			for line in stdout.decode('utf-8').split('\n'):
+			for line in stdout.split('\n'):
 				line = line.replace(' ','')
 				if line == '' or line.startswith('#'):
 					continue
@@ -64,7 +68,7 @@ class RubygemsProxy(PackageManagerProxy):
 					dep_list.append(dep)
 			return dep_list
 		except Exception as e:
-			logging.debug("Failed to parse RubyGems deps file %s: %s" % (line, str(e)))
+			logging.debug("Failed to parse RubyGems deps file %s: %s" % (deps_file, str(e)))
 			return None
 
 	def get_metadata(self, pkg_name, pkg_version=None):
@@ -123,7 +127,7 @@ class RubygemsProxy(PackageManagerProxy):
 			resp.raise_for_status()
 			ver_list = resp.json()
 		except Exception as e:
-			logging.error("Failed to get versions for rubygems package %s: %s!" % (pkg_name, str(e)))
+			logging.debug("Failed to get versions for rubygems package %s: %s!" % (pkg_name, str(e)))
 			return None
 
 		from util.dates import date_str_to_datetime
@@ -196,7 +200,7 @@ class RubygemsProxy(PackageManagerProxy):
 			versions_content = requests.request('GET', versions_url)
 			versions_info = json.loads(versions_content.text)
 		except:
-			logging.error("fail in get_versions for pkg %s, ignoring!", pkg_name)
+			logging.debug("fail in get_versions for pkg %s, ignoring!", pkg_name)
 			return []
 		# filter versions
 		version_date = [(version_info['number'], dateutil.parser.parse(version_info['created_at']))
@@ -213,7 +217,7 @@ class RubygemsProxy(PackageManagerProxy):
 			resp.raise_for_status()
 			return resp.json()
 		except Exception as e:
-			logging.error("Failed to get dependents for rubygems pkg %s: %s!" % (pkg_name, str(e)))
+			logging.debug("Failed to get dependents for rubygems pkg %s: %s!" % (pkg_name, str(e)))
 			return None
 
 	# use rubygems API to get author profile
@@ -226,7 +230,7 @@ class RubygemsProxy(PackageManagerProxy):
 			resp.raise_for_status()
 			return resp.json()
 		except Exception as e:
-			logging.error("Failed to fetch profile for user %s: %s!" % (uid, str(e)))
+			logging.debug("Failed to fetch profile for user %s: %s!" % (uid, str(e)))
 			return None
 
 	# use rubygems API to get owners information
@@ -239,7 +243,7 @@ class RubygemsProxy(PackageManagerProxy):
 			resp.raise_for_status()
 			return resp.json()
 		except Exception as e:
-			logging.error("Failed to fetch owners for package %s: %s!" % (pkg_name, str(e)))
+			logging.debug("Failed to fetch owners for package %s: %s!" % (pkg_name, str(e)))
 			return None
 
 		# use rubygems API to get num gems for this author
@@ -252,7 +256,7 @@ class RubygemsProxy(PackageManagerProxy):
 			resp.raise_for_status()
 			return resp.json()
 		except Exception as e:
-			logging.error("Failed to fetch gems for user %s: %s!" % (pkg_name, str(e)))
+			logging.debug("Failed to fetch gems for user %s: %s!" % (pkg_name, str(e)))
 			return None
 
 	def __parse_dev_list(self, dev_list:str, dev_type:str, data=None):

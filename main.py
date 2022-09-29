@@ -9,7 +9,7 @@ if sys.version_info[0] != 3:
 	print('\n*** WARNING *** Please use Python 3! Exiting.')
 	exit(1)
 
-if __name__ == '__main__':
+def main():
 	try:
 		from options import Options
 		opts = Options(sys.argv[1:])
@@ -31,3 +31,6 @@ if __name__ == '__main__':
 	except Exception as e:
 		print(str(e))
 		exit(1)
+
+if __name__ == '__main__':
+	main()

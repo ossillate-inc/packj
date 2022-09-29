@@ -21,8 +21,10 @@ Packj offers the following tools:
 * [Audit](#auditing-a-package) - to vet a package for "risky" attributes.
 * [Sandbox](#sandboxed-package-installation) - for safe installation of a package.
 
+**NOTE**: the quickest way to test Packj is using the Docker image:
+
 ```
-$ python3 main.py --help
+$  docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
 usage: main [options] args
 
 options:

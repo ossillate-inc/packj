@@ -108,7 +108,7 @@ setup(
 		'Development Status :: 4 - Beta',
 		'Intended Audience :: Developers',
 		'Topic :: Security',
-		'License :: OSI Approved :: GNU AFFERO GENERAL PUBLIC LICENSE V3',
+		'License :: OSI Approved :: GNU Affero General Public License v3',
 		'Programming Language :: Python :: 3',
 		'Programming Language :: Python :: 3.4',
 		'Programming Language :: Python :: 3.5',

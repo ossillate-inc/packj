@@ -41,7 +41,7 @@ Auditing the following is supported:
 - multiple packages: `python3 main.py -p pypi:requests rubygems:overcommit`
 - dependency files: `python3 main.py -f npm:package.json pypi:requirements.txt`
 
-Audit can also be performed in Docker/Podman containers. Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/blob/main/audit/README.md).
+Audit can also be performed in Docker/Podman containers. Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
 
 ```
 $ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace -p npm:browserify
@@ -85,7 +85,7 @@ $ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace -p npm:
 
 Packj offers a lightweight sandboxing for `safe installation` of a package. Specifically, it prevents malicious packages from exfiltrating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware.
 
-Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://github.com/ossillate-inc/packj/blob/main/sandbox/README.md).
+Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://github.com/ossillate-inc/packj/blob/main/packj/sandbox/README.md).
 
 ```
 $ python3 main.py sandbox gem install overcommit

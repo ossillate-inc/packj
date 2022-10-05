@@ -74,7 +74,7 @@ setup(
 		'packj.audit.static_proxy' : ['*.rb'],
 		'packj.audit.proto' : ['ruby/*.rb'],
 	},
-	version = '0.1',
+	version = '0.2',
 	license='MIT',
 	description = 'Packj flags "risky" open-source packages in your software supply chain',
 	long_description=long_description,

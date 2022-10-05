@@ -433,7 +433,7 @@ def review_events(fs_events, fs_tree_root, net_events, details=False):
 		print(f'Failed to dump parsed data (details: {details}): {str(e)}!')
 		return None, False
 
-def main(args):
+def main(args, config_file):
 
 	# only works on Linux
 	if not sys.platform.startswith('linux'):
@@ -443,7 +443,7 @@ def main(args):
 	install_cmd = ' '.join([args.pm_tool, 'install'] + args.install_args)
 
 	# get sandboxing policies
-	rules = build_sandboxing_profile(args.pm_tool, os.path.join('packj','packj.yaml'))
+	rules = build_sandboxing_profile(args.pm_tool, config_file)
 
 	# execute command
 	sandbox_root, sandbox_logfile = run_sandbox(rules, install_cmd)

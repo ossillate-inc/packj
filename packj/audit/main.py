@@ -818,10 +818,10 @@ def parse_request_args(args):
 
 	return audit_pkg_list, report_dir, (host_volume, container_mountpoint, install_trace)
 
-def main(args):
+def main(args, config_file):
 
 	# get user threat model
-	build_threat_model(os.path.join('packj','packj.yaml'))
+	build_threat_model(config_file)
 
 	# parse input
 	audit_pkg_list, report_dir, cmd_args = parse_request_args(args)

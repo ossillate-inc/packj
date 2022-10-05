@@ -81,10 +81,10 @@ setup(
 	long_description_content_type="text/markdown",
 	author = 'Ossillate Inc.',
 	author_email = 'oss@ossillate.com',
-	url = 'https://github.com/ossillate-inc/packj-pypi',
-	download_url = 'https://github.com/ossillate-inc/packj-pypi/archive/refs/tags/placeholder.tar.gz',
+	url = 'https://github.com/ossillate-inc/packj',
+	download_url = 'https://github.com/ossillate-inc/packj/archive/refs/tags/placeholder.tar.gz',
 	project_urls={
-		"Bug Tracker": "https://github.com/ossillate-inc/packj-pypi/issues",
+		"Bug Tracker": "https://github.com/ossillate-inc/packj/issues",
 	},
 	keywords = ['software supply chain', 'malware', 'typo-squatting', 'vulnerability', 'open-source software', 'software composition analysis'],
 	python_requires=">=3.4",

@@ -47,7 +47,7 @@ else
 
 	# Configure
 	echo -n "	[+] Configuring strace (est: 2mins)..."
-	CFLAGS='-fPIC' ./configure --enable-mpers=no >> $logfile 2>&1
+	CFLAGS='-fPIC' ./configure --enable-mpers=no --with-libselinux=no >> $logfile 2>&1
 	if [ $? -ne 0 ]; then
 		rm -rf $tmpdir
 		echo "Failed"

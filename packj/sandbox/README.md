@@ -59,7 +59,7 @@ arguments:
 
 ## How it works ##
 
-Packj sandbox creates a network firewall and an isolated filesystem layer by interposing on system calls (e.g., `open`, `connect`) with [strace](https://github.com/strace/strace) and re-writing system calls arguments (e.g., file path) as per the sandboxing rules in `packj.yaml`. Rewriting ensures that all file system modifications are confined to the isolated layer. As a result, the requested package is **ONLY** installed in the sandboxed file system. All network and file system activities are logged. At the end, the user can review these activities before commiting to the host filesystem to **actually** install the package (i.e., copy artifacts).
+Packj sandbox creates a network firewall and an isolated filesystem layer by interposing on system calls (e.g., `open`, `connect`) with [strace](https://github.com/strace/strace) and re-writing system calls arguments (e.g., file path) as per the sandboxing rules in `config.yaml`. Rewriting ensures that all file system modifications are confined to the isolated layer. As a result, the requested package is **ONLY** installed in the sandboxed file system. All network and file system activities are logged. At the end, the user can review these activities before commiting to the host filesystem to **actually** install the package (i.e., copy artifacts).
 
 ```
 $ python3 main.py sandbox gem install overcommit
@@ -129,7 +129,7 @@ Done installing documentation for childprocess, iniparse, rexml, overcommit afte
 
 # How to customize #
 
-Sandboxing rules from `packj.yaml` are applied to allow/block network access or allow/hide sensitive file system paths. By default, only a few domains are allowed; please customize to fit your use case by simply editing rules in [packj.yaml](https://github.com/ossillate-inc/packj/blob/main/packj.yaml)
+Sandboxing rules from `config.yaml` are applied to allow/block network access or allow/hide sensitive file system paths. By default, only a few domains are allowed; please customize to fit your use case by simply editing rules in [config.yaml](https://github.com/ossillate-inc/packj/blob/main/config.yaml)
 
 # FAQ #
 

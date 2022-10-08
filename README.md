@@ -196,14 +196,17 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add support for other language ecosystems. Rust is a work in progress, and will be available in September '22 (last week).
+* GitHub action for auditing a pull request (WIP, ETA: Oct'22).
+* Add support for other language ecosystems. Rust is a work in progress, and will be available in December '22.
 * Add functionality to detect several other "risky" code as well as metadata attributes.
+
+Have a feature or support request? Please visit our [GitHub discussion page](https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/8hx3yEtF) for discussion and requests.
 
 # Team #
 
 Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://ossillate.com/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators.
 
-We welcome code contributions with open arms. Please join our [discord community](https://discord.gg/8hx3yEtF) for discussion and feature requests.
+We welcome code contributions with open arms. See [CONTRIBUTING.md](CONTRIBUTING.md) guidelines. Found a bug? Please open an issue. Refer to our [SECURITY.md](SECURITY.md) guidelines to report a security issue.
 
 # FAQ #
 

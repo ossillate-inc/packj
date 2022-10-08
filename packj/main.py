@@ -10,7 +10,7 @@ if sys.version_info[0] != 3:
 	print('\n*** WARNING *** Please use Python 3! Exiting.')
 	exit(1)
 
-def main():
+def main(config:str):
 	try:
 		# parse command line args
 		from packj.options import Options
@@ -20,13 +20,8 @@ def main():
 		args = opts.args()
 		assert args, 'Failed to get cmdline args!'
 
-		# configuration
-		config = 'packj.yaml'
-		if not os.path.exists(config):
-			config = os.path.join('packj', 'packj.yaml')
-		if not os.path.exists(config):
-			config = os.path.expanduser(os.path.join('~', f'.{config}'))
-		assert os.path.exists(config), 'No packj.yaml file found in current or ~/.packj dir'
+		# configuration file
+		assert os.path.exists(config), f'No {config} file found'
 
 		# audit request
 		if args.cmd == 'audit':
@@ -42,5 +37,12 @@ def main():
 		print(str(e))
 		exit(1)
 
-if __name__ == '__main__':
-	main()
+def bin_wrapper():
+	config = os.path.join('.packj', 'config.yaml')
+	if not os.path.exists(config):
+		config = os.path.expanduser(os.path.join('~', f'{config}'))
+	return main(config)
+
+def main_wrapper():
+	config = os.path.join(os.path.dirname(__file__), 'config.yaml')
+	return main(config)

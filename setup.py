@@ -41,7 +41,7 @@ def setup_sandbox(build_dir):
 		raise Exception(f'Failed to install sandbox:\n{stderr}')
 
 def copy_config():
-	src_path = os.path.join('packj', 'packj.yaml')
+	src_path = os.path.join('packj', 'config.yaml')
 	dst_path = os.path.expanduser(os.path.join('~', f'.{src_path}'))
 	try:
 		shutil.rmtree(os.path.dirname(dst_path))
@@ -79,9 +79,9 @@ setup(
 		'packj.audit.proto' : ['ruby/*.rb'],
 	},
 	data_files = [
-		(os.path.expanduser(os.path.join('~','.packj')), ['packj/packj.yaml']),
+		(os.path.expanduser(os.path.join('~','.packj')), ['packj/config.yaml']),
 	],
-	version = '0.4',
+	version = '0.5',
 	license='GNU AGPLv3',
 	description = 'Packj flags "risky" open-source packages in your software supply chain',
 	long_description=long_description,
@@ -98,7 +98,7 @@ setup(
 	install_requires=REQUIREMENTS,
 	entry_points = {
 		'console_scripts': [
-			'packj=packj.main:main',
+			'packj=packj.main:bin_wrapper',
 		],
 	},
 	cmdclass = {

@@ -1,6 +1,8 @@
 **/.git
 **/node_modules
 **/.pyc
+**/packj.egg-info
+**/dist
 **/__pycache__
 **/.DS_Store
 **/.*.swp

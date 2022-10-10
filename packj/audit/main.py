@@ -178,7 +178,7 @@ def analyze_cves(pm_name, pkg_name, ver_str, risks, report):
 		from packj.audit.osv import get_pkgver_vulns
 		vuln_list = get_pkgver_vulns(pm_name, pkg_name, ver_str)
 		if vuln_list:
-			alert_type = 'contains known vulnerabilities (CVEs)'
+			alert_type = 'contains known vulnerabilities'
 			vulnerabilities = ','.join(vul['id'] for vul in vuln_list)
 			reason = f'contains {vulnerabilities}'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)

@@ -81,7 +81,7 @@ setup(
 	data_files = [
 		(os.path.expanduser(os.path.join('~','.packj')), ['packj/config.yaml']),
 	],
-	version = '0.5',
+	version = '0.6',
 	license='GNU AGPLv3',
 	description = 'Packj flags "risky" open-source packages in your software supply chain',
 	long_description=long_description,

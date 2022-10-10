@@ -11,7 +11,7 @@ RUN useradd -rm -d /home/ubuntu -s /bin/bash -g ubuntu -u 1001 ubuntu
 WORKDIR /home/ubuntu/packj
 
 COPY --chown=ubuntu:ubuntu . .
-RUN pip3 install -r requirements.txt && cd sandbox && ./install.sh && mkdir /home/ubuntu/.local /home/ubuntu/.ruby /home/ubuntu/.npm /home/ubuntu/.npm/_cacache && chown -R ubuntu:ubuntu /home/ubuntu
+RUN pip3 install -r requirements.txt && cd packj/sandbox && ./install.sh && mkdir /home/ubuntu/.local /home/ubuntu/.ruby /home/ubuntu/.npm /home/ubuntu/.npm/_cacache && chown -R ubuntu:ubuntu /home/ubuntu
 
 USER ubuntu
 ENTRYPOINT ["python3", "main.py"]

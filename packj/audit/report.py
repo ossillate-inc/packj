@@ -16,7 +16,7 @@ html_template = """
 </head>
 <body>
 	<div>
-		<h4><a href="https://github.com/ossillate-inc/packj" target="_blank">Packj</a> audit found {{ data.risks | length }}/{{ data | length }} risky dependencies.</h4>
+		<h4><a href="https://github.com/ossillate-inc/packj" target="_blank">Packj</a> audit found {{ num_risky_deps }}/{{ data | length }} risky dependencies.</h4>
 	</div>
 	<details>
 		<summary><h4>Click here for details</h4></summary>
@@ -46,9 +46,6 @@ html_template = """
 			{% endfor %}
 		</table>
 	</details>
-	<div>
-		<h4>Powered by <a href="https://packj.dev" target="_blank">Packj.dev</a></h4>
-	</div>
 </body>
 </html>
 """
@@ -70,6 +67,7 @@ def generate_summary(reports, report_dir, args, suffix='.html'):
 	report_title = f'Packj security audit report'
 
 	data = []
+	num_risky_deps = 0
 	for report in reports:
 		data.append({
 			'pkg_name'	: report['pkg_name'],
@@ -77,13 +75,11 @@ def generate_summary(reports, report_dir, args, suffix='.html'):
 			'pkg_ver'	: report['pkg_ver'],
 			'risks'		: report['risks'],
 		})
-		#for category, risks in report['risks'].items():
-		#	for item in risks:
-		#		reason, details = str(item).strip(' ').split(':')
-		#		report_data['risks'][category].append((category, reason, details))
+		if report['risks']:
+			num_risky_deps += 1
 
 	t = Template(html_template)
-	c = Context({"title": report_title, "data": data})
+	c = Context({"title": report_title, "data": data, "num_risky_deps": num_risky_deps})
 
 	_, filepath = tempfile.mkstemp(prefix=f'report_', dir=report_dir, suffix=suffix)
 	write_to_file(filepath, t.render(c))

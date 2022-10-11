@@ -17,9 +17,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 long_description = open(os.path.join(here, "README.md")).read()
 long_description_content_type = 'text/markdown'
 
-sandbox_ext = setuptools.extension.Extension('sandbox',
-					 sources = ['sandbox/sandbox.o'])
-
 # this grabs the requirements from requirements.txt
 REQUIREMENTS = [i.strip().split('==')[0] for i in open(os.path.join(here, "requirements.txt")).readlines()]
 
@@ -81,7 +78,7 @@ setup(
 	data_files = [
 		(os.path.expanduser(os.path.join('~','.packj')), ['packj/config.yaml']),
 	],
-	version = '0.8',
+	version = '0.9',
 	license='GNU AGPLv3',
 	description = 'Packj flags "risky" open-source packages in your software supply chain',
 	long_description=long_description,
@@ -96,6 +93,7 @@ setup(
 	keywords = ['software supply chain', 'malware', 'typo-squatting', 'vulnerability', 'open-source software', 'software composition analysis'],
 	python_requires=">=3.4",
 	install_requires=REQUIREMENTS,
+	requires_dist=REQUIREMENTS,
 	entry_points = {
 		'console_scripts': [
 			'packj=packj.main:bin_wrapper',

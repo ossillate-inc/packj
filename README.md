@@ -21,11 +21,29 @@ Packj offers the following tools:
 * [Audit](#auditing-a-package) - to vet a package for "risky" attributes.
 * [Sandbox](#sandboxed-package-installation) - for safe installation of a package.
 
-**NOTE**: the quickest way to test Packj is using the Docker image:
+## Install and try now ##
+
+- The quickest way to test Packj is using the PyPI package. **NOTE**: Packj only works on Linux.
 
 ```
-$  docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
-usage: main [options] args
+$ pip3 install packj
+```
+
+- Use GitHub action to audit deps in a PR. View on [marketplace](https://github.com/marketplace/actions/packj-audit). Example [PR run](https://github.com/ossillate-inc/packj-github-action-demo/pull/3).
+
+```
+- name: Packj Audit
+  uses: ossillate-inc/packj.dev@0.0.3-beta
+  with:
+    DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
+    REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+- Use Docker or Podman for containerized (isolated) runs
+
+```
+$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
+usage: packj [options] args
 
 options:
     audit          Audit a package for malware/risky attributes

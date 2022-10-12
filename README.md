@@ -219,7 +219,6 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* GitHub action for auditing a pull request (WIP, ETA: Oct'22).
 * Add support for other language ecosystems. Rust is a work in progress, and will be available in December '22.
 * Add functionality to detect several other "risky" code as well as metadata attributes.
 

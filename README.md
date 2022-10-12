@@ -206,7 +206,7 @@ More examples of malware we found are listed at [https://packj.dev/malware](http
 
 To learn more about Packj tool or open-source software supply chain attacks, refer to our
 
-[![PyConUS'22 Video](https://img.youtube.com/vi/Rcuqn56uCDk/0.jpg)](https://www.youtube.com/watch?v=Rcuqn56uCDk)
+| [![PyConUS'22 Video](https://img.youtube.com/vi/Rcuqn56uCDk/0.jpg)](https://www.youtube.com/watch?v=Rcuqn56uCDk) | [![OSSEU'22 Video](https://img.youtube.com/vi/a7BfDGeW_jY/0.jpg)](https://www.youtube.com/watch?v=a7BfDGeW_jY) |
 
 - PyConUS'22 [talk](https://www.youtube.com/watch?v=Rcuqn56uCDk) and [slides](https://speakerdeck.com/ashishbijlani/pyconus22-slides).
 - BlackHAT Asia'22 Arsenal [presentation](https://www.blackhat.com/asia-22/arsenal/schedule/#mitigating-open-source-software-supply-chain-attacks-26241)

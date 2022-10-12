@@ -23,7 +23,11 @@ Packj offers the following tools:
 
 ## Install and try now ##
 
-- The quickest way to test Packj is using the PyPI package. **NOTE**: Packj only works on Linux.
+>
+> **NOTE**: Packj only works on Linux.
+>
+
+- The quickest way to test Packj is using the PyPI package.
 
 ```
 $ pip3 install packj

@@ -38,9 +38,9 @@ def main(config:str):
 		exit(1)
 
 def bin_wrapper():
-	config = os.path.join('.packj', 'config.yaml')
+	config = '.packj.yaml'
 	if not os.path.exists(config):
-		config = os.path.expanduser(os.path.join('~', f'{config}'))
+		config = os.path.expanduser(os.path.join('~', os.path.join('.packj', 'config.yaml')))
 	return main(config)
 
 def main_wrapper():

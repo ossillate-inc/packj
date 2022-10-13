@@ -1,13 +1,14 @@
 # <img src="https://raw.githubusercontent.com/feathericons/feather/master/icons/package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj flags malicious/risky open-source packages</span> 
 
-*Packj* (pronounced package) is a suite of command line (CLI) tools to mitigate software supply chain attacks. Specifically, it flags malicious and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. This is the tool behind our large-scale security analysis platform [Packj.dev](https://packj.dev) that continuously vets packages and provides free risk assessment reports.
+*Packj* (pronounced package) is a command line tool to mitigate software supply chain attacks. Specifically, it flags malicious and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. This is the tool behind our large-scale security analysis platform [Packj.dev](https://packj.dev) that continuously vets packages and provides free risk assessment reports.
 
 [![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/8hx3yEtF) ![](https://img.shields.io/badge/status-alpha-yellow) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
 
 
 # Contents #
 
-* [Get started ](#get-started)
+* [Get started](#get-started)
+* [Functionality](#functionality)
 * [Malware found](#malware-found)
 * [Talks and videos](#resources)
 * [Project roadmap](#feature-roadmap)
@@ -16,24 +17,11 @@
 
 # Get started #
 
-Packj offers the following tools: 
+We support multiple deployment models:
 
-* [Audit](#auditing-a-package) - to vet a package for "risky" attributes.
-* [Sandbox](#sandboxed-package-installation) - for safe installation of a package.
+### 1. GitHub runner 
 
-## Install and try now ##
-
->
-> **NOTE**: Packj only works on Linux.
->
-
-- The quickest way to test Packj is using the PyPI package.
-
-```
-$ pip3 install packj
-```
-
-- Use GitHub action to audit deps in a PR. View on [marketplace](https://github.com/marketplace/actions/packj-audit). Example [PR run](https://github.com/ossillate-inc/packj-github-action-demo/pull/3).
+Use Packj to audit dependencies in pull requests.
 
 ```
 - name: Packj Audit
@@ -43,7 +31,23 @@ $ pip3 install packj
     REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-- Use Docker or Podman for containerized (isolated) runs
+View on [marketplace](https://github.com/marketplace/actions/packj-audit). Example [PR run](https://github.com/ossillate-inc/packj-github-action-demo/pull/3).
+
+###  2. PyPI package
+
+The quickest way to try/test Packj is using the PyPI package.
+
+>
+> **NOTE**: Packj only works on Linux.
+>
+
+```
+$ pip3 install packj
+```
+
+### 3. Docker image
+
+Use Docker or Podman for containerized (isolated) runs
 
 ```
 $ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
@@ -53,6 +57,13 @@ options:
     audit          Audit a package for malware/risky attributes
     sandbox        Sandbox package installation to mitigate risks
 ```
+
+# Functionality #
+
+Packj offers the following tools: 
+
+* [Audit](#auditing-a-package) - to vet a package for "risky" attributes.
+* [Sandbox](#sandboxed-package-installation) - for safe installation of a package.
 
 ## Auditing a package ##
 

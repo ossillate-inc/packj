@@ -51,12 +51,15 @@ pip3 install packj
 Use Docker or Podman for containerized (isolated) runs
 
 ```
-$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
-usage: packj [options] args
+docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
+```
 
-options:
-    audit          Audit a package for malware/risky attributes
-    sandbox        Sandbox package installation to mitigate risks
+### 4. Clone repo
+
+Clone this repo and try
+
+```
+pip3 install -r requirements.txt && python3 main.py --help 
 ```
 
 # Functionality #

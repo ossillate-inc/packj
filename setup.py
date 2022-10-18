@@ -37,20 +37,20 @@ def setup_sandbox(build_dir):
 	if make_process.returncode:
 		raise Exception(f'Failed to install sandbox:\n{stderr}')
 
-def copy_config():
-	src_path = os.path.join('packj', 'config.yaml')
-	dst_path = os.path.expanduser(os.path.join('~', f'.{src_path}'))
+def copy_config(config='.packj.yaml'):
+	path = os.path.expanduser(os.path.join('~', f'{config}'))
 	try:
-		shutil.rmtree(os.path.dirname(dst_path))
+		os.remove(path)
 	except:
 		pass
-	os.mkdir(os.path.dirname(dst_path))
-	shutil.copy(src_path, dst_path)
+	shutil.copy(config, path)
 
-def remove_config():
-	dst_path = os.path.expanduser(os.path.join('~', '.packj'))
-	if os.path.exists(dst_path):
-		shutil.rmtree(dst_path)
+def remove_config(config='.packj.yaml'):
+	path = os.path.expanduser(os.path.join('~', f'{config}'))
+	try:
+		os.remove(path)
+	except:
+		pass
 
 class custom_install(install):
 	def run(self):
@@ -76,9 +76,9 @@ setup(
 		'packj.audit.proto' : ['ruby/*.rb'],
 	},
 	data_files = [
-		(os.path.expanduser(os.path.join('~','.packj')), ['packj/config.yaml']),
+		(os.path.expanduser(os.path.join('~','.packj.yaml')), ['.packj.yaml']),
 	],
-	version = '0.10',
+	version = '0.11',
 	license='GNU AGPLv3',
 	description = 'Packj flags "risky" open-source packages in your software supply chain',
 	long_description=long_description,
@@ -96,7 +96,7 @@ setup(
 	requires_dist=REQUIREMENTS,
 	entry_points = {
 		'console_scripts': [
-			'packj=packj.main:bin_wrapper',
+			'packj=packj.main:main',
 		],
 	},
 	cmdclass = {

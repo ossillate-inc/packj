@@ -6,6 +6,5 @@
 **/__pycache__
 **/.DS_Store
 **/.*.swp
-**/.packj.yaml
 **/sandbox/strace
 **/sandbox/*.so

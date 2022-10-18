@@ -43,7 +43,7 @@ The quickest way to try/test Packj is using the PyPI package.
 >
 
 ```
-$ pip3 install packj
+pip3 install packj
 ```
 
 ### 3. Docker image

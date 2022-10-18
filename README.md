@@ -46,17 +46,17 @@ The quickest way to try/test Packj is using the PyPI package.
 pip3 install packj
 ```
 
-### 3. Docker image
+### 3. Docker image (recommended)
 
-Use Docker or Podman for containerized (isolated) runs
+Use Docker or Podman for containerized (isolated) runs.
 
 ```
 docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
 ```
 
-### 4. Clone repo
+### 4. Source repo
 
-Clone this repo and try
+Clone this repo, install dependencies, and try for yourself.
 
 ```
 pip3 install -r requirements.txt && python3 main.py --help 

@@ -23,7 +23,7 @@ We support multiple deployment models:
 
 Use Packj to audit dependencies in pull requests.
 
-```
+```yaml
 - name: Packj Audit
   uses: ossillate-inc/packj.dev@0.0.3-beta
   with:

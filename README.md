@@ -27,6 +27,7 @@ Use Packj to audit dependencies in pull requests.
 - name: Packj Audit
   uses: ossillate-inc/packj.dev@0.0.3-beta
   with:
+    # TODO: replace with your dependency files in the repo
     DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
     REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

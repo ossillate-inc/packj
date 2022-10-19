@@ -190,7 +190,7 @@ Packj has been developed with a goal to assist developers in identifying and rev
 
 However, since the degree of perceived security risk from an untrusted package depends on the specific security requirements, Packj can be customized according to your threat model. For instance, a package with no 2FA may be perceived to pose greater security risks to some developers, compared to others who may be more willing to use such packages for the functionality offered. Given the volatile nature of the problem, providing customized and granular risk measurement is one of our goals.
 
-Packj can be customized to minimize noise and reduce alert fatigue by simply commenting out unwanted attributes in [config.yaml](https://github.com/ossillate-inc/packj/blob/main/packj/config.yaml)
+Packj can be customized to minimize noise and reduce alert fatigue by simply commenting out unwanted attributes in [.packj.yaml](https://github.com/ossillate-inc/packj/blob/main/.packj.yaml)
 
 # FAQ #
 

@@ -180,7 +180,7 @@ Some of the attributes we vet for, include
 |  Contributors' email | Metadata | Email addresses of the contributors | Incorrect or invalid of email addresses suggest lack of 2FA |
 |  Source repo | Metadata | Presence and validity of public source repo | Absence of a public repo means no easy way to audit or review the source code publicly |
 
-Full list of the attributes we track can be viewed at [config.yaml](https://github.com/ossillate-inc/packj/blob/main/packj/config.yaml)
+Full list of the attributes we track can be viewed at [.packj.yaml](https://github.com/ossillate-inc/packj/blob/main/.packj.yaml)
 
 These attributes have been identified as risky by several other researchers [[1](https://arxiv.org/pdf/2112.10165.pdf), [2](https://www.usenix.org/system/files/sec19-zimmermann.pdf), [3](https://www.ndss-symposium.org/wp-content/uploads/ndss2021_1B-1_23055_paper.pdf)] as well. 
 
@@ -196,7 +196,7 @@ Packj can be customized to minimize noise and reduce alert fatigue by simply com
 
 - _What techniques does Packj employ to detect risky/malicious packages?_
 
-Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive detection of malware. Static analysis parses package into  syntactical code components (e.g., functions, statements), which are analyzed for usage of sensitive language APIs (e.g., `JavaScript https.get` followed by `eval` that is typically used to download and execute malicious code). However, as the code is analyzed without execution during static analysis, Packj also performs dynamic analysis to capture runtime behavior of the package (and all dependencies). Finally, metadata analysis is carried out to check for several "risky" attributes (e.g., expired author email that implies lack of 2FA, lack of public source code repo or missing published version). Full list of the attributes we track can be viewed at [config.yaml](https://github.com/ossillate-inc/packj/blob/main/packj/config.yaml
+Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive detection of malware. Static analysis parses package into  syntactical code components (e.g., functions, statements), which are analyzed for usage of sensitive language APIs (e.g., `JavaScript https.get` followed by `eval` that is typically used to download and execute malicious code). However, as the code is analyzed without execution during static analysis, Packj also performs dynamic analysis to capture runtime behavior of the package (and all dependencies). Finally, metadata analysis is carried out to check for several "risky" attributes (e.g., expired author email that implies lack of 2FA, lack of public source code repo or missing published version). Full list of the attributes we track can be viewed at [.packj.yaml](https://github.com/ossillate-inc/packj/blob/main/.packj.yaml
 )
 
 - _Does this work at the system call level, where it would detect e.g. any attempt to open ~/.aws/credentials, or does it rely on heuristic analysis of the code itself, which will always be able to be "coded around" by the malware authors?_

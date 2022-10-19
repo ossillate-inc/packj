@@ -1,6 +1,6 @@
 # <img src="https://raw.githubusercontent.com/feathericons/feather/master/icons/package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj flags malicious/risky open-source packages</span> 
 
-*Packj* (pronounced package) is a command line tool to mitigate software supply chain attacks. Specifically, it flags malicious and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. This is the tool behind our large-scale security analysis platform [Packj.dev](https://packj.dev) that continuously vets packages and provides free risk assessment reports.
+*Packj* (pronounced package) is **zero-noise** tool to mitigate software supply chain attacks. It flags malicious, vulnerable, and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. This is the tool behind our large-scale security analysis platform [Packj.dev](https://packj.dev) that continuously vets packages and provides free risk assessment reports.
 
 [![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/8hx3yEtF) ![](https://img.shields.io/badge/status-alpha-yellow) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
 
@@ -9,6 +9,7 @@
 
 * [Get started](#get-started)
 * [Functionality](#functionality)
+* [Customization](#customization)
 * [Malware found](#malware-found)
 * [Talks and videos](#resources)
 * [Project roadmap](#feature-roadmap)
@@ -175,6 +176,10 @@ Installing ri documentation for overcommit-0.59.1
 
 [C]ommit all changes, [Q|q]uit & discard changes, [L|l]ist details:
 ```
+
+# Customization #
+
+Packj can be easily customized (zero noise) to your threat model. Simply add a [.packj.yaml](https://github.com/ossillate-inc/packj/blob/main/.packj.yaml) file in the top dir of your repo/project and reduce alert fatigue by commenting out unwanted attributes.
 
 # Malware found #
 

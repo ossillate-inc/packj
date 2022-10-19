@@ -37,9 +37,25 @@ def setup_sandbox(build_dir):
 	if make_process.returncode:
 		raise Exception(f'Failed to install sandbox:\n{stderr}')
 
+def copy_config(config='.packj.yaml'):
+	path = os.path.expanduser(os.path.join('~', f'{config}'))
+	try:
+		os.remove(path)
+	except:
+		pass
+	shutil.copy(config, path)
+
+def remove_config(config='.packj.yaml'):
+	path = os.path.expanduser(os.path.join('~', f'{config}'))
+	try:
+		os.remove(path)
+	except:
+		pass
+
 class custom_install(install):
 	def run(self):
 		try:
+			copy_config()
 			install.run(self)
 			target_dir = os.path.realpath(self.build_lib)
 			setup_sandbox(target_dir)

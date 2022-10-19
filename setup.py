@@ -37,32 +37,14 @@ def setup_sandbox(build_dir):
 	if make_process.returncode:
 		raise Exception(f'Failed to install sandbox:\n{stderr}')
 
-def copy_config(config='.packj.yaml'):
-	path = os.path.expanduser(os.path.join('~', f'{config}'))
-	try:
-		os.remove(path)
-	except:
-		pass
-	shutil.copy(config, path)
-
-def remove_config(config='.packj.yaml'):
-	path = os.path.expanduser(os.path.join('~', f'{config}'))
-	try:
-		os.remove(path)
-	except:
-		pass
-
 class custom_install(install):
 	def run(self):
 		try:
 			install.run(self)
 			target_dir = os.path.realpath(self.build_lib)
 			setup_sandbox(target_dir)
-			copy_config()
 		except Exception as e:
-			remove_config()
-			distutils_logger.error(f'Installation failed: {str(e)}')
-			raise DistutilsSetupError(str(e))
+			distutils_logger.warning(f'Custom build failed: {str(e)}! Sandbox feature will not work')
 
 setup(
 	name = 'packj',
@@ -76,9 +58,9 @@ setup(
 		'packj.audit.proto' : ['ruby/*.rb'],
 	},
 	data_files = [
-		(os.path.expanduser(os.path.join('~','.packj.yaml')), ['.packj.yaml']),
+		(os.path.expanduser('~'), ['.packj.yaml']),
 	],
-	version = '0.11',
+	version = '0.12',
 	license='GNU AGPLv3',
 	description = 'Packj flags "risky" open-source packages in your software supply chain',
 	long_description=long_description,
@@ -93,7 +75,6 @@ setup(
 	keywords = ['software supply chain', 'malware', 'typo-squatting', 'vulnerability', 'open-source software', 'software composition analysis'],
 	python_requires=">=3.4",
 	install_requires=REQUIREMENTS,
-	requires_dist=REQUIREMENTS,
 	entry_points = {
 		'console_scripts': [
 			'packj=packj.main:main',

@@ -26,14 +26,14 @@ Use Packj to audit dependencies in pull requests.
 
 ```yaml
 - name: Packj Audit
-  uses: ossillate-inc/packj.dev@0.0.3-beta
+  uses: ossillate-inc/packj-github-action@0.0.4-beta
   with:
     # TODO: replace with your dependency files in the repo
     DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
     REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-View on [marketplace](https://packj.dev/go?next=https://github.com/marketplace/actions/packj-audit). Example [PR run](https://packj.dev/go?next=https://github.com/ossillate-inc/packj-github-action-demo/pull/3).
+View on [marketplace](https://packj.dev/go?next=https://github.com/marketplace/actions/packj-security-audit). Example [PR run](https://packj.dev/go?next=https://github.com/ossillate-inc/packj-github-action-demo/pull/3).
 
 ###  2. PyPI package
 

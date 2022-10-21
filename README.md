@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/feathericons/feather/master/icons/package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj flags malicious/risky open-source packages</span> 
+# <img src="https://packj.dev/static/img/icons/package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj flags malicious/risky open-source packages</span> 
 
 *Packj* (pronounced package) is a tool to mitigate software supply chain attacks. It flags malicious, vulnerable, and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. It can be easily customized to minimize noise. This is the tool behind our large-scale security analysis platform [Packj.dev](https://packj.dev) that continuously vets packages and provides free risk assessment reports.
 

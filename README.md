@@ -33,7 +33,7 @@ Use Packj to audit dependencies in pull requests.
     REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-View on [marketplace](https://packj.dev/go?next=https://github.com/marketplace/actions/packj-security-audit). Example [PR run](https://packj.dev/go?next=https://github.com/ossillate-inc/packj-github-action-demo/pull/3#issuecomment-1274797138).
+View on GitHub [marketplace](https://packj.dev/go?next=https://github.com/marketplace/actions/packj-security-audit). Example [PR run](https://packj.dev/go?next=https://github.com/ossillate-inc/packj-github-action-demo/pull/3#issuecomment-1274797138).
 
 ###  2. PyPI package
 

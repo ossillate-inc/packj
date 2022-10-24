@@ -9,6 +9,7 @@
 
 * [Get started](#get-started)
 * [Functionality](#functionality)
+* [Why Packj](#why-packj)
 * [Customization](#customization)
 * [Malware found](#malware-found)
 * [Talks and videos](#resources)
@@ -176,6 +177,14 @@ Installing ri documentation for overcommit-0.59.1
 
 [C]ommit all changes, [Q|q]uit & discard changes, [L|l]ist details:
 ```
+
+# Why Packj
+
+**TL;DR** The state-of-the-art open-source vulnerability scanners assume **TRUSTED** code. Therefore, all of them **ONLY** scan for CVEs. Whereas, Packj not only scans for CVEs, but also carries our deep code analsysis to flag any hidden malware and "risky” code behavior, such as spawning of shell, use of SSH keys, mismatch of GitHub code vs packaged code (provenance), which none of the existing tools support. Please read more at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md#faq)
+
+CVEs are accidental programming bugs that create security vulnerabilities (e.g., Log4J, HeartBleed). Attackers need to develop an exploit to trigger such security vulnerabilities (e.g., a crafted TCP/IP packet in case of HeartBleed). Such CVEs can be fixed by patching or upgrading to a newer version of the library (e.g., newer version of Log4J fixes the CVE). In contrast, malware is purposefully bad. Moreover, malware itself is an exploit and cannot be patched or fixed by upgrading to a newer version. For example, [dependency confusion attack](https://packj.dev/go?next=https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610) was intentionally malicious; it did not exploit any accidental programming bug in the code. Similarly, an author of popular package sabotaging their own code to [protest](https://packj.dev/go?next=https://en.wikipedia.org/wiki/Peacenotwar) against the war is very much intentional and does not exploit any CVEs. Typo-squatting is another attack vector that bad actors use to propagate malware in popular open-source package registries: it exploits typos and inexperience of devs, not accidental programming bugs or CVEs in the code.
+
+Existing scanners **DO NOT** detect malware or intentionally bad code because they assume that the third-party open-source code is benign. As such, simply scan the source code for open-source dependencies, compile a list of all dependencies being used, and look each <dependency-NAME, dependency-VERSION> up in a database (e.g., NVD) to report if the source code uses vulnerable package versions (e.g., vulnerable version of Log4J, LibSSL version affected by HeartBleed).
 
 # Customization #
 

@@ -185,7 +185,7 @@ Please find details on the sandboxing mechanism and how to use at [Sandbox READM
 
 # Why Packj
 
-**TL;DR** The state-of-the-art open-source vulnerability scanners assume **TRUSTED** code. Therefore, all of them **ONLY** scan for CVEs. Whereas, Packj not only scans for CVEs, but also carries our deep code analsysis to flag any hidden malware and "risky” code behavior, such as spawning of shell, use of SSH keys, mismatch of GitHub code vs packaged code (provenance), which none of the existing tools support. 
+**TL;DR** The state-of-the-art open-source vulnerability scanners assume **TRUSTED** code. Therefore, all of them **ONLY** scan for CVEs. Whereas, Packj not only scans for CVEs, but also carries out deep code analsysis to flag any hidden malware and "risky” code behavior, such as spawning of shell, use of SSH keys, and mismatch of GitHub code vs packaged code (provenance). Such risky behavior/attributes does not qualify as vulnerabilities (CVEs), which is why none of the existing tools can flag them. 
 
 <details>
     <summary><h4>Show long answer</h4></summary>

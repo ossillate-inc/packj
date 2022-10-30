@@ -82,43 +82,45 @@ Auditing the following is supported:
 
 Audit can also be performed in Docker/Podman containers. Please find details on risky attributes and how to use at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
 
-```
-$ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace -p npm:browserify
+<details>
+    <summary><h4>Show example run/output</h4></summary>
 
-[+] Fetching 'browserify' from npm..........PASS [ver 17.0.0]
-[+]    Checking package description.........PASS [browser-side require() the node way]
-[+]    Checking release history.............PASS [484 version(s)]
-[+] Checking version........................RISK [702 days old]
-[+]    Checking release time gap............PASS [68 days since last release]
-[+] Checking author.........................PASS [mail@substack.net]
-[+]    Checking email/domain validity.......RISK [expired author email domain]
-[+] Checking readme.........................PASS [26838 bytes]
-[+] Checking homepage.......................PASS [https://github.com/browserify/browserify#readme]
-[+] Checking downloads......................PASS [2M weekly]
-[+] Checking repo URL.......................PASS [https://github.com/browserify/browserify]
-[+]    Checking repo data...................PASS [stars: 14189, forks: 1244]
-[+]    Checking if repo is a forked copy....PASS [original, not forked]
-[+]    Checking repo description............PASS [browser-side require() the node.js way]
-[+]    Checking repo activity...............PASS [commits: 2290, contributors: 207, tags: 413]
-[+] Checking for CVEs.......................PASS [none found]
-[+] Checking dependencies...................RISK [48 found]
-[+] Downloading package from npm............PASS [163.83 KB]
-[+] Analyzing code..........................RISK [needs 3 perm(s): decode,codegen,file]
-[+] Checking files/funcs....................PASS [429 files (383 .js), 744 funcs, LoC: 9.7K]
-[+] Installing package and tracing code.....PASS [found 5 process,1130 files,22 network syscalls]
-=============================================
-[+] 5 risk(s) found, package is undesirable!
-=> Complete report: /tmp/packj_54rbjhgm/report_npm-browserify-17.0.0_hlr1rhcz.json
-{
-    "undesirable": [
-        "old package: 702 days old",
-        "invalid or no author email: expired author email domain",
-        "generates new code at runtime", 
-        "reads files and dirs",
-        "forks or exits OS processes",
-    ]
-}
-```
+    $ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest audit --trace -p npm:browserify
+
+    [+] Fetching 'browserify' from npm..........PASS [ver 17.0.0]
+    [+]    Checking package description.........PASS [browser-side require() the node way]
+    [+]    Checking release history.............PASS [484 version(s)]
+    [+] Checking version........................RISK [702 days old]
+    [+]    Checking release time gap............PASS [68 days since last release]
+    [+] Checking author.........................PASS [mail@substack.net]
+    [+]    Checking email/domain validity.......RISK [expired author email domain]
+    [+] Checking readme.........................PASS [26838 bytes]
+    [+] Checking homepage.......................PASS [https://github.com/browserify/browserify#readme]
+    [+] Checking downloads......................PASS [2M weekly]
+    [+] Checking repo URL.......................PASS [https://github.com/browserify/browserify]
+    [+]    Checking repo data...................PASS [stars: 14189, forks: 1244]
+    [+]    Checking if repo is a forked copy....PASS [original, not forked]
+    [+]    Checking repo description............PASS [browser-side require() the node.js way]
+    [+]    Checking repo activity...............PASS [commits: 2290, contributors: 207, tags: 413]
+    [+] Checking for CVEs.......................PASS [none found]
+    [+] Checking dependencies...................RISK [48 found]
+    [+] Downloading package from npm............PASS [163.83 KB]
+    [+] Analyzing code..........................RISK [needs 3 perm(s): decode,codegen,file]
+    [+] Checking files/funcs....................PASS [429 files (383 .js), 744 funcs, LoC: 9.7K]
+    [+] Installing package and tracing code.....PASS [found 5 process,1130 files,22 network syscalls]
+    =============================================
+    [+] 5 risk(s) found, package is undesirable!
+    => Complete report: /tmp/packj_54rbjhgm/report_npm-browserify-17.0.0_hlr1rhcz.json
+    {
+        "undesirable": [
+            "old package: 702 days old",
+            "invalid or no author email: expired author email domain",
+            "generates new code at runtime",
+            "reads files and dirs",
+            "forks or exits OS processes",
+        ]
+    }
+</details>
 
 ## Sandboxed package installation ##
 
@@ -126,68 +128,75 @@ Packj offers a lightweight sandboxing for `safe installation` of a package. Spec
 
 Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/sandbox/README.md).
 
-```
-$ python3 main.py sandbox gem install overcommit
+<details>
+    <summary><h4>Show example run/output</h4></summary>
 
-Fetching: overcommit-0.59.1.gem (100%)
-Install hooks by running `overcommit --install` in your Git repository
-Successfully installed overcommit-0.59.1
-Parsing documentation for overcommit-0.59.1
-Installing ri documentation for overcommit-0.59.1
+    $ python3 main.py sandbox gem install overcommit
+   
+    Fetching: overcommit-0.59.1.gem (100%)
+    Install hooks by running `overcommit --install` in your Git repository
+    Successfully installed overcommit-0.59.1
+    Parsing documentation for overcommit-0.59.1
+    Installing ri documentation for overcommit-0.59.1
+   
+    #############################
+    # Review summarized activity
+    #############################
+   
+    [+] Network connections
+        [+] DNS (1 IPv4 addresses) at port 53 [rule: ALLOW]
+        [+] rubygems.org (4 IPv6 addresses) at port 443 [rule: IPv6 rules not supported]
+        [+] rubygems.org (4 IPv4 addresses) at port 443 [rule: ALLOW]
+    [+] Filesystem changes
+    /
+    └── home
+        └── ubuntu
+            └── .ruby
+                ├── gems
+                │   ├── iniparse-1.5.0 [new: DIR, 15 files, 46.6K bytes]
+                │   ├── rexml-3.2.5 [new: DIR, 77 files, 455.6K bytes]
+                │   ├── overcommit-0.59.1 [new: DIR, 252 files, 432.7K bytes]
+                │   └── childprocess-4.1.0 [new: DIR, 57 files, 141.2K bytes]
+                ├── cache
+                │   ├── iniparse-1.5.0.gem [new: FILE, 16.4K bytes]
+                │   ├── rexml-3.2.5.gem [new: FILE, 93.2K bytes]
+                │   ├── childprocess-4.1.0.gem [new: FILE, 34.3K bytes]
+                │   └── overcommit-0.59.1.gem [new: FILE, 84K bytes]
+                ├── specifications
+                │   ├── rexml-3.2.5.gemspec [new: FILE, 2.7K bytes]
+                │   ├── overcommit-0.59.1.gemspec [new: FILE, 1.7K bytes]
+                │   ├── childprocess-4.1.0.gemspec [new: FILE, 1.8K bytes]
+                │   └── iniparse-1.5.0.gemspec [new: FILE, 1.3K bytes]
+                ├── bin
+                │   └── overcommit [new: FILE, 622 bytes]
+                └── doc
+                    ├── iniparse-1.5.0
+                    │   └── ri [new: DIR, 119 files, 131.7K bytes]
+                    ├── rexml-3.2.5
+                    │   └── ri [new: DIR, 836 files, 841K bytes]
+                    ├── overcommit-0.59.1
+                    │   └── ri [new: DIR, 1046 files, 1.5M bytes]
+                    └── childprocess-4.1.0
+                        └── ri [new: DIR, 272 files, 297.8K bytes]
 
-#############################
-# Review summarized activity
-#############################
+    [C]ommit all changes, [Q|q]uit & discard changes, [L|l]ist details:
+</details>
 
-[+] Network connections
-	[+] DNS (1 IPv4 addresses) at port 53 [rule: ALLOW]
-	[+] rubygems.org (4 IPv6 addresses) at port 443 [rule: IPv6 rules not supported]
-	[+] rubygems.org (4 IPv4 addresses) at port 443 [rule: ALLOW]
-[+] Filesystem changes
-/
-└── home
-    └── ubuntu
-        └── .ruby
-            ├── gems
-            │   ├── iniparse-1.5.0 [new: DIR, 15 files, 46.6K bytes]
-            │   ├── rexml-3.2.5 [new: DIR, 77 files, 455.6K bytes]
-            │   ├── overcommit-0.59.1 [new: DIR, 252 files, 432.7K bytes]
-            │   └── childprocess-4.1.0 [new: DIR, 57 files, 141.2K bytes]
-            ├── cache
-            │   ├── iniparse-1.5.0.gem [new: FILE, 16.4K bytes]
-            │   ├── rexml-3.2.5.gem [new: FILE, 93.2K bytes]
-            │   ├── childprocess-4.1.0.gem [new: FILE, 34.3K bytes]
-            │   └── overcommit-0.59.1.gem [new: FILE, 84K bytes]
-            ├── specifications
-            │   ├── rexml-3.2.5.gemspec [new: FILE, 2.7K bytes]
-            │   ├── overcommit-0.59.1.gemspec [new: FILE, 1.7K bytes]
-            │   ├── childprocess-4.1.0.gemspec [new: FILE, 1.8K bytes]
-            │   └── iniparse-1.5.0.gemspec [new: FILE, 1.3K bytes]
-            ├── bin
-            │   └── overcommit [new: FILE, 622 bytes]
-            └── doc
-                ├── iniparse-1.5.0
-                │   └── ri [new: DIR, 119 files, 131.7K bytes]
-                ├── rexml-3.2.5
-                │   └── ri [new: DIR, 836 files, 841K bytes]
-                ├── overcommit-0.59.1
-                │   └── ri [new: DIR, 1046 files, 1.5M bytes]
-                └── childprocess-4.1.0
-                    └── ri [new: DIR, 272 files, 297.8K bytes]
-
-[C]ommit all changes, [Q|q]uit & discard changes, [L|l]ist details:
-```
 
 # Why Packj
 
 **TL;DR** The state-of-the-art open-source vulnerability scanners assume **TRUSTED** code. Therefore, all of them **ONLY** scan for CVEs. Whereas, Packj not only scans for CVEs, but also carries our deep code analsysis to flag any hidden malware and "risky” code behavior, such as spawning of shell, use of SSH keys, mismatch of GitHub code vs packaged code (provenance), which none of the existing tools support. 
 
-CVEs are accidental programming bugs that create security vulnerabilities (e.g., Log4J, HeartBleed). Attackers need to develop an exploit to trigger such security vulnerabilities (e.g., a crafted TCP/IP packet in case of HeartBleed). Such CVEs can be fixed by patching or upgrading to a newer version of the library (e.g., newer version of Log4J fixes the CVE). In contrast, malware is purposefully bad. Moreover, malware itself is an exploit and cannot be patched or fixed by upgrading to a newer version. For example, [dependency confusion attack](https://packj.dev/go?next=https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610) was intentionally malicious; it did not exploit any accidental programming bug in the code. Similarly, an author of popular package sabotaging their own code to [protest](https://packj.dev/go?next=https://en.wikipedia.org/wiki/Peacenotwar) against the war is very much intentional and does not exploit any CVEs. Typo-squatting is another attack vector that bad actors use to propagate malware in popular open-source package registries: it exploits [typos and inexperience of devs](https://packj.dev/go?next=https://discuss.python.org/t/improving-risks-and-consequences-against-typosquatting-on-pypi/5090), not accidental programming bugs or CVEs in the code.
+<details>
+    <summary><h4>Show long answer</h4></summary>
+
+ CVEs are accidental programming bugs that create security vulnerabilities (e.g., Log4J, HeartBleed). Attackers need to develop an exploit to trigger such security vulnerabilities (e.g., a crafted TCP/IP packet in case of HeartBleed). Such CVEs can be fixed by patching or upgrading to a newer version of the library (e.g., newer version of Log4J fixes the CVE). In contrast, malware is purposefully bad. Moreover, malware itself is an exploit and cannot be patched or fixed by upgrading to a newer version. For example, [dependency confusion attack](https://packj.dev/go?next=https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610) was intentionally malicious; it did not exploit any accidental programming bug in the code. Similarly, an author of popular package sabotaging their own code to [protest](https://packj.dev/go?next=https://en.wikipedia.org/wiki/Peacenotwar) against the war is very much intentional and does not exploit any CVEs. Typo-squatting is another attack vector that bad actors use to propagate malware in popular open-source package registries: it exploits [typos and inexperience of devs](https://packj.dev/go?next=https://discuss.python.org/t/improving-risks-and-consequences-against-typosquatting-on-pypi/5090), not accidental programming bugs or CVEs in the code.
 
 Existing scanners **DO NOT** detect malware or intentionally bad code because they assume that the third-party open-source code is benign. As such, simply scan the source code for open-source dependencies, compile a list of all dependencies being used, and look each <dependency-NAME, dependency-VERSION> up in a database (e.g., NVD) to report if the source code uses vulnerable package versions (e.g., vulnerable version of Log4J, LibSSL version affected by HeartBleed).
 
 Packj uses static code analysis, dynamic tracing, and metadata analysis. Please read more at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md#faq)
-
+</details>
+	
 # Customization #
 
 Packj can be easily customized (zero noise) to your threat model. Simply add a [.packj.yaml](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/.packj.yaml) file in the top dir of your repo/project and reduce alert fatigue by commenting out unwanted attributes.
@@ -196,38 +205,42 @@ Packj can be easily customized (zero noise) to your threat model. Simply add a [
 
 We found over 40 malicious packages on PyPI using this tool. A number of them been taken down. Refer to an example below:
 
-```
-$ python3 main.py audit pypi:krisqian
-[+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
-[+] Checking version...OK [256 days old]
-[+] Checking release history...OK [7 version(s)]
-[+] Checking release time gap...OK [1 days since last release]
-[+] Checking author...OK [KrisWuQian@baidu.com]
-	[+] Checking email/domain validity...OK [KrisWuQian@baidu.com]
-[+] Checking readme...ALERT [no readme]
-[+] Checking homepage...OK [https://www.bilibili.com/bangumi/media/md140632]
-[+] Checking downloads...OK [13 weekly]
-[+] Checking repo_url URL...OK [None]
-[+] Checking for CVEs...OK [none found]
-[+] Checking dependencies...OK [none found]
-[+] Downloading package 'KrisQian' (ver 0.0.7) from pypi...OK [1.94 KB]
-[+] Analyzing code...ALERT [needs 3 perms: process,network,file]
-[+] Checking files/funcs...OK [9 files (2 .py), 6 funcs, LoC: 184]
-=============================================
-[+] 6 risk(s) found, package is undesirable!
-{
-    "undesirable": [
-        "no readme",
-        "only 45 weekly downloads",
-        "no source repo found", 
-        "generates new code at runtime", 
-        "fetches data over the network: ['KrisQian-0.0.7/setup.py:40', 'KrisQian-0.0.7/setup.py:50']", 
-        "reads files and dirs: ['KrisQian-0.0.7/setup.py:59', 'KrisQian-0.0.7/setup.py:70']"
-    ]
-}
-=> Complete report: pypi-KrisQian-0.0.7.json
-=> View pre-vetted package report at https://packj.dev/package/PyPi/KrisQian/0.0.7
-```
+<details>
+    <summary><h4>Show example malware</h4></summary>
+
+    $ python3 main.py audit pypi:krisqian
+
+    [+] Fetching 'krisqian' from pypi...OK [ver 0.0.7]
+    [+] Checking version...OK [256 days old]
+    [+] Checking release history...OK [7 version(s)]
+    [+] Checking release time gap...OK [1 days since last release]
+    [+] Checking author...OK [KrisWuQian@baidu.com]
+        [+] Checking email/domain validity...OK [KrisWuQian@baidu.com]
+    [+] Checking readme...ALERT [no readme]
+    [+] Checking homepage...OK [https://www.bilibili.com/bangumi/media/md140632]
+    [+] Checking downloads...OK [13 weekly]
+    [+] Checking repo_url URL...OK [None]
+    [+] Checking for CVEs...OK [none found]
+    [+] Checking dependencies...OK [none found]
+    [+] Downloading package 'KrisQian' (ver 0.0.7) from pypi...OK [1.94 KB]
+    [+] Analyzing code...ALERT [needs 3 perms: process,network,file]
+    [+] Checking files/funcs...OK [9 files (2 .py), 6 funcs, LoC: 184]
+    =============================================
+    [+] 6 risk(s) found, package is undesirable!
+    {
+        "undesirable": [
+            "no readme",
+            "only 45 weekly downloads",
+            "no source repo found",
+            "generates new code at runtime",
+            "fetches data over the network: ['KrisQian-0.0.7/setup.py:40', 'KrisQian-0.0.7/setup.py:50']",
+            "reads files and dirs: ['KrisQian-0.0.7/setup.py:59', 'KrisQian-0.0.7/setup.py:70']"
+        ]
+    }
+    => Complete report: pypi-KrisQian-0.0.7.json
+    => View pre-vetted package report at https://packj.dev/package/PyPi/KrisQian/0.0.7
+</details>
+
 
 Packj flagged KrisQian (v0.0.7) as suspicious due to absence of source repo and use of sensitive APIs (network, code generation) during package installation time (in setup.py). We decided to take a deeper look, and found the package malicious. Please find our detailed analysis at [https://packj.dev/malware/krisqian](https://packj.dev/go?next=https://packj.dev/malware/krisqian).
 

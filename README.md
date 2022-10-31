@@ -7,15 +7,15 @@
 
 # Contents #
 
-* [Get started](#get-started)
-* [Functionality](#functionality)
-* [Why Packj](#why-packj)
-* [Customization](#customization)
-* [Malware found](#malware-found)
-* [Talks and videos](#resources)
-* [Project roadmap](#feature-roadmap)
-* [Team and collaboration](#team)
-* [FAQ](#faq)
+* [Get started](#get-started) - available as Docker image, GitHub Action, Python PyPI package
+* [Functionality](#functionality) - performs deep metadata and static/dynamic code analysis
+* [Why Packj](#why-packj) - existing scanners TRUST open-source and not analyze code behavior
+* [Customization](#customization) - turn off alerts as per your threat model to reduce noise
+* [Malware found](#malware-found) - reported over 70 malicious PyPI and RubyGems packages
+* [Talks and videos](#resources) - presentations from PyCon, OpenSourceSummit, BlackHAT
+* [Project roadmap](#feature-roadmap) - view or suggest new features; join [discord channel](https://discord.gg/8hx3yEtF)
+* [Team and collaboration](#team) - expert Cybersecurity researchers from academia/industry
+* [FAQ](#faq) - supported package managers, commonly asked questions on techniques, and more
 
 # Get started #
 
@@ -276,14 +276,23 @@ We welcome code contributions with open arms. See [CONTRIBUTING.md](CONTRIBUTING
 
 # FAQ #
 
-- _What Package Managers (Registries) are supported?_
+<details>
+	<summary><b>What Package Managers (Registries) are supported?</b></summary>
 
 Packj can currently vet NPM, PyPI, and RubyGems packages for "risky" attributes. We are adding support for Rust.
+	
+</details>
 
-- _What techniques does Packj employ to detect risky/malicious packages?_
+<details>
+	<summary><b>What techniques does Packj employ to detect risky/malicious packages?</b></summary>
 
 Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive auditing. Static analysis alone is not sufficient to flag sophisticated malware that can hide itself better using code obfuscation. Dynamic analysis is performed by installing the package under `strace` and monitoring it's runtime behavior. Please read more at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
+	
+</details>
 
-- _Does it work on obfuscated calls? For example, a base 64 encrypted string that gets decrypted and then passed to a shell?_
+<details>
+	<summary><b>Does it work on obfuscated calls? For example, a base 64 encrypted string that gets decrypted and then passed to a shell?</b></summary>
 
 This is a very common malicious behavior. Packj detects code obfuscation as well as spawning of shell commands (exec system call). For example, Packj can  flag use of `getattr()` and `eval()` API as they indicate "runtime code generation"; a developer can go and take a deeper look then. See [main.py](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/main.py#L512) for details.
+	
+</details>

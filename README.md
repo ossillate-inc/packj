@@ -69,7 +69,7 @@ pip3 install -r requirements.txt && python3 main.py --help
 Packj offers the following tools: 
 
 * [Audit](#auditing-a-package) - to vet a package for "risky" attributes.
-* [Sandbox](#sandboxed-package-installation) - for safe installation of a package.
+* [Sandbox](#sandboxed-package-installation) - for safe installation of a package. 
 
 ## Auditing a package ##
 
@@ -124,7 +124,9 @@ Audit can also be performed in Docker/Podman containers. Please find details on 
 
 ## Sandboxed package installation ##
 
-Packj offers a lightweight sandboxing for `safe installation` of a package. Specifically, it prevents malicious packages from exfiltrating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware.
+Packj offers a lightweight sandboxing for `safe installation` of a package. Specifically, it prevents malicious packages from exfiltrating sensitive data, accessing sensitive files (e.g., SSH keys), and persisting malware. 
+
+It sandboxes install-time scripts, including any native compliation. It uses **strace** (i.e., **NO** VM/Container required).
 
 Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/sandbox/README.md).
 

@@ -8,8 +8,8 @@
 # Contents #
 
 * [Get started](#get-started) - available as Docker image, GitHub Action, Python PyPI package
-* [Functionality](#functionality) - performs metadata and deep static/dynamic code analysis
-* [Why Packj](#why-packj) - existing scanners TRUST open-source and not analyze code behavior
+* [Functionality](#functionality) - deep static/dynamic code analysis and sandboxing
+* [Why Packj](#why-packj) - existing CVE scanners ASSUME code is BENIGN and not analyze its behavior
 * [Customization](#customization) - turn off alerts as per your threat model to reduce noise
 * [Malware found](#malware-found) - reported over 70 malicious PyPI and RubyGems packages
 * [Talks and videos](#resources) - presentations from PyCon, OpenSourceSummit, BlackHAT

@@ -4,7 +4,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/8hx3yEtF) ![](https://img.shields.io/badge/status-beta-yellow) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
 
-> Have feedback for us? [Take the poll](https://github.com/ossillate-inc/packj/discussions/14#discussion-4536501)
+> Have feedback for us? [Post it here](https://github.com/ossillate-inc/packj/discussions)
 
 # Contents #
 

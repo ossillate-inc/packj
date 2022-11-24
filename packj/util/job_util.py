@@ -49,14 +49,20 @@ def md5_digest_file(filepath):
 	import hashlib
 	return hashlib.md5(open(filepath,'rb').read()).hexdigest()
 
+def proc_path_exists():
+    return os.path.exists('/proc/self/mountinfo')
+
 def is_mounted(path):
-	with open('/proc/self/mountinfo') as file:
-		line = file.readline().strip()
-		while line:
-			if f'{ path }' in line:
-				return line.split()[3]
-			line = file.readline().strip()
-	return None
+    if proc_path_exists():
+        with open('/proc/self/mountinfo') as file:
+            line = file.readline().strip()
+            while line:
+                if f'{path}' in line:
+                    return line.split()[3]
+                line = file.readline().strip()
+        return None
+    else:
+        return None
 
 def in_podman():
 	return os.path.exists('/run/.containerenv')

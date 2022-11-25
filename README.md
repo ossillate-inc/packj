@@ -269,7 +269,7 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 * Add support for other language ecosystems. Rust is a work in progress, and will be available in December '22.
 * Add functionality to detect several other "risky" code as well as metadata attributes.
 
-Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/8hx3yEtF) for discussion and requests.
+Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/8yfySt8S) for discussion and requests.
 
 # Team #
 

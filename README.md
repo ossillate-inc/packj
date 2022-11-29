@@ -3,6 +3,7 @@
 *Packj* (pronounced package) is a tool to mitigate software supply chain attacks. It flags malicious, vulnerable, and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. It can be easily customized to minimize noise. 
 
 [![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/8yfySt8S) ![](https://img.shields.io/badge/status-beta-yellow) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/packj?label=PyPI%20Downloads)](https://pypistats.org/packages/packj)
 
 ![alt text](https://drive.google.com/uc?export=view&id=1QfA73i_ihgqo2JbNXoxaGSZ2Wa02RZNq)
 

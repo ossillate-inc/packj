@@ -43,7 +43,7 @@ View on GitHub [marketplace](https://packj.dev/go?next=https://github.com/market
 The quickest way to try/test Packj is using the PyPI package.
 
 >
-> **NOTE**: Packj only works on Linux.
+> **Warning**: Packj only works on Linux.
 >
 
 ```

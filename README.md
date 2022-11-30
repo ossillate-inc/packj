@@ -2,7 +2,7 @@
 
 *Packj* (pronounced package) is a tool to mitigate software supply chain attacks. It flags malicious, vulnerable, and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. It can be easily customized to minimize noise. 
 
-[![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/8yfySt8S) ![](https://img.shields.io/badge/status-beta-yellow) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
+[![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/qFcqaV2wYa) ![](https://img.shields.io/badge/status-beta-yellow) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/packj?label=PyPI%20Downloads)](https://pypistats.org/packages/packj)
 
 ![alt text](https://drive.google.com/uc?export=view&id=1QfA73i_ihgqo2JbNXoxaGSZ2Wa02RZNq)
@@ -15,7 +15,7 @@
 * [Customization](#customization) - turn off alerts as per your threat model to reduce noise
 * [Malware found](#malware-found) - reported over 70 malicious PyPI and RubyGems packages
 * [Talks and videos](#resources) - presentations from PyCon, OpenSourceSummit, BlackHAT
-* [Project roadmap](#feature-roadmap) - view or suggest new features; join our [discord channel](https://discord.gg/8hx3yEtF)
+* [Project roadmap](#feature-roadmap) - view or suggest new features; join our [discord channel](https://discord.gg/qFcqaV2wYa)
 * [Team and collaboration](#team) - expert Cybersecurity researchers from academia/industry
 * [FAQ](#faq) - supported package managers, commonly asked questions on techniques, and more
 
@@ -270,7 +270,7 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 * Add support for other language ecosystems. Rust is a work in progress, and will be available in December '22.
 * Add functionality to detect several other "risky" code as well as metadata attributes.
 
-Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/8yfySt8S) for discussion and requests.
+Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/qFcqaV2wYa) for discussion and requests.
 
 # Team #
 

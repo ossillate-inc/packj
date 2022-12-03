@@ -797,7 +797,6 @@ def parse_request_args(args):
 	if args.debug:
 		try:
 			_, filename = tempfile.mkstemp(prefix='debug_', dir=report_dir, suffix='.log')
-			os.chmod(filename, 0o544)
 			print(f'\n*** NOTE: Running in debug mode (log: {filename}) ***\n')
 			logging.basicConfig(filename=filename, datefmt='%H:%M:%S', level=logging.DEBUG,
 								format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s')

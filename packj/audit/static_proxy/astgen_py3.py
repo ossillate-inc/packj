@@ -50,12 +50,12 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 		ast.NodeVisitor.generic_visit(self, node)
 		if self.debug:
 			if hasattr(node, 'lineno'):
-				logging.warning('visiting %s node at line %d' % (type(node).__name__, node.lineno))
+				logging.warning(f'visiting {type(node).__name__} node at line {node.lineno}')
 			else:
-				logging.warning('visiting %s node' % (type(node).__name__))
+				logging.warning(f'visiting {type(node).__name__} node')
 
 	def visit_ImportFrom(self, node):
-		logging.debug('visiting ImportFrom node (line %d)' % (node.lineno))
+		logging.debug(f'visiting ImportFrom node (line {node.lineno})')
 		for name in node.names:
 			self.name2module.setdefault(name.name, node.module)
 			if name.asname is not None:
@@ -63,15 +63,15 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 		ast.NodeVisitor.generic_visit(self, node)
 
 	def visit_FunctionDef(self, node):
-		logging.debug('visiting FunctionDef node (line %d)' % (node.lineno))
+		logging.debug(f'visiting FunctionDef node (line {node.lineno})')
 
 		# FIXME: warn about redefined functions?
 		if node.name in self.alias2name or node.name in self.name2module:
-			logging.warning("redefined imported function %s!" % (node.name))
+			logging.warning(f'redefined imported function {node.name}!')
 
 		ast.NodeVisitor.generic_visit(self, node)
 		if self.save_feature:
-			logging.warning("set root_nodes")
+			logging.warning('set root_nodes')
 
 		args = []
 		for arg in node.args.args:
@@ -85,10 +85,10 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 		self.all_declrefs["Functions"].append(node_details)
 
 	def visit_ClassDef(self, node):
-		logging.debug('visiting ClassDef node (line %d)' % (node.lineno))
+		logging.debug(f'visiting ClassDef node (line {node.lineno})')
 		ast.NodeVisitor.generic_visit(self, node)
 		if self.save_feature:
-			logging.warning("set root_nodes")
+			logging.warning('set root_nodes')
 
 		node_details = {
 			 "Name"		: node.name,
@@ -98,17 +98,17 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 		self.all_declrefs["Classes"].append(node_details)
 
 	def visit_Call(self, node):
-		logging.debug('visiting Call node (line %d)' % (node.lineno))
+		logging.debug(f'visiting Call node (line {node.lineno})')
 
 		# debug code
 		if self.debug:
 			for fieldname, value in ast.iter_fields(node):
-				logging.warning('fieldname %s, value %s' % (fieldname, value))
+				logging.warning(f'fieldname {fieldname}, value {value}')
 				if fieldname == 'func':
 					for f_fieldname, f_value in ast.iter_fields(value):
-						logging.info('func fieldname %s, func value %s' % (f_fieldname, f_value))
+						logging.info(f'func fieldname {f_fieldname}, func value {f_value}')
 						if f_fieldname == 'id':
-							logging.warning('func id: %s' % (f_value))
+							logging.warning(f'func id: {f_value}')
 
 		# compute base and func
 		if isinstance(node.func, ast.Attribute):
@@ -118,24 +118,23 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 				base = node.func.value.id
 			elif isinstance(node.func.value, ast.Call):
 				base = self.asttok.get_text(node.func.value)
-				logging.debug("node.func.value is ast.Call, Ignoring!")
+				logging.debug('node.func.value is ast.Call, Ignoring!')
 			elif isinstance(node.func.value, ast.Subscript):
 				base = self.asttok.get_text(node.func.value)
 				# NOTE: currently, we use text of chained functions (i.e. foo().bar(), foo() is used),
 				# because Python is runtime type language, and it is not possible to get the type statically
-				logging.warning("node.func.value type ast.Subscript, fields: %s",
-								list(ast.iter_fields(node.func.value)))
+				logging.warning(f'node.func.value type ast.Subscript, fields: {list(ast.iter_fields(node.func.value))}')
 			else:
 				base = self.asttok.get_text(node.func.value)
-				logging.warning("node.func.value type: %s, fields: %s",
-							  type(node.func.value), list(ast.iter_fields(node.func.value)))
+				logging.warning(f'node.func.value type: {type(node.func.value)}, \
+									fields: {list(ast.iter_fields(node.func.value))}')
 		else:
 			# NOTE: we assume the imported functions are not redefined! this may not be true!
 			if isinstance(node.func, ast.Name):
 				name = node.func.id
 			else:
 				name = self.asttok.get_text(node.func)
-				logging.warning("node.func type: %s, name: %s" % (type(node.func), name))
+				logging.warning(f'node.func type: {type(node.func)}, name: {name}')
 			name = self.alias2name[name] if name in self.alias2name else name
 			base = self.name2module[name] if name in self.name2module else None
 
@@ -152,10 +151,10 @@ class PythonDeclRefVisitor(ast.NodeVisitor):
 			# append '**' to reproduce the calling text
 			args.append('**' + self.asttok.get_text(node.kwargs))
 
-		full_name = name if base is None else '%s.%s' % (base, name)
+		full_name = name if base is None else f'{base}.{name}'
 
 		# log stuff
-		logging.warning("calling function %s with args %s at line %d" % (full_name, args, node.lineno))
+		logging.warning(f'calling function {full_name} with args {args} at line {node.lineno}')
 
 		node_details = {
 			 "Name"	: full_name,
@@ -213,7 +212,7 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 		try:
 			all_source = open(infile, 'r').read()
 		except Exception as e:
-			logging.warning("Failed to read file %s: %s" % (infile, str(e)))
+			logging.warning(f'Failed to read file {infile}: {str(e)}')
 			continue
 
 		try:
@@ -224,7 +223,7 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 			}
 			composition["Files"].append(file_details)
 		except Exception as e:
-			logging.error("Failed to parse FILE %s ast details: %s" % (infile, str(e)))
+			logging.error(f'Failed to parse FILE {infile} ast details: {str(e)}')
 
 		if infile not in infiles:
 			continue
@@ -232,7 +231,7 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 		try:
 			tree = ast.parse(all_source, filename=infile)
 		except SyntaxError as se:
-			logging.warning("Syntax error %s parsing file %s in Python3. Skipping!" % (str(se), infile))
+			logging.warning(f'Syntax error {str(se)} parsing file {infile} in Python3. Skipping!')
 			continue
 
 		# mark the tree with tokens information
@@ -240,7 +239,7 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 			asttok = asttokens.ASTTokens(source_text=all_source, tree=tree, filename=infile)
 			visitor = PythonDeclRefVisitor(infile=infile, asttok=asttok, configpb=configpb)
 			visitor.visit(tree)
-			logging.warning("collected functions: %s" % (Counter(visitor.get_declrefs()).items()))
+			logging.warning(f'collected functions: {Counter(visitor.get_declrefs()).items()}')
 
 			filepb = StaticAnalyzer._get_filepb(infile, root)
 			for base, name, args, source_text, source_range in visitor.get_declrefs():
@@ -250,14 +249,14 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 			for item_type, item_details in visitor.get_all_declrefs().items():
 				composition[item_type] += item_details
 		except Exception as e:
-			logging.debug("Error parsing AST for file %s in Python3: %s" % (infile, str(se)))
+			logging.debug(f'Error parsing AST for file {infile} in Python3: {str(e)}')
 			
 	# save AST details
 	try:
-		logging.warning('writing to %s' % (outfile+'.json'))
+		logging.warning(f'writing to {outfile}.json')
 		write_dict_to_file(composition, outfile + '.json')
 	except Exception as e:
-		logging.debug("failed to write ast_details: %s" % (str(e)))
+		logging.debug(f'failed to write ast_details: {str(e)}')
 
 	# save resultpb
 	write_proto_to_file(resultpb, outfile, binary=False)
@@ -283,7 +282,7 @@ if __name__ == "__main__":
 	configpath = args.configpath
 	configpb = AstLookupConfig()
 	read_proto_from_file(configpb, configpath, binary=False)
-	logging.debug("loaded lookup config from %s:\n%s" % (configpath, configpb))
+	logging.debug(f'loaded lookup config from {configpath}:\n{configpb}')
 
 	# Run the ast generation
 	py3_astgen(inpath=args.inpath, outfile=args.outfile, configpb=configpb, root=args.root, pkg_name=args.package_name,

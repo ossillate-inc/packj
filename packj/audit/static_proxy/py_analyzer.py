@@ -34,9 +34,9 @@ class PyAnalyzer(StaticAnalyzer):
             if pkg_version is not None:
                 astgen_py2_cmd.extend(['-v', pkg_version])
             stdout, stderr, error = exec_command("python2 astgen", astgen_py2_cmd, cwd="static_proxy", redirect_mask=3)
-            assert not error, "could not generate AST"
+            assert not error, 'could not generate AST'
         except Exception as e:
-            logging.debug("Failed to analyze for APIs using Python2: %s" % (str(e)))
+            logging.debug(f'Failed to analyze for APIs using Python2: {str(e)}')
 
     def astgen(self, inpath, outfile, root=None, configpath=None, pkg_name=None, pkg_version=None, evaluate_smt=False):
         analyze_path, is_decompress_path, outfile, root, configpath = self._sanitize_astgen_args(
@@ -48,17 +48,17 @@ class PyAnalyzer(StaticAnalyzer):
             configpb = AstLookupConfig()
             read_proto_from_file(configpb, configpath, binary=False)
 
-            logging.debug("loaded lookup config from %s:\n%s", configpath, configpb)
+            logging.debug(f'loaded lookup config from {configpath}:\n{configpb}')
 
             # invoke the language specific ast generators to call functions
             py3_astgen(inpath=analyze_path, outfile=outfile, configpb=configpb, root=root, pkg_name=pkg_name, pkg_version=pkg_version)
 
         # try python2
         except SyntaxError as se:
-            logging.debug("Syntax error %s, now trying to parse %s again in python2!", se, analyze_path)
+            logging.debug(f'Syntax error {str(se)}, now trying to parse {analyze_path} again in python2!')
             self.exec_py2_astgen(analyze_path, outfile, configpath, root=root, pkg_name=pkg_name, pkg_version=pkg_version)
         except Exception as e:
-            logging.debug("Fatal error %s running astgen for %s!" % (str(e), analyze_path))
+            logging.debug(f'Fatal error {str(e)} running astgen for {analyze_path}!')
 
         # clean up residue files
         self._cleanup_astgen(analyze_path=analyze_path, is_decompress_path=is_decompress_path)

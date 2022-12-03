@@ -25,8 +25,13 @@ def main(config:str='.packj.yaml'):
 			config = os.path.expanduser(os.path.join('~', f'{config}'))
 		assert os.path.exists(config), f'No {config} file found'
 
+		# auth request
+		if args.cmd == 'auth':
+			from packj.auth.main import main
+			main(args, config)
+
 		# audit request
-		if args.cmd == 'audit':
+		elif args.cmd == 'audit':
 			from packj.audit.main import main
 			main(args, config)
 

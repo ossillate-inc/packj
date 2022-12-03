@@ -1,4 +1,17 @@
 #
+# PRO account (XXX activated ONLY when 'auth' subcommand is used. see '--help')
+#
+account:
+  creds_file: ~/.packj.creds
+  base_url: https://packj.dev
+  endpoints:
+    auth: /oauth/authorize
+    session: /api/v1/cli_sessions
+    token: /oauth/token
+    redirect: /oauth/code/callback
+    audit: /api/v1/audit
+    
+#
 # Audit policies
 #
 audit:

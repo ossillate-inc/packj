@@ -15,6 +15,16 @@ class Options():
 		subparsers = parser.add_subparsers(title='actions', dest='cmd', help='Command (e.g. audit, sandbox)')
 
 		#############################
+		# Authenticate sub-command
+		#############################
+		auth_parser = subparsers.add_parser('auth', help='Authenticate user with the server.')
+		auth_parser.add_argument('--force', help='Force user re-authentication', dest="force", action='store_true')
+
+		# Auth optional args
+		auth_parser.add_argument("-d", "--debug", dest="debug", \
+					help="Enable debugging", action="store_true")
+
+		#############################
 		# Audit sub-command
 		#############################
 		parser_audit = subparsers.add_parser('audit', help='Audit packages for malware/risky attributes')

@@ -1,5 +1,7 @@
 #
-# PRO account (XXX activated ONLY when 'auth' subcommand is used. see '--help')
+# Pro account for premium features
+#
+# XXX use 'auth' subcommand to activate. See '--help' for details.)
 #
 account:
   creds_file: ~/.packj.creds

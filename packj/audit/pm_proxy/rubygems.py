@@ -52,10 +52,18 @@ class RubygemsProxy(PackageManagerProxy):
 	def parse_deps_file(self, deps_file):
 		try:
 			cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+			if not deps_file.endswith('.lock'):
+				cmd = ['bundle', 'lock', '--lockfile=packj-generated-Gemfile.lock']
+				stdout, stderr, error = exec_command("generate lockfile", cmd, cwd=cwd, redirect_mask=3)
+				if error or not stdout:
+					logging.debug(f'failed to generate lockfile for {deps_file}:\n{stdout}\n{stderr}')
+					raise Exception(f'deps parse error {error}!')
+				deps_file = dst = os.path.join(cwd, 'packj-generated-Gemfile.lock')
+
 			cmd = ['ruby', 'parse_gemfile.rb', os.path.abspath(deps_file)]
 			stdout, stderr, error = exec_command("parse deps", cmd, cwd=cwd, redirect_mask=3)
 			if error or not stdout:
-				logging.debug(f'deps parse error:\n{stdout}\n{stderr}')
+				logging.debug(f'failed to parse {deps_file}:\n{stdout}\n{stderr}')
 				raise Exception(f'deps parse error {error}!')
 
 			dep_list = []

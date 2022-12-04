@@ -751,7 +751,6 @@ def parse_request_args(args):
 			msg_info(f'Missing host volume at {container_mountpoint}. Run Docker/Podman with "-v /tmp:{container_mountpoint}" argument.')
 			exit(1)
 
-	import inspect
 	# build list of packages to audit
 	audit_pkg_list = []
 	for item in args.depfiles:

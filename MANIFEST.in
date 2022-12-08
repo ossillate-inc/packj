@@ -1,4 +1,4 @@
-include packj/.packj.yaml
+include .packj.yaml
 include packj/audit/config/astgen_javascript_smt.config
 include packj/audit/config/astgen_python_smt.config
 include packj/audit/config/astgen_ruby_smt.config

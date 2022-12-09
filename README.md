@@ -50,6 +50,12 @@ The quickest way to try/test Packj is using the PyPI package.
 pip3 install packj
 ```
 
+Auditing RubyGems require additional dependencies
+
+```
+bundle install
+```
+
 ### 3. Docker image (recommended)
 
 Use Docker or Podman for containerized (isolated) runs.
@@ -69,7 +75,7 @@ https://github.com/ossillate-inc/packj.git && cd packj
 Install dependencies
 
 ```
-sudo apt install -y python3 gcc python3-dev python3-pip ruby-full rubygems-integration musl-dev protobuf-compiler git ruby-full libmagic-dev strace curl autoconf build-essential libssl-dev gawk && bundle install && pip3 install -r requirements.txt
+bundle install && pip3 install -r requirements.txt
 ```
 
 Start with help:

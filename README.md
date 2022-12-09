@@ -66,10 +66,10 @@ Clone this repo,
 https://github.com/ossillate-inc/packj.git && cd packj
 ```
 
-Install PyPI and RubyGems dependencies
+Install dependencies
 
 ```
-bundle install && pip3 install -r requirements.txt
+sudo apt install -y python3 gcc python3-dev python3-pip ruby-full rubygems-integration musl-dev protobuf-compiler git ruby-full libmagic-dev strace curl autoconf build-essential libssl-dev gawk && bundle install && pip3 install -r requirements.txt
 ```
 
 Start with help:

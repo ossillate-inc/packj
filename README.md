@@ -60,10 +60,22 @@ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
 
 ### 4. Source repo
 
-Clone this repo, install dependencies, and try for yourself.
+Clone this repo, 
 
 ```
-pip3 install -r requirements.txt && python3 main.py --help 
+https://github.com/ossillate-inc/packj.git && cd packj
+```
+
+Install PyPI and RubyGems dependencies
+
+```
+bundle install && pip3 install -r requirements.txt
+```
+
+Start with help:
+
+```
+python3 main.py --help 
 ```
 
 # Functionality #

@@ -64,3 +64,9 @@ __pycache__
 # virtual env
 .env/
 .venv/
+
+# Python setuptools
+build/
+packj.egg-info/
+
+

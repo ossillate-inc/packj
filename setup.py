@@ -60,7 +60,7 @@ class custom_install(install):
 			target_dir = os.path.realpath(self.build_lib)
 			setup_sandbox(target_dir)
 		except Exception as e:
-			distutils_logger.warning(f'Custom build failed: {str(e)}! Sandbox feature will not work')
+			distutils_logger.warn(f'Custom build failed: {str(e)}! Sandbox feature will not work')
 
 setup(
 	name = 'packj',

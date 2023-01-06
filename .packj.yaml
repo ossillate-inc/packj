@@ -93,6 +93,10 @@ audit:
         - threshold: 50
         - enabled: true
 
+      immature dependencies:
+        - reason: a high maturity package depends upon a low maturity package
+        - enabled: false
+
       version release after a long gap:
         - reason: a release after a long time may indicate account hijacking
         - threshold: 180

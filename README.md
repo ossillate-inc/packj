@@ -1,16 +1,17 @@
 # <img src="https://packj.dev/static/img/icons/package.svg" width="45"/>&nbsp;<span style="font-size: 42px"> Packj flags malicious/risky open-source packages</span> 
 
-*Packj* (pronounced package) is a tool to mitigate software supply chain attacks. It flags malicious, vulnerable, and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. It can be easily customized to minimize noise. 
+*Packj* (pronounced package) is a tool to mitigate software supply chain attacks. It flags malicious, vulnerable, abandoned, typo-squatting, and other "risky" packages in popular open-source package registries, such as NPM, RubyGems, and PyPI. It can be easily customized to minimize noise. Packj started as a PhD research project and is currently being developed under various govt grant.
 
 [![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/qFcqaV2wYa) ![](https://img.shields.io/badge/status-beta-yellow) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/packj?label=PyPI%20Downloads)](https://pypistats.org/packages/packj)
 
-![alt text](https://drive.google.com/uc?export=view&id=1QfA73i_ihgqo2JbNXoxaGSZ2Wa02RZNq)
+![demo video](https://drive.google.com/uc?export=view&id=1QfA73i_ihgqo2JbNXoxaGSZ2Wa02RZNq)
 
 # Contents #
 
 * [Get started](#get-started) - available as Docker image, GitHub Action, Python PyPI package
 * [Functionality](#functionality) - deep static/dynamic code analysis and sandboxing
+* [Our story](#our-story) - started as a PhD research project and is backed by govt grants
 * [Why Packj](#why-packj) - existing CVE scanners ASSUME code is BENIGN and not analyze its behavior
 * [Customization](#customization) - turn off alerts as per your threat model to reduce noise
 * [Malware found](#malware-found) - reported over 70 malicious PyPI and RubyGems packages
@@ -204,6 +205,22 @@ Please find details on the sandboxing mechanism and how to use at [Sandbox READM
     [C]ommit all changes, [Q|q]uit & discard changes, [L|l]ist details:
 </details>
 
+# Our story
+
+**TL;DR** Packj started as a PhD research project. It is backed by various government grants.
+
+<details>
+	<summary><h4>Show long answer</h4></summary>
+
+Packj started as an academic research project. Specifically, the static code analysis techniques used by Packj are based on cutting-edge Cybersecurity research: [MalOSS](https://packj.dev/go?next=https://github.com/osssanitizer/maloss) project by our research [group](https://packj.dev/go?next=http://cyfi.ece.gatech.edu) at Georgia Tech.
+
+<a href="https://packj.dev/go?next=https://arxiv.org/pdf/2002.01139v1.pdf" target="_blank">
+	<img src="https://drive.google.com/uc?export=view&id=1L03-kFTdNDFvGLWt_zJ-Qe8PPX75ICqo" width="300" alt="academic paper">
+</a>
+
+Packj is backed by generous grants from [NSF](https://www.sbir.gov/node/2083473), [GRA](https://gra.org/company/227/OSSPolice.html), and [ALInnovate](https://innovatealabama.org).
+
+</details>
 
 # Why Packj
 
@@ -218,7 +235,7 @@ Existing scanners **DO NOT** detect malware or intentionally bad code because th
 
 Packj uses static code analysis, dynamic tracing, and metadata analysis. Please read more at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md#faq)
 </details>
-	
+
 # Customization #
 
 Packj can be easily customized (zero noise) to your threat model. Simply add a [.packj.yaml](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/.packj.yaml) file in the top dir of your repo/project and reduce alert fatigue by commenting out unwanted attributes.

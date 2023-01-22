@@ -248,7 +248,7 @@ Packj can be easily customized (zero noise) to your threat model. Simply add a [
 
 # Malware found #
 
-We found over 40 malicious packages on PyPI using this tool. A number of them been taken down. Refer to an example below:
+We found over 40 and 20 malicious packages on PyPI and Rubygems, respectively using this tool. A number of them been taken down. Refer to an example below:
 
 <details>
     <summary><h4>Show example malware</h4></summary>

@@ -98,10 +98,10 @@ Packj audits open-source software packages for "risky" attributes that make them
 
 Auditing the following is supported:
 
-- multiple packages: `python3 main.py -p pypi:requests rubygems:overcommit`
-- dependency files: `python3 main.py -f npm:package.json pypi:requirements.txt`
+- multiple packages: `python3 main.py audit -p pypi:requests rubygems:overcommit`
+- dependency files: `python3 main.py audit -f npm:package.json pypi:requirements.txt`
 
-Audit can also be performed in Docker/Podman containers. Please find details on risky attributes and how to use at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
+By default, `audit` only performs static code analysis to detect risky code. You can paas `-t` or `--trace` flag to perform dynamic code analysis as well, which will install all requested packages under strace and monitor install-time behavior of packages. Please see the example output below.
 
 <details>
     <summary><h4>Show example run/output</h4></summary>
@@ -142,6 +142,10 @@ Audit can also be performed in Docker/Podman containers. Please find details on 
         ]
     }
 </details>
+
+> WARNING: since packages could execute malicious code during installation, it is recommended to ONLY use `-t` or `--trace` when running inside a Docker container or a Virtual Machine.
+
+Audit can also be performed in Docker/Podman containers. Please find details on risky attributes and how to use at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
 
 ## Sandboxed package installation ##
 

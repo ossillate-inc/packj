@@ -11,6 +11,8 @@ import setuptools
 import shutil
 import os, sys, subprocess
 
+from packj import __version__
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 # package descr
@@ -76,7 +78,7 @@ setup(
 	data_files = [
 		(os.path.expanduser('~'), ['.packj.yaml']),
 	],
-	version = '0.13',
+	version = __version__,
 	license='GNU AGPLv3',
 	description = 'Packj flags "risky" open-source packages in your software supply chain',
 	long_description=long_description,

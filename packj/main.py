@@ -20,6 +20,12 @@ def main(config:str='.packj.yaml'):
 		args = opts.args()
 		assert args, 'Failed to get cmdline args!'
 
+		# version request
+		if args.ver and not args.cmd:
+			from packj import __version__
+			print(__version__)
+			exit(1)
+
 		# configuration file
 		if not os.path.exists(config):
 			config = os.path.expanduser(os.path.join('~', f'{config}'))

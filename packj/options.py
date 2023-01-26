@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+from packj import __version__
 
 class Options():
 	__args = None
@@ -9,10 +10,12 @@ class Options():
 		return self.__args
 
 	def __init__(self, argv):
-		parser = argparse.ArgumentParser(prog='packj v0.1',
+		parser = argparse.ArgumentParser(prog=f'packj {__version__}',
 						usage='main [options] args',
 						description='Packj flags malicious/risky open-source packages')
-		subparsers = parser.add_subparsers(title='actions', dest='cmd', help='Command (e.g. audit, sandbox)')
+		subparsers = parser.add_subparsers(title='actions', dest='cmd', help='Command (e.g. auth, audit, sandbox)')
+
+		parser.add_argument('-v', '--version', help='Dump tool version', dest="ver", action='store_true')
 
 		#############################
 		# Authenticate sub-command

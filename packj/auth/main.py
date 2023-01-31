@@ -9,6 +9,7 @@ from urllib import parse
 from datetime import datetime, timedelta
 from dateutil import parser as dateparser
 
+from packj import __version__
 from packj.auth.creds import Creds
 
 def setup_session(cfg, creds):
@@ -28,7 +29,7 @@ def setup_session(cfg, creds):
 		params = parse.urlencode(params)
 
 		headers = {
-			'User-Agent': 'pypi-packj-0.12',
+			'User-Agent': f'pypi-packj-{__version__}',
 			'From': f'{hostname}',
 		}
 
@@ -77,7 +78,7 @@ def get_auth_code(cfg, creds):
 		auth_endpoint = cfg['endpoints']['auth']
 
 		headers = {
-			'User-Agent': 'pypi-packj-0.12',
+			'User-Agent': f'pypi-packj-{__version__}',
 			'From': socket.gethostname(),
 		}
 
@@ -137,7 +138,7 @@ def get_auth_token(cfg, creds):
 		url = base_url + token_endpoint
 
 		headers = {
-			'User-Agent': 'pypi-packj-0.12',
+			'User-Agent': f'pypi-packj-{__version__}',
 			'From': socket.gethostname(),
 		}
 
@@ -206,7 +207,7 @@ def get_auth_implicit_token(creds):
 		url = base_url + auth_endpoint
 
 		headers = {
-			'User-Agent': 'pypi-packj-0.12',
+			'User-Agent': f'pypi-packj-{__version__}',
 			'From': socket.gethostname(),
 		}
 
@@ -266,37 +267,6 @@ def get_auth_implicit_token(creds):
 		logging.warning("get_auth_implicit_token(%s:%s): failed to save token (%s)" % \
 				(base_url, auth_endpoint, str(e)))
 
-def authorize_audit_request(body, creds):
-	try:
-		base_url = cfg['base_url']
-		audit_endpoint = cfg['endpoints']['audit']
-		url = base_url + audit_endpoint
-
-		headers = {
-			'User-Agent': 'pypi-packj-0.12',
-			'From': socket.gethostname(),
-		}
-
-		token = creds.get('token')
-		assert token, "No access token!"
-
-		if grant_type == 'code':
-			headers['Authorization']= f"{token['token_type']} {token['access_token']}"
-		else:
-			headers['Authorization']= f"{token['type']} {token['access_token']}"
-
-		params = parse.urlencode(body)
-		resp = requests.post(url=url, params=params, headers=headers)
-		resp.raise_for_status()
-
-		try:
-			resp_data = resp.json()
-		except:
-			resp_data = resp.content
-		return resp_data
-	except Exception as e:
-		raise Exception("Failed to authorize request: %s" % (str(e)))
-
 def refresh_credentials(cfg, creds):
 	try:
 		logging.debug("Refreshing user auth tokens")
@@ -305,7 +275,7 @@ def refresh_credentials(cfg, creds):
 		token_endpoint = cfg['endpoints']['token']
 
 		headers = {
-			'User-Agent': 'pypi-packj-0.12',
+			'User-Agent': f'pypi-packj-{__version__}',
 			'From': socket.gethostname(),
 		}
 
@@ -338,7 +308,7 @@ def refresh_credentials(cfg, creds):
 
 	try:
 		headers = {
-			'User-Agent': 'pypi-packj-0.12',
+			'User-Agent': f'pypi-packj-{__version__}',
 			'From': socket.gethostname(),
 		}
 

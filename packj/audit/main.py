@@ -49,6 +49,8 @@ def msg_fail(x):
 	msg_info(f'{Style.BRIGHT}{Fore.YELLOW}FAIL{Style.RESET_ALL} [{x}]')
 def msg_alert(x):
 	msg_info(f'{Style.BRIGHT}{Fore.RED}RISK{Style.RESET_ALL} [{x}]')
+def msg_warn(x):
+	msg_info(f'{Style.BRIGHT}{Fore.YELLOW} N/A{Style.RESET_ALL} [{Fore.MAGENTA}{x}{Style.RESET_ALL}]')
 
 def build_threat_model(filename):
 	try:
@@ -208,6 +210,26 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	finally:
 		return risks, report
 
+def analyze_typosquatting(pm_proxy, pkg_name, pkg_info, risks, report):
+	try:
+		msg_info('Checking for typo-squatting...', end='', flush=True)
+		# TODO
+		msg_warn('Coming soon!')
+	except Exception as e:
+		msg_fail(str(e))
+	finally:
+		return risks, report
+
+def analyze_dep_confusion(pm_proxy, pkg_name, pkg_info, risks, report):
+	try:
+		msg_info('Checking for dependency confusion...', end='', flush=True)
+		# TODO
+		msg_warn('Coming soon!')
+	except Exception as e:
+		msg_fail(str(e))
+	finally:
+		return risks, report
+
 def analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		msg_info('Checking downloads...', end='', flush=True)
@@ -334,6 +356,17 @@ def analyze_repo_activity(risks, report):
 			commits, contributors, tags = tuple(repo_data[k] for k in ('commits', 'contributors', 'tags'))
 			msg_ok(f'commits: {commits}, contributors: {contributors}, tags: {tags}')
 			report['repo'].update(repo_data)
+	except Exception as e:
+		msg_fail(str(e))
+	finally:
+		return risks, report
+
+def analyze_repo_code(risks, report):
+	try:
+		repo_url = report['repo']['url']
+		msg_info('Analyzing repo-pkg src code match...', end='', flush=True, indent=1)
+		# TODO
+		msg_warn('Coming soon!')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -591,6 +624,14 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 		report['permissions'] = report_data
 	except Exception as e:
 		msg_fail(str(e))
+
+	# Analyze risky API sequence (e.g., decode+exec)
+	try:
+		msg_info('Analyzing risky API sequence...', end='', flush=True, indent=1)
+		# TODO
+		msg_warn('Coming soon!')
+	except Exception as e:
+		msg_fail(str(e))
 	finally:
 		return risks, report
 
@@ -679,11 +720,14 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 	risks, report = analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report = analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report = analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report)
+	risks, report = analyze_typosquatting(pm_proxy, pkg_name, pkg_info, risks, report)
+	risks, report = analyze_dep_confusion(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	if 'repo' in report and 'url' in report['repo'] and report['repo']['url']:
 		risks, report = analyze_repo_data(risks, report)
 		if 'description' in report['repo']:
 			risks, report = analyze_repo_descr(risks, report)
+		risks, report = analyze_repo_code(risks, report)
 		risks, report = analyze_repo_activity(risks, report)
 	risks, report = analyze_cves(pm_name, pkg_name, ver_str, risks, report)
 	risks, report = analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)

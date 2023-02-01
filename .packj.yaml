@@ -31,15 +31,22 @@ audit:
       cryptominer:
         - reason: package is a cryptominer
         - enabled: true
+
     #
     # alert category: suspicious packages (potentially malicious)
     #
     suspicious:
       inconsistent with repo source:
-        - reason: package code inconsistent with the public repo source code
+        - reason: package code differs from public repo source code, indicating malicious intention
         - enabled: true
       overwrites system binaries:
-        - reason: package code inconsistent with the public repo source code
+        - reason: overwriting system binaries such as /bin/ls suggests malware persistence
+        - enabled: true
+      risky API sequence:
+        - reason: package code uses risky API sequence such as decode() followed by exec() or eval()
+        - enabled: true
+      anomalous dependency version:
+        - reason: a anomalously high dependency version could indicate confusion attack
         - enabled: true
 
     #
@@ -104,6 +111,14 @@ audit:
 
       contains custom installation hooks:
         - reason: custom installation hooks may download or execute malicious code
+        - enabled: true
+
+      contains executable or other binary blobs:
+        - reason: binary blobs cannot be analyzed accurately and are used to hide malware
+        - enabled: true
+
+      noisy package:
+        - reason: package is a typo-guard, placeholder, dummy, empty, or troll package
         - enabled: true
 
       #

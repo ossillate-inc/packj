@@ -210,6 +210,16 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	finally:
 		return risks, report
 
+def analyze_install_hooks(pm_proxy, pkg_name, pkg_info, risks, report):
+	try:
+		msg_info('Checking for install-time hooks...', end='', flush=True)
+		# TODO
+		msg_warn('Coming soon!')
+	except Exception as e:
+		msg_fail(str(e))
+	finally:
+		return risks, report
+
 def analyze_typosquatting(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		msg_info('Checking for typo-squatting...', end='', flush=True)
@@ -512,7 +522,12 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.ruby
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
+	except Exception as e:
+		msg_fail(str(e))
+		return risks, report
 
+	# analyze package composition
+	try:
 		num_files, lang_files, num_funcs, total_loc = parse_package_composition(
 			pkg_name,
 			ver_str,
@@ -534,9 +549,27 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 		}
 	except Exception as e:
 		msg_fail(str(e))
+
+	# check if this package contains executables or other binary blobs and alert the user
+	try:
+		msg_info('Checking for exe/binary blobs...', end='', flush=True, indent=1)
+		# TODO
+		msg_warn('Coming soon!')
+	except Exception as e:
+		msg_fail(str(e))
+
+	#
+	# check if this package is a noisy package:
+	# i.e., typo-guard, placeholder, dummy, empty, or troll package
+	#
+	try:
+		msg_info('Checking if a noisy package...', end='', flush=True, indent=1)
+		# TODO
+		msg_warn('Coming soon!')
+	except Exception as e:
+		msg_fail(str(e))
 	finally:
 		return risks, report
-
 
 class Risk(tuple, Enum):
 	FILE_IO = 'accesses files and dirs', 'file'
@@ -587,7 +620,12 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			system = 'ruby'
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
+	except Exception as e:
+		msg_fail(str(e))
+		return risks, report
 
+	# analyze code for APIs
+	try:
 		static = get_static_proxy_for_language(language=language)
 		try:
 			static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
@@ -720,6 +758,7 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 	risks, report = analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report = analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report = analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report)
+	risks, report = analyze_install_hooks(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_typosquatting(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_dep_confusion(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)

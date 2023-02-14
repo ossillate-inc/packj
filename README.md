@@ -5,6 +5,9 @@
 [![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) ![](https://img.shields.io/badge/status-beta-yellow) [![Prs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=shields)](https://github.com/ossillate-inc/packj/blob/main/CONTRIBUTING.md) ![Github Commit Activity](https://img.shields.io/github/commit-activity/m/ossillate-inc/packj) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/qFcqaV2wYa)  [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/packj?label=PyPI%20Downloads)](https://pypistats.org/packages/packj)
 
+> **Note**
+**Self-hosted Packj webserver and several integrations coming later this month :punch: Watch this repo to stay up-to-date.**
+
 ![demo video](https://drive.google.com/uc?export=view&id=1QfA73i_ihgqo2JbNXoxaGSZ2Wa02RZNq)
 
 # Contents #
@@ -308,8 +311,11 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add support for other language ecosystems. Rust is a work in progress, and will be available in December '22.
-* Add functionality to detect several other "risky" code as well as metadata attributes.
+* Add support for other language ecosystems. Rust is a work in progress [ETA: Mar '22].
+* Add functionality to detect several other "risky" code as well as metadata attributes [ETA: Feb '22].
+* Self-hosted Packj webserver and several integrations [ETA: Feb'22].
+
+Watch this repo to stay up-to-date. Give us a :star: if you find this useful.
 
 Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/qFcqaV2wYa) for discussion and requests.
 

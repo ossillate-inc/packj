@@ -6,7 +6,7 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/packj?label=PyPI%20Downloads)](https://pypistats.org/packages/packj)
 
 > **Note**
-**Self-hosted Packj webserver and several integrations coming later this month :punch: Watch this repo to stay up-to-date.**
+**Self-hosted Packj webserver and several integrations coming later this month :punch: Watch this repo to stay up to date.**
 
 ![demo video](https://drive.google.com/uc?export=view&id=1QfA73i_ihgqo2JbNXoxaGSZ2Wa02RZNq)
 
@@ -313,9 +313,9 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 * Add support for other language ecosystems. Rust is a work in progress [ETA: Mar '22].
 * Add functionality to detect several other "risky" code as well as metadata attributes [ETA: Feb '22].
-* Self-hosted Packj webserver and several integrations [ETA: Feb'22].
+* Self-hosted Packj webserver and several useful integrations (e.g., Gitlab runner) [ETA: Feb'22].
 
-Watch this repo to stay up-to-date. Give us a :star: if you find this useful.
+Watch this repo to stay up to date. Give us a :star: if you find this useful.
 
 Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/qFcqaV2wYa) for discussion and requests.
 

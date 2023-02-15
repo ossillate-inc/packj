@@ -321,7 +321,7 @@ Have a feature or support request? Please visit our [GitHub discussion page](htt
 
 # Team #
 
-Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://packj.dev/go?next=https://ossillate.com/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators.
+Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://packj.dev/go?next=https://packj.dev/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators.
 
 We welcome code contributions with open arms. See [CONTRIBUTING.md](CONTRIBUTING.md) guidelines. Found a bug? Please open an issue. Refer to our [SECURITY.md](SECURITY.md) guidelines to report a security issue.
 

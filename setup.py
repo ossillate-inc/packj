@@ -20,7 +20,7 @@ long_description = open(os.path.join(here, "README.md")).read()
 long_description_content_type = 'text/markdown'
 
 # this grabs the requirements from requirements.txt
-REQUIREMENTS = [i.strip().split('==')[0] for i in open(os.path.join(here, "requirements.txt")).readlines()]
+REQUIREMENTS = [i.strip() for i in open(os.path.join(here, "requirements.txt")).readlines()]
 
 def setup_sandbox(build_dir):
 	if sys.platform != 'linux':

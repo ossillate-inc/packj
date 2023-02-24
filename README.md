@@ -6,7 +6,7 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/packj?label=PyPI%20Downloads)](https://pypistats.org/packages/packj)
 
 > **Note**
-**Self-hosted Packj webserver and several integrations coming later this month :punch: Watch this repo to stay up to date.**
+**Self-hosted Packj webserver and several integrations coming later this month :punch: Watch this repo to stay up to date. **
 
 ![demo video](https://drive.google.com/uc?export=view&id=1QfA73i_ihgqo2JbNXoxaGSZ2Wa02RZNq)
 
@@ -319,9 +319,9 @@ Watch this repo to stay up to date. Give us a :star: if you find this useful.
 
 Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/qFcqaV2wYa) for discussion and requests.
 
-# Team #
+# Team and contributors #
 
-Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://packj.dev/go?next=https://packj.dev/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators.
+Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://packj.dev/go?next=https://packj.dev/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators. Show your appreciation by giving us a :star: if you like our work.
 
 We welcome code contributions with open arms. See [CONTRIBUTING.md](CONTRIBUTING.md) guidelines. Found a bug? Please open an issue. Refer to our [SECURITY.md](SECURITY.md) guidelines to report a security issue.
 

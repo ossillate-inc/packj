@@ -20,7 +20,7 @@
 * [Malware found](#malware-found) - reported over 70 malicious PyPI and RubyGems packages
 * [Talks and videos](#resources) - presentations from PyCon, OpenSourceSummit, BlackHAT
 * [Project roadmap](#feature-roadmap) - view or suggest new features; join our [discord channel](https://discord.gg/qFcqaV2wYa)
-* [Team and collaboration](#team) - expert Cybersecurity researchers from academia/industry
+* [Team and collaboration](#team-and-contributors) - lead by Cybersecurity researchers from academia/industry
 * [FAQ](#faq) - supported package managers, commonly asked questions on techniques, and more
 
 # Get started #

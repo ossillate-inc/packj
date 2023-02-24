@@ -6,7 +6,7 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/packj?label=PyPI%20Downloads)](https://pypistats.org/packages/packj)
 
 > **Note**
-**Self-hosted Packj webserver and several integrations coming later this month :punch: Watch this repo to stay up to date. **
+**Self-hosted Packj webserver and several integrations coming later this month :punch: Watch this repo to stay up to date.**
 
 ![demo video](https://drive.google.com/uc?export=view&id=1QfA73i_ihgqo2JbNXoxaGSZ2Wa02RZNq)
 

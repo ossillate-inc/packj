@@ -315,7 +315,7 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 * Add functionality to detect several other "risky" code as well as metadata attributes [ETA: Feb '22].
 * Self-hosted Packj webserver and several useful integrations (e.g., Gitlab runner) [ETA: Feb'22].
 
-Watch this repo to stay up to date. Give us a :star: if you find this useful.
+Watch :eyes: this repo to stay up to date.
 
 Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/qFcqaV2wYa) for discussion and requests.
 

@@ -256,7 +256,7 @@ def get_auth_implicit_token(creds):
 			expires = expires.strftime('%Y-%m-%d %H:%M:%S %Z')
 			response_data['expires'] = expires
 	except Exception as e:
-		logger,warning("get_auth_implicit_token(%s:%s): failed to add token expiry (%s)" % \
+		logging.warning("get_auth_implicit_token(%s:%s): failed to add token expiry (%s)" % \
 				(base_url, auth_endpoint, str(e)))
 
 	try:

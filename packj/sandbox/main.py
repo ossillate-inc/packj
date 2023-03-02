@@ -121,7 +121,7 @@ def parse_network_event(net_events, event_data):
 		else:
 			ipaddr_type = 'IPv4'
 		if not domain:
- 			key = (ipaddr, port, rule, ipaddr_type)
+			key = (ipaddr, port, rule, ipaddr_type)
 		else:
 			key = (domain, port, rule, ipaddr_type)
 		if key not in net_events:

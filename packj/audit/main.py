@@ -779,21 +779,26 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 			end='',
 			flush=True
 		)
-		filepath, size = download_file(ver_info['url'])
+		if os.path.isdir(pkg_name):
+			filepath, size = pkg_name, 114514
+		else:
+			filepath, size = download_file(ver_info['url'])
+
 		msg_ok(f'{float(size)/1024:.2f} KB')
-	except KeyError:
-		msg_fail('URL missing')
+	# except KeyError:
+	# 	msg_fail('URL missing')
 	except Exception as e:
 		msg_fail(str(e))
 
 	# perform static analysis
+	# print("\n😁Analyze filepath: ", filepath)
 	if filepath:
 		risks, report = analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report)
 		risks, report = analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report)
 
 	# perform dynamic analysis if requested
-	if install_trace:
-		risks, report = trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report)
+	# if install_trace:
+	# 	risks, report = trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report)
 
 	# aggregate risks
 	if not risks:

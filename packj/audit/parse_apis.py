@@ -4,6 +4,7 @@ import inspect
 from packj.util.files import read_from_csv, read_json_from_file
  
 def parse_api_usage(pm_name, filepath):
+	# print('\n😭out: ', filepath)
 	cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 	config_dir= os.path.join(cwd, 'config')
 	if pm_name == 'pypi':

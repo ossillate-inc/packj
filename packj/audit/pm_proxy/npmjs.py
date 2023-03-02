@@ -70,6 +70,16 @@ class NpmjsProxy(PackageManagerProxy):
 			return None
 
 	def get_metadata(self, pkg_name, pkg_version=None):
+		# local package, get metadata from package.json
+		if os.path.isdir(pkg_name):
+			try:
+				with open(os.path.join(pkg_name, 'package.json')) as f:
+					pkg_info = json.load(f)
+			except Exception as e:
+				logging.debug("fail in get_metadata for pkg_path %s: %s (tips: package.json is needed)", pkg_path, str(e))
+				pkg_info = None
+			finally:
+				return pkg_name, pkg_info
 		# fetch metadata from json api
 		try:
 			metadata_url = "https://registry.npmjs.org/%s" % (pkg_name)
@@ -126,8 +136,14 @@ class NpmjsProxy(PackageManagerProxy):
 
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name)
+			_, pkg_info = self.get_metadata(pkg_name=pkg_name)
+
+		# local packages are no needed to be have versions attr
+		if os.path.isdir(pkg_name):
+			ver_info = {'tag': pkg_info['version']}
+			return ver_info
 		assert pkg_info and 'versions' in pkg_info, "package not found!"
+
 		try:
 			if not ver_str:
 				ver_str = pkg_info['dist-tags']['latest']

@@ -1,5 +1,6 @@
 #
 # Inspired from npmjs.py
+# Partially analysis support for local Node.js packages. 
 #
 import json
 import logging

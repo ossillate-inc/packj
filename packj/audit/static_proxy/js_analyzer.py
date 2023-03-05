@@ -217,7 +217,6 @@ class JsAnalyzer(StaticAnalyzer):
 
 		# load the config proto
 		configpb = AstLookupConfig()
-		# print("❓", inpath)
 		read_proto_from_file(configpb, configpath, binary=False)
 		logging.debug("loaded lookup config from %s:\n%s", configpath, configpb)
 		# invoke the language specific ast generators to call functions

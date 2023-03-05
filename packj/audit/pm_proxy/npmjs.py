@@ -137,13 +137,6 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
 			_, pkg_info = self.get_metadata(pkg_name=pkg_name)
-
-		# local packages are no needed to be have versions attr
-		if os.path.isdir(pkg_name):
-			ver_info = {'tag': pkg_info['version']}
-			return ver_info
-		assert pkg_info and 'versions' in pkg_info, "package not found!"
-
 		try:
 			if not ver_str:
 				ver_str = pkg_info['dist-tags']['latest']

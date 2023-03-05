@@ -31,6 +31,8 @@ def get_pm_enum(pm_name):
 		return PackageManagerEnum.npmjs
 	elif pm_name == 'rubygems':
 		return PackageManagerEnum.rubygems
+	elif pm_name == 'local_node':
+		return PackageManagerEnum.local_node
 	else:
 		raise Exception(f'Package manager {pm_name} is not supported')
 
@@ -59,5 +61,8 @@ def get_pm_proxy(pm, registry=None, cache_dir=None, isolate_pkg_info=False):
 	elif pm == PackageManagerEnum.rubygems:
 		from packj.audit.pm_proxy.rubygems import RubygemsProxy
 		return RubygemsProxy(registry=registry, cache_dir=cache_dir, isolate_pkg_info=isolate_pkg_info)
+	elif pm == PackageManagerEnum.local_node:
+		from packj.audit.pm_proxy.local_node import LocalNodeProxy
+		return LocalNodeProxy(cache_dir=cache_dir, isolate_pkg_info=isolate_pkg_info)
 	else:
 		raise Exception("PM proxy not available for package manager: %s" % pm)

@@ -13,6 +13,9 @@ class PackageManagerEnum(Enum):
     packagist = 'packagist'
     dockerhub = 'dockerhub'
 
+    # Local package
+    local_node = 'local_node'
+
     # TODO: add support for these
     # Reference: https://github.com/showcases/package-managers?s=stars
     vagrantcloud = 'vagrantcloud'  # for vagrant

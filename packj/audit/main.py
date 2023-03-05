@@ -157,7 +157,7 @@ def analyze_version(ver_info, risks, report):
 			uploaded = ver_info['uploaded']
 			days = datetime_delta(uploaded, days=True)
 		except KeyError:
-			raise Exception('parse error')
+			raise Exception('uploaded time data missing')
 
 		# check if the latest release is too old (unmaintained package)
 		days_old = f'{days} days old'
@@ -263,6 +263,7 @@ def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 			reason = 'no homepage'
 			alert_type = 'invalid or no homepage'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			msg_alert('no homepage')
 		else:
 			# check if insecure
 			ret = __parse_url(url)
@@ -282,8 +283,8 @@ def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 				reason = 'invalid (popular) webpage'
 				alert_type = 'invalid or no homepage'
 				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-		msg_ok(url)
-		report['homepage'] = url
+			msg_ok(url)
+			report['homepage'] = url
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -516,7 +517,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
-		elif pm_name == 'npm':
+		elif pm_name == 'npm' or pm_name == 'local_node':
 			language=LanguageEnum.javascript
 		elif pm_name == 'rubygems':
 			language=LanguageEnum.ruby
@@ -610,7 +611,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.python
 			configpath = os.path.join(config_dir,'astgen_python_smt.config')
 			system = 'python2'
-		elif pm_name == 'npm':
+		elif pm_name == 'npm' or pm_name == 'local_node':
 			language=LanguageEnum.javascript
 			configpath = os.path.join(config_dir,'astgen_javascript_smt.config')
 			system = 'python'
@@ -773,32 +774,30 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 
 	# download package
 	filepath = None
-	try:
-		msg_info(
-			f"Downloading package from {pm_name}...",
-			end='',
-			flush=True
-		)
-		if os.path.isdir(pkg_name):
-			filepath, size = pkg_name, 114514
-		else:
+	if not os.path.isdir(pkg_name):
+		try:
+			msg_info(
+				f"Downloading package from {pm_name}...",
+				end='',
+				flush=True
+			)
 			filepath, size = download_file(ver_info['url'])
-
-		msg_ok(f'{float(size)/1024:.2f} KB')
-	# except KeyError:
-	# 	msg_fail('URL missing')
-	except Exception as e:
-		msg_fail(str(e))
+			msg_ok(f'{float(size)/1024:.2f} KB')
+		except KeyError:
+			msg_fail('URL missing')
+		except Exception as e:
+			msg_fail(str(e))
+	else:
+		filepath = pkg_name
 
 	# perform static analysis
-	# print("\n😁Analyze filepath: ", filepath)
 	if filepath:
 		risks, report = analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report)
 		risks, report = analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report)
 
 	# perform dynamic analysis if requested
-	# if install_trace:
-	# 	risks, report = trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report)
+	if install_trace:
+		risks, report = trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report)
 
 	# aggregate risks
 	if not risks:

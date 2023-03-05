@@ -74,7 +74,6 @@ class StaticAnalyzer(object):
             else:
                 raise Exception("inpath %s is unhandled type for language %s!" % (inpath, language))
 
-        # print("🤕analyze_path:", analyze_path)
         return analyze_path, is_decompress_path, outfile, root, configpath
 
     @staticmethod

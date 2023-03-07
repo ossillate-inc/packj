@@ -8,6 +8,7 @@ import logging
 import yaml
 import tempfile
 from typing import Optional
+import email.utils as eutils
 
 from colorama import Fore, Style
 
@@ -477,6 +478,7 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 			if not email:
 				break
 			try:
+				_,email = eutils.getaddresses([email])[0]
 				valid, valid_with_dns = check_email_address(email)
 			except Exception as e:
 				logging.debug('Failed to parse email %s: %s' % (email, str(e)))

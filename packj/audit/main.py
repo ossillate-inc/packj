@@ -211,6 +211,24 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	finally:
 		return risks, report
 
+def analyze_zero_width_unicode(pm_proxy, pkg_name, pkg_info, risks, report):
+
+	# List of malicious symbols
+	symbols = [u'\u200b', u'\u200c', u'\u200d', u'\u200e', u'\u200f', #U+200x
+				u'\u202a', u'\u202b', u'\u202c', u'\u202d', #U+202x
+				u'\u2060', u'\u2061', u'\u2062', u'\u2063', u'\u2064',
+				u'\u2065', u'\u2066', u'\u2067', u'\u2068', u'\u2069',
+				u'\u206a', u'\u206b', u'\u206c', u'\u206d', u'\u206e' #U+206x
+			]
+	try:
+		msg_info('Checking for zero-width unicode chars...', end='', flush=True)
+		# TODO
+		msg_warn('Coming soon!')
+	except Exception as e:
+		msg_fail(str(e))
+	finally:
+		return risks, report
+
 def analyze_install_hooks(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		msg_info('Checking for install-time hooks...', end='', flush=True)
@@ -252,7 +270,8 @@ def analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report):
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
 		msg_ok(f'{human_format(ret)} weekly')
 	except Exception as e:
-		msg_fail(str(e))
+		logging.debug(f'Failed to get downloads for {pm_proxy} {pkg_name}: {str(e)}')
+		msg_fail('Not available')
 	finally:
 		return risks, report
 
@@ -760,6 +779,7 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 	risks, report = analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report = analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report = analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report)
+	risks, report = analyze_zero_width_unicode(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_install_hooks(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_typosquatting(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_dep_confusion(pm_proxy, pkg_name, pkg_info, risks, report)

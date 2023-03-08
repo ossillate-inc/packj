@@ -41,7 +41,7 @@ class Options():
 		# Audit positional args
 		parser_audit_group = parser_audit.add_argument_group(title='required arguments', description='Either --packages or --depfiles must be chosen.')
 		parser_audit_arg = parser_audit_group.add_mutually_exclusive_group(required=True)
-		parser_audit_arg.add_argument('-p', '--packages', nargs='+', help='Audit packages (e.g., npm:react, pypi:torch), optionally version (e.g., rubygems:overcommit:1.0), local Node packages are also supported (e.g. local_node:/path/to/node-project)', action='store', default=[])
+		parser_audit_arg.add_argument('-p', '--packages', nargs='+', help='Audit packages (e.g., npm:react, pypi:torch), optionally version (e.g., rubygems:overcommit:1.0), local Node packages are also supported (e.g. local_nodejs:/path/to/node-project)', action='store', default=[])
 		parser_audit_arg.add_argument('-f', '--depfiles', nargs='+', help='Audit dependencies (e.g., npm:package.json, pypi:requirements.txt)', action='store', default=[])
 
 		#############################

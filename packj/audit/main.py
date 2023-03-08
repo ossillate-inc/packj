@@ -517,7 +517,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
-		elif pm_name == 'npm' or pm_name == 'local_node':
+		elif pm_name == 'npm' or pm_name == 'local_nodejs':
 			language=LanguageEnum.javascript
 		elif pm_name == 'rubygems':
 			language=LanguageEnum.ruby
@@ -611,7 +611,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.python
 			configpath = os.path.join(config_dir,'astgen_python_smt.config')
 			system = 'python2'
-		elif pm_name == 'npm' or pm_name == 'local_node':
+		elif pm_name == 'npm' or pm_name == 'local_nodejs':
 			language=LanguageEnum.javascript
 			configpath = os.path.join(config_dir,'astgen_javascript_smt.config')
 			system = 'python'

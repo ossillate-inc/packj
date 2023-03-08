@@ -9,14 +9,14 @@ import os
 
 from packj.audit.pm_proxy.pm_base import PackageManagerProxy
 
-class LocalNodeProxy(PackageManagerProxy):
+class LocalNodeJSProxy(PackageManagerProxy):
 	def __init__(self, cache_dir=None, isolate_pkg_info=False):
-		super(LocalNodeProxy, self).__init__()
+		super(LocalNodeJSProxy, self).__init__()
 		self.cache_dir = cache_dir
 		self.isolate_pkg_info = isolate_pkg_info
 		self.metadata_format = 'json'
 		self.dep_format = 'json'
-		self.name = 'local_node'
+		self.name = 'local_nodejs'
 
 	def parse_deps_file(self, deps_file):
 		try:
@@ -27,7 +27,7 @@ class LocalNodeProxy(PackageManagerProxy):
 				dep_list.append((pkg_name, ver_str.replace('^', '').replace('~', '')))
 			return dep_list
 		except Exception as e:
-			logging.debug("Failed to parse NPM deps file %s: %s" % (line, str(e)))
+			logging.debug("Failed to parse NPM deps file %s: %s" % (deps_file, str(e)))
 			return None
 
 	def get_downloads(self, pkg_name, pkg_info):

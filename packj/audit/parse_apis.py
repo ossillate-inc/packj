@@ -8,7 +8,7 @@ def parse_api_usage(pm_name, filepath):
 	config_dir= os.path.join(cwd, 'config')
 	if pm_name == 'pypi':
 		api_dir = os.path.join(config_dir, 'python_api')
-	elif pm_name == 'npm' or pm_name == 'local_node':
+	elif pm_name == 'npm' or pm_name == 'local_nodejs':
 		api_dir = os.path.join(config_dir, 'javascript_api')
 	elif pm_name == 'rubygems':
 		api_dir = os.path.join(config_dir, 'rubygems_api')

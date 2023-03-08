@@ -14,7 +14,7 @@ class PackageManagerEnum(Enum):
     dockerhub = 'dockerhub'
 
     # Local package
-    local_node = 'local_node'
+    local_nodejs = 'local_nodejs'
 
     # TODO: add support for these
     # Reference: https://github.com/showcases/package-managers?s=stars

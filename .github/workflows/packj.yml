@@ -4,12 +4,12 @@ name: Packj security audit
 # Controls when the workflow will run
 on:
   pull_request_target:
-    branches: main
   pull_request:
     branches: main
 
 permissions:  # principle of least privilege (only code READ perms)
   contents: read
+  pull-requests: write
   
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:

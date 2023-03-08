@@ -109,9 +109,15 @@ class PypiProxy(PackageManagerProxy):
 					pass
 			last_date = date
 
+			try:
+				yanked = dists[0]['yanked']
+			except:
+				yanked = None
+
 			history[ver_str] = {
-				"release_date" : datetime_to_date_str(date),
-				"days_since_last_release" : days
+				"release_date"				: datetime_to_date_str(date),
+				"days_since_last_release"	: days,
+				"yanked"					: yanked,
 			}
 		return history
 

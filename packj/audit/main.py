@@ -81,6 +81,30 @@ def alert_user(alert_type, threat_model, reason, risks):
 			risks[risk_cat].append(item)
 	return risks
 
+def analyze_yanked_releases(pm_proxy, pkg_name, pkg_info, risks, report, release_history):
+	try:
+		msg_info('Checking for yanked releases...', end='', flush=True, indent=2)
+
+		if pm_proxy.name == 'rubygems':
+			msg_warn('Not supported!')
+			return risks, report
+
+		num_releases = len(release_history)
+		num_yanked = sum([v['yanked'] for v in release_history.values()])
+
+		if (num_releases == num_yanked) or (num_releases > 3 and num_yanked > int(num_releases/2)):
+			reason = f'more than 50% ({num_yanked}) of {num_releases} releases were yanked'
+			alert_type = 'high release-yank ratio'
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			release_yanked_info = f'{num_yanked} version(s) were yanked'
+			msg_alert(release_yanked_info)
+		else:
+			msg_ok('No versions were yanked')
+	except Exception as e:
+		msg_fail(str(e))
+	finally:
+		return risks, report
+
 def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report, release_history=None):
 	try:
 		msg_info('Checking release history...', end='', flush=True, indent=1)
@@ -773,6 +797,7 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 	# analyze metadata
 	risks, report = analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report, release_history = analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report)
+	risks, report = analyze_yanked_releases(pm_proxy, pkg_name, pkg_info, risks, report, release_history)
 	risks, report = analyze_version(ver_info, risks, report)
 	risks, report = analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report, release_history)
 	risks, report = analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
@@ -823,7 +848,7 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 		report['risks'] = None
 	else:
 		msg_info(
-			f'{sum(len(v) for v in risks.values())} risk(s) found, '
+			f'{sum(len(v) for v in risks.values())} risk(s) apply to you, '
 			f'package is {", ".join(risks.keys())}!'
 		)
 		report['risks'] = risks

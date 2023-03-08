@@ -85,7 +85,10 @@ class RubygemsProxy(PackageManagerProxy):
 		# e.g. curl https://rubygems.org/api/v1/versions/coulda.json
 		# e.g. curl https://rubygems.org/api/v1/versions/rails/latest.json
 		# use rubygems API to get metadata
-		url = f'https://rubygems.org/api/v1/gems/{pkg_name}.json'
+		if not pkg_version:
+			url = f'https://rubygems.org/api/v1/gems/{pkg_name}.json'
+		else:
+			url = f'https://rubygems.org/api/v2/rubygems/{pkg_name}/versions/{pkg_version}.json'
 		try:
 			resp = requests.request('GET', url)
 			resp.raise_for_status()
@@ -98,6 +101,21 @@ class RubygemsProxy(PackageManagerProxy):
 			pkg_info = None
 		finally:
 			return pkg_name, pkg_info
+
+	def is_ver_yanked(self, pkg_name, pkg_version):
+		logging.debug(f'Checking if {pkg_name} (ver {pkg_version}) has been yanked')
+
+		# try with specific pkg version
+		url = f'https://rubygems.org/api/v2/rubygems/{pkg_name}/versions/{pkg_version}.json'
+		try:
+			resp = requests.request('GET', url)
+			resp.raise_for_status()
+		except:
+			return None
+		finally:
+			if resp.status_code == 404:
+				return True
+			return False
 
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
@@ -166,10 +184,14 @@ class RubygemsProxy(PackageManagerProxy):
 					pass
 			last_date = date
 
+			# XXX yanked package versions are not available using APIs
+			yanked = None
+
 			history[ver_str] = {
-				"downloads"	   : downloads,
-				"release_date" : datetime_to_date_str(date),
-				"days_since_last_release" : days
+				"downloads"					: downloads,
+				"release_date"				: datetime_to_date_str(date),
+				"days_since_last_release"	: days,
+				"yanked" 					: yanked,
 			}
 		return history
 

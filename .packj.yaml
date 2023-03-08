@@ -109,6 +109,11 @@ audit:
         - threshold: 180
         - enabled: true
 
+      high release-yank ratio:
+        - reason: a high number of release(s) or version(s) were yanked due to bugs or security issues
+        - threshold: 50
+        - enabled: false
+
       contains custom installation hooks:
         - reason: custom installation hooks may download or execute malicious code
         - enabled: true

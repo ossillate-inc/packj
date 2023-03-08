@@ -101,11 +101,9 @@ class NpmjsProxy(PackageManagerProxy):
 
 		history = {}
 		last_date = None
-		for ver_str, ts in pkg_info['time'].items():
-			if ver_str in ['modified', 'created']:
-				continue
-
+		for ver_str, ver_info in pkg_info['versions'].items():
 			try:
+				ts = ver_info['uploaded']
 				date = dateutil.parser.parse(ts)
 			except:
 				date = None
@@ -118,9 +116,22 @@ class NpmjsProxy(PackageManagerProxy):
 					pass
 			last_date = date
 
+			try:
+				yanked = False
+				descr = ver_info.get('description', None)
+				repo = ver_info.get('repository', None)
+				version = ver_info.get('version', None)
+				if descr == 'security holding package' and \
+					repo == 'npm/security-holder' and \
+					version == '0.0.1-security':
+					yanked = True
+			except:
+				yanked = None
+
 			history[ver_str] = {
-				"release_date" : datetime_to_date_str(date),
-				"days_since_last_release" : days
+				"release_date"				: datetime_to_date_str(date),
+				"days_since_last_release"	: days,
+				"yanked" 					: yanked,
 			}
 		return history
 

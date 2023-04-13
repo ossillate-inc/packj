@@ -71,6 +71,8 @@ def build_threat_model(filename):
 	if len(THREAT_MODEL) == 0:
 		raise Exception("No threat items in {filename} has been enabled")
 
+	return config_data
+
 def alert_user(alert_type, threat_model, reason, risks):
 	if alert_type in threat_model:
 		risk_cat = threat_model[alert_type]
@@ -343,11 +345,11 @@ def analyze_repo_descr(risks, report):
 	finally:
 		return risks, report
 
-def analyze_repo_data(risks, report):
+def analyze_repo_data(config, risks, report):
 	try:
 		repo_url = report['repo']['url']
 		msg_info('Checking repo data...', end='', flush=True, indent=1)
-		err, repo_data	= fetch_repo_data(repo_url)
+		err, repo_data	= fetch_repo_data(config, repo_url)
 		assert repo_data, err
 
 		try:
@@ -766,7 +768,7 @@ def trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report):
 	finally:
 		return risks, report
 
-def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
+def audit(pm_args, pkg_name, ver_str, report_dir, extra_args, config):
 
 	pm_enum, pm_name, pm_proxy = pm_args
 	host_volume, container_mountpoint, install_trace = extra_args
@@ -815,7 +817,7 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args):
 	risks, report = analyze_dep_confusion(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	if 'repo' in report and 'url' in report['repo'] and report['repo']['url']:
-		risks, report = analyze_repo_data(risks, report)
+		risks, report = analyze_repo_data(config, risks, report)
 		if 'description' in report['repo']:
 			risks, report = analyze_repo_descr(risks, report)
 		risks, report = analyze_repo_code(risks, report)
@@ -954,7 +956,7 @@ def parse_request_args(args):
 def main(args, config_file):
 
 	# get user threat model
-	build_threat_model(config_file)
+	config = build_threat_model(config_file)
 
 	# parse input
 	audit_pkg_list, report_dir, cmd_args = parse_request_args(args)
@@ -962,7 +964,7 @@ def main(args, config_file):
 	# audit each package
 	reports = []
 	for pkg_info in audit_pkg_list:
-		report = audit(*pkg_info, report_dir, cmd_args)
+		report = audit(*pkg_info, report_dir, cmd_args, config)
 		if report:
 			reports.append(report)
 

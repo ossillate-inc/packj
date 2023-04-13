@@ -87,11 +87,14 @@ def parse_repo_data(service, repo_data):
 		parsed_data['url'] = repo_url
 	return parsed_data
 
-def fetch_gitlab_repo_data(repo_id):
+def fetch_gitlab_repo_data(token, repo_id):
 	import gitlab
 	logging.debug("fetching %s from gitlab" % (repo_id))
 
-	gl = gitlab.Gitlab('https://gitlab.com', api_version=4)
+	try:
+		gl = gitlab.Gitlab('https://gitlab.com', api_version=4, private_token=token)
+	except:
+		gl = gitlab.Gitlab('https://gitlab.com', api_version=4)
 	assert gl, "NULL gl!"
 
 	repository = gl.projects.get(repo_id)
@@ -99,11 +102,14 @@ def fetch_gitlab_repo_data(repo_id):
 
 	return parse_repo_data('gitlab', repository._attrs)
 
-def fetch_github_repo_data(repo_id):
+def fetch_github_repo_data(token, repo_id):
 	from github3 import GitHub
 	logging.debug("fetching %s from github" % (repo_id))
 
-	gh = GitHub()
+	try:
+		gh = GitHub(token=token)
+	except:
+		gh = GitHub()
 	assert gh, "NULL gh!"
 
 	items = repo_id.split('/')
@@ -118,17 +124,30 @@ def fetch_github_repo_data(repo_id):
 
 	return parse_repo_data('github', repository.as_dict())
 
-def fetch_repo_data(repo_url):
+def fetch_repo_data(config, repo_url):
+	tokens = config.get('tokens', dict())
 	try:
 		logging.debug("Request to dump repo %s data" % (repo_url))
 		if repo_url.startswith('https://github.com/'):
-			ret = fetch_github_repo_data(repo_url.replace('https://github.com/',''))
+			token = tokens.get('github', None)
+			repo_id = repo_url.replace('https://github.com/','')
+			ret = fetch_github_repo_data(token, repo_id)
+
 		elif repo_url.startswith('http://github.com/'):
-			ret = fetch_github_repo_data(repo_url.replace('http://github.com/',''))
+			token = tokens.get('github', None)
+			repo_id = repo_url.replace('http://github.com/','')
+			ret = fetch_github_repo_data(token, repo_id)
+
 		elif repo_url.startswith('https://gitlab.com/'):
-			ret = fetch_gitlab_repo_data(repo_url.replace('https://gitlab.com/',''))
+			token = tokens.get('gitlab', None)
+			repo_id = repo_url.replace('https://gitlab.com/','')
+			ret = fetch_gitlab_repo_data(token, repo_id)
+
 		elif repo_url.startswith('http://gitlab.com/'):
-			ret = fetch_gitlab_repo_data(repo_url.replace('http://gitlab.com/',''))
+			token = tokens.get('gitlab', None)
+			repo_id = repo_url.replace('http://gitlab.com/','')
+			ret = fetch_gitlab_repo_data(token, repo_id)
+
 		else:
 			raise Exception("%s not supported!" % (repo_url))
 		return None, ret

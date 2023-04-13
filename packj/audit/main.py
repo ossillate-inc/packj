@@ -446,6 +446,8 @@ def analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, rep
 			if not repo_url or not repo_url.startswith(popular_hosting_services):
 				repo_url = None
 		if repo_url:
+			if len(repo_url) == 0:
+				repo_url = None
 			if repo_url.startswith('git+https://'):
 				repo_url = repo_url.lstrip('git+')
 			if repo_url.startswith('git://'):
@@ -458,11 +460,14 @@ def analyze_repo_url(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, rep
 			reason = 'no source repo found'
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			msg_alert(reason)
 		elif not repo_url.startswith(popular_hosting_services):
 			reason = f'invalid source repo {repo_url}'
 			alert_type = 'invalid or no source repo'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-		msg_ok(repo_url)
+			msg_alert(reason)
+		else:
+			msg_ok(repo_url)
 		report['repo'] = {
 			'url' : repo_url,
 		}

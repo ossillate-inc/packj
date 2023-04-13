@@ -274,11 +274,6 @@ def refresh_credentials(cfg, creds):
 		base_url = cfg['base_url']
 		token_endpoint = cfg['endpoints']['token']
 
-		headers = {
-			'User-Agent': f'pypi-packj-{__version__}',
-			'From': socket.gethostname(),
-		}
-
 		client_id = creds.get('id')
 		if not client_id:
 			raise Exception("refresh_credentials(): failed to get client_id!")

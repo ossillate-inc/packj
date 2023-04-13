@@ -12,7 +12,13 @@ account:
     token: /oauth/token
     redirect: /oauth/code/callback
     audit: /api/v1/audit
-    
+
+#
+# Tokens for third-party APIs
+#
+tokens:
+  github:
+
 #
 # Audit policies
 #

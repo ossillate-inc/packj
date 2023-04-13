@@ -147,64 +147,103 @@ class PypiProxy(PackageManagerProxy):
 		try:
 			if not pkg_info:
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
-			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
-			return pkg_info['info']['summary']
+			assert pkg_info, "Failed to fetch metadata!"
+
+			info = pkg_info.get('info', None)
+			assert info, "Invalid metadata!"
+
+			summary = info.get('summary', None)
+			if summary: return summary
+
+			descr = info.get('description', None)
+			if descr and len(descr) < 100: return descr
+
+			raise Exception('No package summary or description found in metadata')
 		except Exception as e:
-			logging.error(str(e))
+			logging.warning(str(e))
 			return None
 
 	def get_readme(self, pkg_name, ver_str=None, pkg_info=None):
 		try:
 			if not pkg_info:
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
-			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
-			return pkg_info['info']['description']
+			assert pkg_info, "Failed to fetch metadata!"
+
+			info = pkg_info.get('info', None)
+			assert info, "Invalid metadata!"
+
+			descr = info.get('description', None)
+			if descr: return descr
+
+			raise Exception('No package description found in metadata')
 		except Exception as e:
-			logging.error(str(e))
+			logging.warning(str(e))
 			return None
 
 	def get_dependencies(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
-			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
-			return pkg_info['info']['requires_dist']
-		except KeyError:
-			return None
+			assert pkg_info, "Failed to fetch metadata!"
+
+			info = pkg_info.get('info', None)
+			assert info, "Invalid metadata!"
+
+			deps = info.get('requires_dist', None)
+			if deps: return deps
+
+			raise Exception('No dependency info found in metadata')
 		except Exception as e:
-			logging.error(str(e))
+			logging.warning(str(e))
 			return None
 
 	def get_download_url(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
-			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
-			try:
-				info = pkg_info['info']
-				if info and info['project_urls']:
-					return info['project_urls']['Download']
-				return None
-			except KeyError:
-				return None
+			assert pkg_info, "Failed to fetch metadata!"
+
+			info = pkg_info.get('info', None)
+			assert info, "Invalid metadata!"
+
+			proj_urls = info.get('project_urls', None)
+			assert proj_urls, "No project URLs!"
+
+			download = proj_urls.get('Download', None)
+			if download: return download
+
+			raise Exception('No download info found in metadata')
 		except Exception as e:
-			logging.error(str(e))
+			logging.warning(str(e))
 			return None
 
 	def get_repo(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
-			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
-			try:
-				info = pkg_info['info']
-				if info and info['project_urls']:
-					return info['project_urls']['Source']
-				return None
-			except KeyError:
-				return None
+			assert pkg_info, "Failed to fetch metadata!"
+
+			info = pkg_info.get('info', None)
+			assert info, "Invalid metadata!"
+
+			proj_urls = info.get('project_urls', None)
+			assert proj_urls, "No project URLs!"
+
+			src = proj_urls.get('Source', None)
+			if src: return src
+
+			src = proj_urls.get('source', None)
+			if src: return src
+
+			repo = proj_urls.get('repository', None)
+			if repo: return repo
+
+			repo = proj_urls.get('Repository', None)
+			if repo: return repo
+
+			raise Exception('No repo info found in metadata')
 		except Exception as e:
-			logging.error(str(e))
+			logging.warning(str(e))
 			return None
 
 	def get_downloads(self, pkg_name, pkg_info):
@@ -218,17 +257,33 @@ class PypiProxy(PackageManagerProxy):
 			res = r.json()
 			return int(res["data"]["last_week"])
 		except Exception as e:
-			logging.error("Error fetching downloads: %s" % (str(e)))
+			logging.warning("Error fetching downloads: %s" % (str(e)))
 			return None
 
 	def get_homepage(self, pkg_name, ver_str=None, pkg_info=None):
 		try:
 			if not pkg_info:
 				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
-			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
-			return pkg_info['info']['home_page']
+			assert pkg_info, "Failed to fetch metadata!"
+
+			info = pkg_info.get('info', None)
+			assert info, "Invalid metadata!"
+
+			homepage = info.get('home_page', None)
+			if homepage: return homepage
+
+			proj_urls = info.get('project_urls', None)
+			assert proj_urls, "No project URLs!"
+
+			homepage = proj_urls.get('Homepage', None)
+			if homepage: return homepage
+
+			homepage = proj_urls.get('homepage', None)
+			if homepage: return homepage
+
+			raise Exception('No homepage info found in metadata')
 		except Exception as e:
-			logging.error(str(e))
+			logging.warning(str(e))
 			return None
 
 	def __get_email_list(self, data):
@@ -267,7 +322,7 @@ class PypiProxy(PackageManagerProxy):
 				ret.append({'email' : email})
 			return ret
 		except Exception as e:
-			logging.error("Failed to get maintainers for PyPI package %s: %s" % (pkg_name, str(e)))
+			logging.warning("Failed to get maintainers for PyPI package %s: %s" % (pkg_name, str(e)))
 			return None
 
 	def get_author(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
@@ -294,5 +349,5 @@ class PypiProxy(PackageManagerProxy):
 				ret.append({'email' : email})
 			return ret
 		except Exception as e:
-			logging.error("Failed to get author for PyPI package %s: %s" % (pkg_name, str(e)))
+			logging.warning("Failed to get author for PyPI package %s: %s" % (pkg_name, str(e)))
 			return None

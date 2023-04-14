@@ -123,8 +123,9 @@ def analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report, release
 			reason = f'only {len(release_history)} versions released'
 			alert_type = 'fewer versions or releases'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-
-		msg_ok(f'{len(release_history)} version(s)')
+			msg_alert(reason)
+		else:
+			msg_ok(f'{len(release_history)} version(s)')
 		report['num_releases'] = len(release_history)
 	except Exception as e:
 		msg_fail(str(e))
@@ -294,7 +295,10 @@ def analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report):
 			reason = f'only {ret} weekly downloads'
 			alert_type = 'fewer downloads'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-		msg_ok(f'{human_format(ret)} weekly')
+			msg_alert(reason)
+		else:
+			msg_ok(f'{human_format(ret)} weekly')
+		report['downloads'] = f'{human_format(ret)} weekly'
 	except Exception as e:
 		logging.debug(f'Failed to get downloads for {pm_proxy} {pkg_name}: {str(e)}')
 		msg_fail('Not available')
@@ -309,28 +313,36 @@ def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 			reason = 'no homepage'
 			alert_type = 'invalid or no homepage'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			msg_alert('no homepage')
+			msg_alert(reason)
 		else:
 			# check if insecure
 			ret = __parse_url(url)
+			if ret.scheme == 'https':
+				valid_site = check_site_exist(url)
+
 			if ret.scheme != 'https':
 				reason = 'insecure webpage'
 				alert_type = 'invalid or no homepage'
 				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+				msg_alert(reason)
 
 			# check if an existent webpage
-			valid_site, reason = check_site_exist(url)
-			if not valid_site:
+			elif not valid_site:
+				reason = 'nonexistent webpage'
 				alert_type = 'invalid or no homepage'
 				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+				msg_alert(reason)
 
 			# check if a popular webpage
 			elif check_domain_popular(url):
 				reason = 'invalid (popular) webpage'
 				alert_type = 'invalid or no homepage'
 				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-			msg_ok(url)
-			report['homepage'] = url
+				msg_alert(reason)
+
+			else:
+				msg_ok(url)
+		report['homepage'] = url
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -368,17 +380,32 @@ def analyze_repo_data(config, risks, report):
 		except KeyError:
 			forked_from = None
 
+		msg = ''
+		alert = False
 		if num_forks and num_forks < 5:
 			alert_type = 'few source repo forks'
 			reason = f'only {num_forks} forks'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			msg += reason
+			alert = True
+		else:
+			msg += f'forks: {num_forks}'
 
+		msg += ', '
 		if num_stars and num_stars < 10:
 			alert_type = 'few source repo stars'
 			reason = f'only {num_stars} stars'
 			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			msg += reason
+			alert = True
+		else:
+			msg += f'stars: {num_stars}'
 
-		msg_ok(f'stars: {num_stars}, forks: {num_forks}')
+		if alert:
+			msg_alert(msg)
+		else:
+			msg_ok(msg)
+
 		report['repo'].update(repo_data)
 	except Exception as e:
 		msg_fail(str(e))
@@ -412,7 +439,7 @@ def analyze_repo_activity(risks, report):
 		elif repo_data:
 			commits, contributors, tags = tuple(repo_data[k] for k in ('commits', 'contributors', 'tags'))
 			msg_ok(f'commits: {commits}, contributors: {contributors}, tags: {tags}')
-			report['repo'].update(repo_data)
+		report['repo'].update(repo_data)
 	except Exception as e:
 		msg_fail(str(e))
 	finally:

@@ -317,9 +317,9 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add support for other language ecosystems. Rust is a work in progress [ETA: May '22].
-* Add functionality to detect several other "risky" code as well as metadata attributes [ETA: Apr '22].
-* Self-hosted Packj webserver and several useful integrations (e.g., Gitlab runner) [ETA: Apr'22].
+* Add support for other language ecosystems. Rust is a work in progress [ETA: May '23].
+* Add functionality to detect several other "risky" code as well as metadata attributes [ETA: Apr '23].
+* Self-hosted Packj webserver and several useful integrations (e.g., Gitlab runner) [ETA: Apr'23].
 
 Watch :eyes: this repo to stay up to date.
 

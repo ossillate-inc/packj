@@ -124,7 +124,7 @@ audit:
         - reason: custom installation hooks may download or execute malicious code
         - enabled: true
 
-      contains executable or other binary blobs:
+      contains executables or other binaries:
         - reason: binary blobs cannot be analyzed accurately and are used to hide malware
         - enabled: true
 

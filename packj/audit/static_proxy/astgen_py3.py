@@ -198,7 +198,7 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 
 	# get input files
 	language = LanguageEnum.python
-	allfiles, infiles, root = StaticAnalyzer._get_infiles(inpath=inpath, root=root, language=language)
+	allfiles, infiles, bins, root = StaticAnalyzer._get_infiles(inpath=inpath, root=root, language=language)
 
 	# initialize resultpb
 	resultpb = PkgAstResults()
@@ -220,6 +220,7 @@ def py3_astgen(inpath, outfile, configpb, root=None, pkg_name=None, pkg_version=
 				"Name"	: infile,
 				"LoC"	: len(all_source.split('\n')),
 				"Native" : infile in infiles,
+				"Binary" : infile in bins,
 			}
 			composition["Files"].append(file_details)
 		except Exception as e:

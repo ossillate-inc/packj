@@ -233,7 +233,9 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 			msg_alert(reason)
 		else:
 			msg_ok(f'{len(deps)} direct' if deps else 'none found')
+		report['dependencies'] = deps
 	except Exception as e:
+		report['dependencies'] = 'N/A'
 		msg_fail(str(e))
 	finally:
 		return risks, report
@@ -643,9 +645,16 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 	# i.e., typo-guard, placeholder, dummy, empty, or troll package
 	#
 	try:
-		msg_info('Checking if a noisy package...', end='', flush=True, indent=1)
-		# TODO
-		msg_warn('Coming soon!')
+		msg_info('Checking if dummy/troll package...', end='', flush=True, indent=1)
+		if num_funcs == 0 or (not report.get('permissions', None) and
+				not report.get('dependencies', None) and
+				num_funcs <= 5 and lang_files <= 1):
+			reason = 'dummy/empty or troll package'
+			alert_type = 'noisy package'
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			msg_alert(reason)
+		else:
+			msg_ok(f'{num_funcs} funcs across {lang_files} {lang_file_ext} files ({total_loc} Loc)')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -741,6 +750,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 		msg_alert(f'needs {len(perms_needed)} perm(s): {",".join(perms_needed)}')
 		report['permissions'] = report_data
 	except Exception as e:
+		report['permissions'] = 'N/A'
 		msg_fail(str(e))
 
 	# Analyze risky API sequence (e.g., decode+exec)

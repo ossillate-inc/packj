@@ -185,7 +185,7 @@ def analyze_version(ver_info, risks, report):
 			uploaded = ver_info['uploaded']
 			days = datetime_delta(uploaded, days=True)
 		except KeyError:
-			raise Exception('parse error')
+			raise Exception('uploaded time data missing')
 
 		# check if the latest release is too old (unmaintained package)
 		days_old = f'{days} days old'
@@ -596,7 +596,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 
 		if pm_name == 'pypi':
 			language=LanguageEnum.python
-		elif pm_name == 'npm':
+		elif pm_name == 'npm' or pm_name == 'local_nodejs':
 			language=LanguageEnum.javascript
 		elif pm_name == 'rubygems':
 			language=LanguageEnum.ruby
@@ -690,7 +690,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.python
 			configpath = os.path.join(config_dir,'astgen_python_smt.config')
 			system = 'python2'
-		elif pm_name == 'npm':
+		elif pm_name == 'npm' or pm_name == 'local_nodejs':
 			language=LanguageEnum.javascript
 			configpath = os.path.join(config_dir,'astgen_javascript_smt.config')
 			system = 'python'
@@ -855,18 +855,21 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args, config):
 
 	# download package
 	filepath = None
-	try:
-		msg_info(
-			f"Downloading package from {pm_name}...",
-			end='',
-			flush=True
-		)
-		filepath, size = download_file(ver_info['url'])
-		msg_ok(f'{float(size)/1024:.2f} KB')
-	except KeyError:
-		msg_fail('URL missing')
-	except Exception as e:
-		msg_fail(str(e))
+	if not os.path.isdir(pkg_name):
+		try:
+			msg_info(
+				f"Downloading package from {pm_name}...",
+				end='',
+				flush=True
+			)
+			filepath, size = download_file(ver_info['url'])
+			msg_ok(f'{float(size)/1024:.2f} KB')
+		except KeyError:
+			msg_fail('URL missing')
+		except Exception as e:
+			msg_fail(str(e))
+	else:
+		filepath = pkg_name
 
 	# perform static analysis
 	if filepath:

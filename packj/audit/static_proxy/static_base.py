@@ -68,6 +68,9 @@ class StaticAnalyzer(object):
                 logging.debug("inpath %s is a compressed file, decompress and analyze it!", inpath)
                 analyze_path = decompress_file(inpath)
                 is_decompress_path = True
+            elif os.path.isdir(inpath): # local package
+                logging.debug("inpath %s is a local package directory.", inpath)
+                analyze_path = inpath
             else:
                 raise Exception("inpath %s is unhandled type for language %s!" % (inpath, language))
 
@@ -97,7 +100,9 @@ class StaticAnalyzer(object):
             if root is None:
                 root = inpath
             root = abspath(root)
-            for i_root, _, i_files in os.walk(inpath):
+            for i_root, i_dirs, i_files in os.walk(inpath, topdown=True):
+                if 'node_modules' in i_dirs:
+                    i_dirs.remove('node_modules')
                 for fname in i_files:
                     if fname.endswith(Language2Extensions[language]):
                         infiles.append(abspath(join(i_root, fname)))

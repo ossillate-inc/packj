@@ -55,7 +55,7 @@ class NpmjsProxy(PackageManagerProxy):
 				dep_list.append((pkg_name, ver_str.replace('^', '').replace('~', '')))
 			return dep_list
 		except Exception as e:
-			logging.debug("Failed to parse NPM deps file %s: %s" % (line, str(e)))
+			logging.debug("Failed to parse NPM deps file %s: %s" % (deps_file, str(e)))
 			return None
 
 	def get_downloads(self, pkg_name, pkg_info):
@@ -89,14 +89,14 @@ class NpmjsProxy(PackageManagerProxy):
 
 	def get_homepage(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name)
+			_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 		assert pkg_info and isinstance(pkg_info, dict), "invalid metadata!"
 		return pkg_info.get('homepage', None)
 
 	def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
 		from packj.util.dates import datetime_delta, datetime_to_date_str
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name)
+			_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 		assert pkg_info and 'time' in pkg_info, "package not found!"
 
 		history = {}
@@ -137,7 +137,7 @@ class NpmjsProxy(PackageManagerProxy):
 
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name)
+			_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 		assert pkg_info and 'versions' in pkg_info, "package not found!"
 		try:
 			if not ver_str:
@@ -167,7 +167,7 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_repo(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		if not ver_info or 'repository' not in ver_info:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 			assert pkg_info and 'versions' in pkg_info, "package not found!"
 			ver_info = self.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
 		assert ver_info and 'repository' in ver_info, "invalid version metadata!"
@@ -181,7 +181,7 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_dependencies(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 			assert pkg_info and 'versions' in pkg_info, "invalid metadata!"
 			if not ver_info:
 				ver_info = self.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
@@ -193,13 +193,13 @@ class NpmjsProxy(PackageManagerProxy):
 
 	def get_description(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name)
+			_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 		assert pkg_info and isinstance(pkg_info, dict), "invalid metadata!"
 		return pkg_info.get('description', None)
 
 	def get_readme(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name)
+			_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 		assert pkg_info and isinstance(pkg_info, dict), "invalid metadata!"
 		return pkg_info.get('readme', None)
 
@@ -231,7 +231,7 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_maintainers(self, pkg_name:str, ver_str:str=None, pkg_info:dict=None, ver_info:dict=None):
 		if not ver_info:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 			assert pkg_info and 'versions' in pkg_info, "invalid metadata!"
 
 			ver_info = self.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
@@ -243,7 +243,7 @@ class NpmjsProxy(PackageManagerProxy):
 	def get_author(self, pkg_name:str, ver_str:str=None, pkg_info:dict=None, ver_info:dict=None):
 		if not ver_info:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 			assert pkg_info and 'versions' in pkg_info, "invalid metadata!"
 
 			ver_info = self.get_version(pkg_name, ver_str=ver_str, pkg_info=pkg_info)

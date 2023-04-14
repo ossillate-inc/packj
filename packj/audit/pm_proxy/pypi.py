@@ -87,10 +87,12 @@ class PypiProxy(PackageManagerProxy):
 
 	def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
 		from packj.util.dates import datetime_delta, datetime_to_date_str
-		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+		# always get the latest metadata
+		_, pkg_info = self.get_metadata(pkg_name=pkg_name)
 		assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
 		# skip versions that don't have a distribution
+		assert 'releases' in pkg_info and pkg_info['releases'], 'No release info found!'
+
 		ver_dists = [(ver, dists) for ver, dists in pkg_info['releases'].items() if len(dists) > 0]
 
 		history = {}
@@ -123,7 +125,7 @@ class PypiProxy(PackageManagerProxy):
 
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
 		if not ver_str:
 			ver_str = pkg_info['info']['version']
@@ -146,7 +148,7 @@ class PypiProxy(PackageManagerProxy):
 	def get_description(self, pkg_name, ver_str=None, pkg_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info, "Failed to fetch metadata!"
 
 			info = pkg_info.get('info', None)
@@ -166,7 +168,7 @@ class PypiProxy(PackageManagerProxy):
 	def get_readme(self, pkg_name, ver_str=None, pkg_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info, "Failed to fetch metadata!"
 
 			info = pkg_info.get('info', None)
@@ -183,7 +185,7 @@ class PypiProxy(PackageManagerProxy):
 	def get_dependencies(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info, "Failed to fetch metadata!"
 
 			info = pkg_info.get('info', None)
@@ -200,7 +202,7 @@ class PypiProxy(PackageManagerProxy):
 	def get_download_url(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info, "Failed to fetch metadata!"
 
 			info = pkg_info.get('info', None)
@@ -220,7 +222,7 @@ class PypiProxy(PackageManagerProxy):
 	def get_repo(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info, "Failed to fetch metadata!"
 
 			info = pkg_info.get('info', None)
@@ -263,7 +265,7 @@ class PypiProxy(PackageManagerProxy):
 	def get_homepage(self, pkg_name, ver_str=None, pkg_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info, "Failed to fetch metadata!"
 
 			info = pkg_info.get('info', None)
@@ -305,7 +307,7 @@ class PypiProxy(PackageManagerProxy):
 	def get_maintainers(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
 
 			maintainer = pkg_info['info'].get('maintainer', None)
@@ -328,7 +330,7 @@ class PypiProxy(PackageManagerProxy):
 	def get_author(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		try:
 			if not pkg_info:
-				pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+				_, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 			assert pkg_info and 'info' in pkg_info, "Failed to fetch metadata!"
 
 			author = pkg_info['info'].get('author', None)

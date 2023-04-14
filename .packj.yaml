@@ -76,7 +76,7 @@ audit:
         - enabled: true
 
       invalid or no author email:
-        - reason: a package with lack of or invalid author email suggests 2FA not enabled
+        - reason: a package with no or invalid author email suggests 2FA not enabled
         - enabled: true
 
       invalid or no homepage:
@@ -93,7 +93,7 @@ audit:
         - enabled: true
 
       no or insufficient readme:
-        - reason: a package with lack of documentation may not be preferable
+        - reason: a package with no or insufficient documentation may not be preferable
         - enabled: true
 
       fewer versions or releases:

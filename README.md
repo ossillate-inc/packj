@@ -33,7 +33,7 @@ Use Packj to audit dependencies in pull requests.
 
 ```yaml
 - name: Packj Security Audit
-  uses: ossillate-inc/packj-github-action@0.0.4-beta
+  uses: ossillate-inc/packj-github-action@v0.0.10-beta
   with:
     # TODO: replace with your dependency files in the repo
     DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile

@@ -610,7 +610,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 
 	# analyze package composition
 	try:
-		num_files, lang_files, num_funcs, total_loc = parse_package_composition(
+		num_files, lang_files, bin_files, num_funcs, total_loc = parse_package_composition(
 			pkg_name,
 			ver_str,
 			filepath + '.out.json',
@@ -626,6 +626,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 		report['composition'] = {
 			'num_files' : num_files,
 			'num_funcs' : num_funcs,
+			'num_bins'	: bin_files,
 			f'{lang_file_ext}_files': lang_files,
 			'Loc'		: total_loc,
 		}
@@ -634,9 +635,14 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 
 	# check if this package contains executables or other binary blobs and alert the user
 	try:
-		msg_info('Checking for exe/binary blobs...', end='', flush=True, indent=1)
-		# TODO
-		msg_warn('Coming soon!')
+		msg_info('Checking for binaries (.exe/.so)...', end='', flush=True, indent=1)
+		if bin_files:
+			reason = f'found {bin_files} binaries'
+			alert_type = 'contains executables or other binaries'
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			msg_alert(reason)
+		else:
+			msg_ok('none found')
 	except Exception as e:
 		msg_fail(str(e))
 

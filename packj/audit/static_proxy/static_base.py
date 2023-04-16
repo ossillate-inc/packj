@@ -9,6 +9,7 @@ from os.path import join, exists, abspath, isdir, isfile, dirname, basename, rel
 import packj.audit.proto.python.ast_pb2 as ast_pb2
 from packj.audit.pm_util import get_pm_proxy_for_language, get_pm_proxy
 from packj.util.enum_util import LanguageEnum
+from packj.util.files import file_ext_type
 from packj.util.compress_files import decompress_file, get_file_with_meta
 from packj.util.job_util import read_proto_from_file, write_proto_to_file, exec_command
 from packj.audit.proto.python.ast_pb2 import PkgAstResults, AstLookupConfig, FileInfo, AstNode
@@ -90,6 +91,7 @@ class StaticAnalyzer(object):
     def _get_infiles(inpath, root, language):
         infiles = []
         allfiles = []
+        bins = []
         if isfile(inpath):
             if root is None:
                 root = dirname(inpath)
@@ -104,12 +106,16 @@ class StaticAnalyzer(object):
                 if 'node_modules' in i_dirs:
                     i_dirs.remove('node_modules')
                 for fname in i_files:
+                    fpath = abspath(join(i_root, fname))
                     if fname.endswith(Language2Extensions[language]):
-                        infiles.append(abspath(join(i_root, fname)))
-                    allfiles.append(abspath(join(i_root, fname)))
+                        infiles.append(fpath)
+                    fext_type = file_ext_type(fpath)
+                    if fext_type in ['application/x-executable', 'application/x-sharedlib', 'application/octet-stream']:
+                        bins.append(fpath)
+                    allfiles.append(fpath)
         if len(infiles) == 0:
             logging.warning("No input files from %s for language %s", inpath, language)
-        return allfiles, infiles, root
+        return allfiles, infiles, bins, root
 
     @staticmethod
     def _get_filepb(infile, root):

@@ -229,7 +229,7 @@ class JsAnalyzer(StaticAnalyzer):
 
 		# FIXME: current testdata sometimes fails the analyzer, inspect it!
 		# get input files
-		allfiles, infiles, root = self._get_infiles(inpath=analyze_path, root=root, language=self.language)
+		allfiles, infiles, bins, root = self._get_infiles(inpath=analyze_path, root=root, language=self.language)
 
 		# initialize resultpb
 		resultpb = PkgAstResults()
@@ -251,6 +251,7 @@ class JsAnalyzer(StaticAnalyzer):
 					"Name"	: infile,
 					"LoC"	: len(all_source.split('\n')),
 					"Native" : infile in infiles,
+					"Binary" : infile in bins,
 				}
 				composition["Files"].append(file_details)
 			except Exception as e:

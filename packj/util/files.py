@@ -2,6 +2,11 @@ from packj.util.json_wrapper import json_loads
 from packj.util.job_util import md5_digest_file
 import os
 
+import magic
+
+def file_ext_type(fpath):
+	return magic.from_file(fpath, mime=True)
+
 def dir_file_count_and_size(path:str):
 	from pathlib import Path
 	stats = [p.stat().st_size for p in Path(path).rglob('*')]

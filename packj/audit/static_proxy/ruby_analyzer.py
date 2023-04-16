@@ -32,7 +32,7 @@ class RubyAnalyzer(StaticAnalyzer):
 			"Functions" : [],
 			"Calls" : [],
 		}
-		allfiles, infiles, root = self._get_infiles(inpath=analyze_path, root=root, language=self.language)
+		allfiles, infiles, bins, root = self._get_infiles(inpath=analyze_path, root=root, language=self.language)
 
 		for infile in allfiles:
 			try:
@@ -46,6 +46,7 @@ class RubyAnalyzer(StaticAnalyzer):
 					"Name"	: infile,
 					"LoC"	: len(all_source.split('\n')),
 					"Native" : infile in infiles,
+					"Binary" : infile in bins,
 				}
 				composition["Files"].append(file_details)
 			except Exception as e:

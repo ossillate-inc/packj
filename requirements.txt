@@ -1,4 +1,5 @@
 asttokens==2.0.5
+python-magic==0.4.26
 dnspython==2.2.1
 esprima==4.0.1
 pyIsEmail==1.4.0

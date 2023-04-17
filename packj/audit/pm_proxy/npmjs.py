@@ -104,6 +104,13 @@ class NpmjsProxy(PackageManagerProxy):
 		for ver_str, ver_info in pkg_info['versions'].items():
 			try:
 				ts = ver_info['uploaded']
+			except KeyError:
+				ts = pkg_info['time'][ver_str]
+			except:
+				ts = None
+
+			try:
+				assert ts, 'No release timestamp'
 				date = dateutil.parser.parse(ts)
 			except:
 				date = None

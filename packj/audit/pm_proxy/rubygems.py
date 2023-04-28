@@ -119,7 +119,7 @@ class RubygemsProxy(PackageManagerProxy):
 
 	def get_version(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 		if not ver_str:
 			ver_str = pkg_info['version']
@@ -134,13 +134,13 @@ class RubygemsProxy(PackageManagerProxy):
 
 	def get_description(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 		return pkg_info.get('info', None)
 
 	def get_readme(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 		return pkg_info.get('documentation_uri')
 
@@ -197,19 +197,19 @@ class RubygemsProxy(PackageManagerProxy):
 
 	def get_download_url(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 		return pkg_info.get('gem_uri', None)
 
 	def get_repo(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 		return pkg_info.get('source_code_uri', None)
 
 	def get_downloads(self, pkg_name, pkg_info):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 		downloads = pkg_info.get('downloads', None)
 		if downloads:
@@ -218,7 +218,7 @@ class RubygemsProxy(PackageManagerProxy):
 
 	def get_homepage(self, pkg_name, ver_str=None, pkg_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 		return pkg_info.get('homepage_uri', None)
 
@@ -319,7 +319,7 @@ class RubygemsProxy(PackageManagerProxy):
 
 	def get_maintainers(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 
 		owners = self.__owners(pkg_name)
@@ -328,7 +328,7 @@ class RubygemsProxy(PackageManagerProxy):
 	# use rubygems API to get num gems for this author
 	def get_author(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 
 		authors = pkg_info.get('authors', None)
@@ -337,7 +337,7 @@ class RubygemsProxy(PackageManagerProxy):
 	def get_dependencies(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
 		# Alternatively, use gem dependency, but it is regex-based and tricky to parse.
 		if not pkg_info:
-			pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+			_,pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
 		assert pkg_info and 'version' in pkg_info, "Invalid metadata!"
 
 		if 'dependencies' in pkg_info and 'runtime' in pkg_info['dependencies']:

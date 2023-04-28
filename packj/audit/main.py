@@ -50,8 +50,8 @@ def msg_fail(x):
 	msg_info(f'{Style.BRIGHT}{Fore.YELLOW}FAIL{Style.RESET_ALL} [{x}]')
 def msg_alert(x):
 	msg_info(f'{Style.BRIGHT}{Fore.RED}RISK{Style.RESET_ALL} [{x}]')
-def msg_warn(x):
-	msg_info(f'{Style.BRIGHT}{Fore.YELLOW} N/A{Style.RESET_ALL} [{Fore.MAGENTA}{x}{Style.RESET_ALL}]')
+def msg_warn(tag, x):
+	msg_info(f'{Style.BRIGHT}{Fore.YELLOW}{tag}{Style.RESET_ALL} [{Fore.MAGENTA}{x}{Style.RESET_ALL}]')
 
 def build_threat_model(filename):
 	try:
@@ -88,7 +88,7 @@ def analyze_yanked_releases(pm_proxy, pkg_name, pkg_info, risks, report, release
 		msg_info('Checking for yanked releases...', end='', flush=True, indent=2)
 
 		if pm_proxy.name == 'rubygems':
-			msg_warn('Not supported!')
+			msg_warn(' N/A','Not supported!')
 			return risks, report
 
 		num_releases = len(release_history)
@@ -143,7 +143,7 @@ def analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report, r
 
 		days = release_history[ver_str]['days_since_last_release']
 
-		# check if the latest release is made after a long gap (indicative of package takeover)
+		# check if the release is made after a long gap (indicative of package takeover)
 		release_info = f'{days} days since last release' if days else 'first release'
 		if days and days > 180:
 			reason = f'version released after {days} days'
@@ -174,11 +174,29 @@ def analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	finally:
 		return risks, report
 
-def analyze_version(ver_info, risks, report):
+def analyze_version(pm_proxy, pkg_name, ver_info, risks, report):
 	try:
 		msg_info('Checking version...', end='', flush=True)
 
-		assert ver_info, 'no data!'
+		assert ver_info, 'No version info!'
+		requested_ver_str = ver_info['tag']
+
+		# fetch the latest package metadata
+		latest_ver_info = pm_proxy.get_version(pkg_name, ver_str=None, pkg_info=None)
+		assert latest_ver_info, 'No latest version info!'
+
+		latest_ver_str = latest_ver_info['tag']
+		if latest_ver_str != requested_ver_str:
+			msg_warn('WARN', 'not latest')
+		else:
+			msg_ok('Latest release')
+		report['version'] = ver_info
+	except Exception as e:
+		msg_fail(str(e))
+		return risks, report
+
+	try:
+		msg_info('Checking if old/abandoned...', end='', flush=True, indent=1)
 
 		# check upload timestamp
 		try:
@@ -187,7 +205,7 @@ def analyze_version(ver_info, risks, report):
 		except KeyError:
 			raise Exception('uploaded time data missing')
 
-		# check if the latest release is too old (unmaintained package)
+		# check if the release is too old (unmaintained package)
 		days_old = f'{days} days old'
 		if not uploaded or days > 365:
 			reason = 'no release date' if not uploaded else days_old
@@ -196,7 +214,6 @@ def analyze_version(ver_info, risks, report):
 			msg_alert(days_old)
 		else:
 			msg_ok(days_old)
-		report['version'] = ver_info
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -235,7 +252,7 @@ def analyze_deps(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 			msg_ok(f'{len(deps)} direct' if deps else 'none found')
 		report['dependencies'] = deps
 	except Exception as e:
-		report['dependencies'] = 'N/A'
+		report['dependencies'] = ' N/A'
 		msg_fail(str(e))
 	finally:
 		return risks, report
@@ -252,7 +269,7 @@ def analyze_zero_width_unicode(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		msg_info('Checking for zero-width unicode chars...', end='', flush=True)
 		# TODO
-		msg_warn('Coming soon!')
+		msg_warn(' N/A','Coming soon!')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -262,7 +279,7 @@ def analyze_install_hooks(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		msg_info('Checking for install-time hooks...', end='', flush=True)
 		# TODO
-		msg_warn('Coming soon!')
+		msg_warn(' N/A','Coming soon!')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -272,7 +289,7 @@ def analyze_typosquatting(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		msg_info('Checking for typo-squatting...', end='', flush=True)
 		# TODO
-		msg_warn('Coming soon!')
+		msg_warn(' N/A','Coming soon!')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -282,7 +299,7 @@ def analyze_dep_confusion(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		msg_info('Checking for dependency confusion...', end='', flush=True)
 		# TODO
-		msg_warn('Coming soon!')
+		msg_warn(' N/A','Coming soon!')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -292,7 +309,7 @@ def analyze_downloads(pm_proxy, pkg_name, pkg_info, risks, report):
 	try:
 		msg_info('Checking downloads...', end='', flush=True)
 		ret = pm_proxy.get_downloads(pkg_name, pkg_info)
-		assert ret != None, "N/A"
+		assert ret != None, " N/A"
 		if ret < 1000:
 			reason = f'only {ret} weekly downloads'
 			alert_type = 'fewer downloads'
@@ -452,7 +469,7 @@ def analyze_repo_code(risks, report):
 		repo_url = report['repo']['url']
 		msg_info('Analyzing repo-pkg src code match...', end='', flush=True, indent=1)
 		# TODO
-		msg_warn('Coming soon!')
+		msg_warn(' N/A','Coming soon!')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -756,14 +773,14 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 		msg_alert(f'needs {len(perms_needed)} perm(s): {",".join(perms_needed)}')
 		report['permissions'] = report_data
 	except Exception as e:
-		report['permissions'] = 'N/A'
+		report['permissions'] = ' N/A'
 		msg_fail(str(e))
 
 	# Analyze risky API sequence (e.g., decode+exec)
 	try:
 		msg_info('Analyzing risky API sequence...', end='', flush=True, indent=1)
 		# TODO
-		msg_warn('Coming soon!')
+		msg_warn(' N/A','Coming soon!')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -849,7 +866,7 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args, config):
 	risks, report = analyze_pkg_descr(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)
 	risks, report, release_history = analyze_release_history(pm_proxy, pkg_name, pkg_info, risks, report)
 	risks, report = analyze_yanked_releases(pm_proxy, pkg_name, pkg_info, risks, report, release_history)
-	risks, report = analyze_version(ver_info, risks, report)
+	risks, report = analyze_version(pm_proxy, pkg_name, ver_info, risks, report)
 	risks, report = analyze_release_time(pm_proxy, pkg_name, ver_str, pkg_info, risks, report, release_history)
 	risks, report = analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, report)
 	risks, report = analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report)

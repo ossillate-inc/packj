@@ -12,6 +12,7 @@ class PackageManagerEnum(Enum):
     nuget = 'nuget'
     packagist = 'packagist'
     dockerhub = 'dockerhub'
+    rust = 'cargo'
 
     # Local package
     local_nodejs = 'local_nodejs'

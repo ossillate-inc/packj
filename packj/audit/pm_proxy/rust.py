@@ -1,5 +1,6 @@
 import requests
 import logging
+import dateutil.parser
 
 from packj.audit.pm_proxy.pm_base import PackageManagerProxy
 class RustProxy(PackageManagerProxy):
@@ -51,9 +52,9 @@ class RustProxy(PackageManagerProxy):
         
         if 'categories' in pkg_info:
             for vers in pkg_info['versions']:
-                return {'tag':ver_str, 'url':vers['dl_path'], 'uploaded':vers['created_at']}
+                return {'tag':ver_str, 'url':f"http://crates.io{vers['dl_path']}", 'uploaded':vers['created_at']}
         elif 'version' in pkg_info:
-            return {'tag':ver_str, 'url':vers['dl_path'], 'uploaded':vers['created_at']}
+            return {'tag':ver_str, 'url':f"http://crates.io{vers['dl_path']}", 'uploaded':vers['created_at']}
         
         return None
     def get_download_url(self, pkg_name, ver_str=None, pkg_info=None):
@@ -63,9 +64,11 @@ class RustProxy(PackageManagerProxy):
             assert pkg_info, "Failed to fetch metadata!"
             
             if 'categories' in pkg_info:
-                return pkg_info['versions'][0]['dl_path']
+                durl = f"crates.io{pkg_info['versions'][0]['dl_path']}"
             elif 'version' in pkg_info:
-                return pkg_info['version']['dl_path']
+                durl = f"crates.io{pkg_info['version']['dl_path']}"
+            if durl:
+                return durl
             
             raise Exception('No download info found in metadata')
         except Exception as e:
@@ -114,10 +117,10 @@ class RustProxy(PackageManagerProxy):
         except Exception as e:
             logging.warning(str(e))
             return None
-    def get_repo(self, pkg_name, pkg_info=None):
+    def get_repo(self, pkg_name,ver_str=None, pkg_info=None, ver_info=None):
         try:
             if not pkg_info:
-                _, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=None)
+                _, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
             assert pkg_info, "Failed to fetch metadata!"
             
             crate_info = pkg_info.get('crate',None)
@@ -131,23 +134,23 @@ class RustProxy(PackageManagerProxy):
         except Exception as e:
             logging.warning(str(e))
             return None
-    def get_author(self, pkg_name, ver_str=None, pkg_info=None):
+    def get_author(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
         try:
             if not pkg_info:
                 _, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
             assert pkg_info, "Failed to fetch metadata!"
             
             if 'categories' in pkg_info:
-                return {'name':pkg_info['versions'][0]['published_by']['name'], 'url':pkg_info['versions'][0]['published_by']['url']}
+                return [{'name':pkg_info['versions'][0]['published_by']['name']}, {'url':pkg_info['versions'][0]['published_by']['url']}, {'handle':pkg_info['versions'][0]['published_by']['login']}]
             elif 'version' in pkg_info:
-                return {'name':pkg_info['version']['published_by']['name'], 'url':pkg_info['versions'][0]['published_by']['url']}
+                return [{'name':pkg_info['version']['published_by']['name']}, {'url':pkg_info['versions'][0]['published_by']['url']}, {'handle':pkg_info['versions'][0]['published_by']['login']}]
         except Exception as e:
             logging.warning("Failed to get author details for package %s: %s"%(pkg_name,str(e)))
             return None
-    def get_homepage(self,pkg_name,pkg_info=None):
+    def get_homepage(self,pkg_name,ver_str=None,pkg_info=None):
         try:
             if not pkg_info:
-                _, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=None)
+                _, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
             assert pkg_info, "Failed to fetch metadata!"
             
             homepage=pkg_info['crate']['homepage']
@@ -158,7 +161,7 @@ class RustProxy(PackageManagerProxy):
         except Exception as e:
             logging.warning(str(e))
             return None
-    def get_dependencies(self, pkg_name, ver_str=None, pkg_info=None):
+    def get_dependencies(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
         try:
             if not ver_str:
                 dict_ver= self.get_version(pkg_name=pkg_name,pkg_info=pkg_info,ver_str=ver_str)
@@ -184,3 +187,36 @@ class RustProxy(PackageManagerProxy):
         except Exception as e:
             logging.warning('Failed to parse dependencie files: %s'%(str(e)))
             return None
+    def get_release_history(self, pkg_name, pkg_info=None, max_num=-1):
+        from packj.util.dates import datetime_delta, datetime_to_date_str
+        
+        _, pkg_info = self.get_metadata(pkg_name=pkg_name)
+        assert pkg_info and 'crate' in pkg_info, "Failed to fetch metadata!"
+        
+        assert 'versions' in pkg_info and pkg_info['versions'], "No release info found!"
+        history = {}
+        last_date=None
+        for vers in pkg_info['versions']:
+            try:
+                date = dateutil.parser.parse(vers['created_at'])
+            except:
+                date = None
+            days=None
+            if date and last_date:
+                try:
+                    days=datetime_delta(date, date2=last_date,days=True)
+                except:
+                    pass
+            last_date=date
+            
+            try:
+                yanked = vers['yanked']
+            except:
+                yanked=None
+            
+            history[vers['num']]={
+                "release_date": datetime_to_date_str(date),
+                "days_since_last_release":days,
+                "yanked":yanked
+            }
+        return history

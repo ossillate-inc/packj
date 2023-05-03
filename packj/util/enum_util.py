@@ -45,6 +45,7 @@ class LanguageEnum(Enum):
     php = 'php'
     docker = 'docker'
     vagrant = 'vagrant'
+    rust = 'rust'
 
     def __str__(self):
         return self.value

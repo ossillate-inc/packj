@@ -41,4 +41,4 @@ def parse_package_composition(pkg_name, ver_str, filepath):
 	except Exception as e:
 		logging.debug("Failed to parse package %s (ver %s) composition: %s" % \
 			(pkg_name, ver_str if ver_str else 'latest', str(e)))
-		return None, None, None, None
+		return None, None, None, None, None

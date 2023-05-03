@@ -619,6 +619,8 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.javascript
 		elif pm_name == 'rubygems':
 			language=LanguageEnum.ruby
+		elif pm_name == 'cargo':
+			language=LanguageEnum.rust
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 	except Exception as e:
@@ -730,6 +732,10 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.ruby
 			configpath = os.path.join(config_dir,'astgen_ruby_smt.config')
 			system = 'ruby'
+		elif pm_name == 'cargo':
+			language=LanguageEnum.rust
+			configpath = os.path.join(config_dir,'astgen_rust_smt.config')
+			system = 'rust'
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 	except Exception as e:

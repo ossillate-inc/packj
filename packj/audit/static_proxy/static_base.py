@@ -20,7 +20,8 @@ Language2Extensions = {
     LanguageEnum.ruby: ('.rb',),
     LanguageEnum.java: ('.java', '.class', '.jar', '.aar', '.war', '.dex', '.apk'),  # java packages are compiled
     LanguageEnum.csharp: ('.cs',),  # c# packages are compiled and are windows binaries/libraries
-    LanguageEnum.php: ('.php',)
+    LanguageEnum.php: ('.php',),
+    LanguageEnum.rust: ('.rs',)
 }
 
 class StaticAnalyzer(object):

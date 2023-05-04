@@ -202,7 +202,7 @@ class RustProxy(PackageManagerProxy):
             except:
                 date = None
             days=None
-            if date and last_date:
+            if date or last_date:
                 try:
                     days=datetime_delta(date, date2=last_date,days=True)
                 except:

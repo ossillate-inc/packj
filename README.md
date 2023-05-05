@@ -33,7 +33,7 @@ Use Packj to audit dependencies in pull requests.
 
 ```yaml
 - name: Packj Security Audit
-  uses: ossillate-inc/packj-github-action@0.0.4-beta
+  uses: ossillate-inc/packj-github-action@v0.0.10-beta
   with:
     # TODO: replace with your dependency files in the repo
     DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
@@ -317,9 +317,9 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add support for other language ecosystems. Rust is a work in progress [ETA: Mar '22].
-* Add functionality to detect several other "risky" code as well as metadata attributes [ETA: Feb '22].
-* Self-hosted Packj webserver and several useful integrations (e.g., Gitlab runner) [ETA: Feb'22].
+* Add support for other language ecosystems. Rust is a work in progress [ETA: May '23].
+* Add functionality to detect several other "risky" code as well as metadata attributes [ETA: Apr '23].
+* Self-hosted Packj webserver and several useful integrations (e.g., Gitlab runner) [ETA: Apr'23].
 
 Watch :eyes: this repo to stay up to date.
 

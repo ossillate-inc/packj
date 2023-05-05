@@ -24,7 +24,7 @@ jobs:
 
       # Audit 
       - name: Audit dependencies
-        uses: ossillate-inc/packj-github-action@v0.0.8-beta
+        uses: ossillate-inc/packj-github-action@v0.0.11-beta
         with:
           DEPENDENCY_FILES: pypi:requirements.txt
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}

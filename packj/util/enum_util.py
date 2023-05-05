@@ -12,6 +12,7 @@ class PackageManagerEnum(Enum):
     nuget = 'nuget'
     packagist = 'packagist'
     dockerhub = 'dockerhub'
+    rust = 'cargo'
 
     # Local package
     local_nodejs = 'local_nodejs'
@@ -45,6 +46,7 @@ class LanguageEnum(Enum):
     php = 'php'
     docker = 'docker'
     vagrant = 'vagrant'
+    rust = 'rust'
 
     def __str__(self):
         return self.value

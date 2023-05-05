@@ -613,7 +613,7 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 	try:
 		msg_info('Checking files/funcs...', end='', flush=True)
 
-		if pm_name == 'pypi':
+		if pm_name == 'pypi' or pm_name == 'local_python':
 			language=LanguageEnum.python
 		elif pm_name == 'npm' or pm_name == 'local_nodejs':
 			language=LanguageEnum.javascript
@@ -718,7 +718,7 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 		msg_info('Analyzing code...', end='', flush=True)
 		cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 		config_dir= os.path.join(cwd, 'config')
-		if pm_name == 'pypi':
+		if pm_name == 'pypi' or pm_name == 'local_python':
 			language=LanguageEnum.python
 			configpath = os.path.join(config_dir,'astgen_python_smt.config')
 			system = 'python2'
@@ -976,7 +976,7 @@ def parse_request_args(args):
 		try:
 			components = item.split(':')
 			assert len(components) >= 2 and len(components) <= 3, f'Invalid request: {item}. Expected <pm>:<pkg>[:<ver>] (e.g., npm:react)'
- 
+
 			if len(components) == 2: item += ':'
 			pm_name, pkg_name, ver_str = item.split(':')
 			pm_enum, pm_name, pm_proxy = __get_pm_args(pm_name)

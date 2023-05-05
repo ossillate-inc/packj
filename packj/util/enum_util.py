@@ -15,6 +15,7 @@ class PackageManagerEnum(Enum):
 
     # Local package
     local_nodejs = 'local_nodejs'
+    local_python = 'local_python'
 
     # TODO: add support for these
     # Reference: https://github.com/showcases/package-managers?s=stars

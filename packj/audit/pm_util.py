@@ -33,6 +33,8 @@ def get_pm_enum(pm_name):
 		return PackageManagerEnum.rubygems
 	elif pm_name == 'local_nodejs':
 		return PackageManagerEnum.local_nodejs
+	elif pm_name == 'local_python':
+		return PackageManagerEnum.local_python
 	else:
 		raise Exception(f'Package manager {pm_name} is not supported')
 
@@ -55,6 +57,9 @@ def get_pm_proxy(pm, registry=None, cache_dir=None, isolate_pkg_info=False):
 	if pm == PackageManagerEnum.pypi:
 		from packj.audit.pm_proxy.pypi import PypiProxy
 		return PypiProxy(registry=registry, cache_dir=cache_dir, isolate_pkg_info=isolate_pkg_info)
+	elif pm == PackageManagerEnum.local_python:
+		from packj.audit.pm_proxy.local_python import LocalPythonProxy
+		return LocalPythonProxy(cache_dir=cache_dir, isolate_pkg_info=isolate_pkg_info)
 	elif pm == PackageManagerEnum.npmjs:
 		from packj.audit.pm_proxy.npmjs import NpmjsProxy
 		return NpmjsProxy(registry=registry, cache_dir=cache_dir, isolate_pkg_info=isolate_pkg_info)

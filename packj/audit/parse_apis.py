@@ -6,7 +6,7 @@ from packj.util.files import read_from_csv, read_json_from_file
 def parse_api_usage(pm_name, filepath):
 	cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 	config_dir= os.path.join(cwd, 'config')
-	if pm_name == 'pypi':
+	if pm_name == 'pypi' or pm_name == 'local_python':
 		api_dir = os.path.join(config_dir, 'python_api')
 	elif pm_name == 'npm' or pm_name == 'local_nodejs':
 		api_dir = os.path.join(config_dir, 'javascript_api')

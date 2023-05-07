@@ -46,19 +46,10 @@ View on GitHub [marketplace](https://packj.dev/go?next=https://github.com/market
 
 The quickest way to try/test Packj is using the PyPI package.
 
->
-> **Warning**: Packj only works on Linux.
->
+**Linux/Mac**: `pip3 install packj`
 
-```
-pip3 install packj
-```
+**Windows**: Install [WSL - Ubuntu](https://apps.microsoft.com/store/detail/ubuntu/9PDXGNCFSCZV). In WSL, run `sudo apt update;sudo apt install python3-pip;pip install pip --upgrade;pip install pyopenssl --upgrade`. Make sure to add `~/.local/bin` to your PATH. Now you can run the linux command above.
 
-Auditing RubyGems require additional dependencies
-
-```
-bundle install
-```
 
 ### 3. Docker image (recommended)
 

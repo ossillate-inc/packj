@@ -13,6 +13,7 @@ class PackageManagerEnum(Enum):
     packagist = 'packagist'
     dockerhub = 'dockerhub'
     rust = 'cargo'
+    php = 'packagist'
 
     # Local package
     local_nodejs = 'local_nodejs'

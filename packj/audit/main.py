@@ -87,7 +87,7 @@ def analyze_yanked_releases(pm_proxy, pkg_name, pkg_info, risks, report, release
 	try:
 		msg_info('Checking for yanked releases...', end='', flush=True, indent=2)
 
-		if pm_proxy.name == 'rubygems':
+		if pm_proxy.name == 'rubygems' or pm_proxy.name == 'packagist':
 			msg_warn(' N/A','Not supported!')
 			return risks, report
 
@@ -529,6 +529,9 @@ def analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 	try:
 		msg_info('Checking readme...', end='', flush=True)
 		readme = pm_proxy.get_readme(pkg_name, ver_str=ver_str, pkg_info=pkg_info)
+		if pm_proxy.name == 'packagist':
+			msg_warn(' N/A','Not supported!')
+			return risks, report
 		if not readme or len(readme) < 100:
 			reason = 'no readme' if not readme else 'insufficient readme'
 			alert_type = 'no or insufficient readme'
@@ -621,6 +624,8 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.ruby
 		elif pm_name == 'cargo':
 			language=LanguageEnum.rust
+		elif pm_name == 'packagist':
+			language = LanguageEnum.php
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 	except Exception as e:
@@ -736,6 +741,10 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.rust
 			configpath = os.path.join(config_dir,'astgen_rust_smt.config')
 			system = 'rust'
+		elif pm_name == 'packagist':
+			language = LanguageEnum.php
+			configpath = os.path.join(config_dir, 'astgen_php_smt.config')
+			system = 'php'
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 	except Exception as e:

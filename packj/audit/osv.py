@@ -11,7 +11,9 @@ def __fetch_vuln_data(pm_name, pkg_name, ver_str):
 		pm_name = 'RubyGems'
 	elif pm_name.lower() == 'cargo':
 		pm_name = 'cargo'
-	assert pm_name in ['PyPI', 'npm', 'RubyGems','cargo'], "CVE checking for package manager %s not supported" % (pm_name)
+	elif pm_name.lower() == 'packagist':
+		pm_name = 'packagist'
+	assert pm_name in ['PyPI', 'npm', 'RubyGems','cargo','packagist'], "CVE checking for package manager %s not supported" % (pm_name)
 	data = {
 		"version": ver_str,
 		"package": {

@@ -77,7 +77,7 @@ class RustProxy(PackageManagerProxy):
     def get_downloads(self, pkg_name, pkg_info=None):
         try:
             if not pkg_info:
-                pkg_info = self.get_metadata(pkg_name=pkg_name)
+                _, pkg_info = self.get_metadata(pkg_name=pkg_name)
             assert pkg_info, "Failed to fetch metadata!"
             
             return int(pkg_info['crate']['downloads'])

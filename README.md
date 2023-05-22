@@ -3,7 +3,6 @@
 *Packj* (pronounced package) is a tool to mitigate software supply chain attacks. It can detect malicious, vulnerable, abandoned, typo-squatting, and other "risky" packages from popular open-source package registries, such as NPM, RubyGems, and PyPI. It can be easily customized to minimize noise. Packj started as a PhD research project and is currently being developed under various govt grants.
 
 [![GitHub Stars](https://img.shields.io/github/stars/ossillate-inc/packj?style=social)](https://github.com/ossillate-inc/packj/stargazers) ![](https://img.shields.io/badge/status-beta-yellow) [![Prs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=shields)](https://github.com/ossillate-inc/packj/blob/main/CONTRIBUTING.md) ![Github Commit Activity](https://img.shields.io/github/commit-activity/m/ossillate-inc/packj) [![Discord](https://img.shields.io/discord/910733124558802974?label=Discord)](https://discord.gg/qFcqaV2wYa)  [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/ossillate/packj/tags)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/packj?label=PyPI%20Downloads)](https://pypistats.org/packages/packj)
 
 > **Note**
 **Self-hosted Packj webserver and several integrations coming later this month :punch: Watch this repo to stay up to date.**
@@ -12,8 +11,9 @@
 
 # Contents #
 
-* [Get started](#get-started) - available as Docker image, GitHub Action, Python PyPI package
+* [Get started](#get-started) - available as Docker image, GitHub Action, and packages
 * [Functionality](#functionality) - deep static/dynamic code analysis and sandboxing
+* [Supported ecosystems](#supported-ecosystems) - NPM, PyPI, Rubygems, PHP, Rust
 * [Our story](#our-story) - started as a PhD research project and is backed by govt grants
 * [Why Packj](#why-packj) - existing CVE scanners ASSUME code is BENIGN and not analyze its behavior
 * [Customization](#customization) - turn off alerts as per your threat model to reduce noise
@@ -42,33 +42,15 @@ Use Packj to audit dependencies in pull requests.
 
 View on GitHub [marketplace](https://packj.dev/go?next=https://github.com/marketplace/actions/packj-security-audit). Example [PR run](https://packj.dev/go?next=https://github.com/ossillate-inc/packj-github-action-demo/pull/3#issuecomment-1274797138).
 
-###  2. PyPI package
+### 2. Docker image (recommended)
 
-The quickest way to try/test Packj is using the PyPI package.
-
->
-> **Warning**: Packj only works on Linux.
->
-
-```
-pip3 install packj
-```
-
-Auditing RubyGems require additional dependencies
-
-```
-bundle install
-```
-
-### 3. Docker image (recommended)
-
-Use Docker or Podman for containerized (isolated) runs.
+The quickest way to try/test Packj is using Docker. Podman is also supported for containerized (isolated) runs.
 
 ```
 docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
 ```
 
-### 4. Source repo
+### 3. Source repo
 
 Clone this repo, 
 
@@ -87,6 +69,11 @@ Start with help:
 ```
 python3 main.py --help 
 ```
+
+# Supported ecosystems #
+
+Packj can vet pubished packages from NPM, PyPI, Rust, PHP, and Rubygems package registries. Rust and PHP support is WIP. We're actively adding support for registries.
+It also supports vetting local (unpublished) NPM and PyPI packages.
 
 # Functionality #
 

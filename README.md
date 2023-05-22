@@ -75,6 +75,18 @@ python3 main.py --help
 Packj can vet pubished packages from NPM, PyPI, Rust, PHP, and Rubygems package registries. Rust and PHP support is WIP. We're actively adding support for registries.
 It also supports vetting local (unpublished) NPM and PyPI packages.
 
+| Registry  | Ecosystem  | Supported          |
+| --------- | ---------- | ------------------ |
+| NPM       | JavaScript | :white_check_mark: |
+| PyPI      | Python     | :white_check_mark: |
+| Cargo     | Rust       | :white_check_mark: |
+| Rubygems  | Ruby       | :white_check_mark: |
+| Packagist | PHP        | :white_check_mark: |
+| Docker    | PHP        | :x: |
+| Nuget     | .NET       | :x: |
+| Maven     | Java       | :x: |
+| Cocoapods | Swift      | :x: |
+
 # Functionality #
 
 Packj offers the following tools: 

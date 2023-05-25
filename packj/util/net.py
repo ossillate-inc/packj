@@ -36,17 +36,16 @@ def check_domain_popular(url):
 		print(str(e))
 		return False
 
+	domain = url_parts.netloc
 	try:
 		from io import BytesIO
-		from zipfile import ZipFile
-		domain_list_url = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'		
+		domain_list_url = 'https://raw.githubusercontent.com/ossillate-inc/top-1m/main/top-1m.csv'
 		resp = __open_url(domain_list_url)
-		zipfile = ZipFile(BytesIO(resp.read()))
 		domain_list = []
-		for line in zipfile.open(zipfile.namelist()[0]).readlines():				
+		for line in BytesIO(resp.read()):
 			rank, dom = line.strip().decode('utf-8').split(',')					
 			domain_list.append(dom)												
-		return domain in domain_list and url_parts.path==''
+		return domain in domain_list and url_parts.path in ['', '/']
 	except Exception as e:															
 		print("check_domain_popular (%s): %s" % (url, str(e)))						
 		return False

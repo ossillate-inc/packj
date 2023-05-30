@@ -8,7 +8,7 @@ from packj.audit.static_proxy.analyzer_php_util.function import *
 
 result_count = 0
 result_files = 0
-my_dict ={}
+final_dict ={}
 # Compute a Shannon entropy for a string based on an iterator
 def shannon_entropy(data, iterator):
     """
@@ -49,7 +49,7 @@ def analysis(path):
             for vuln_content in matches:
                 if credential in vuln_content.lower():
                     payload = ["", "SINK_UNCLASSIFIED", []]
-                    my_dict.update(add_vuln_var(payload, path, vuln_content, content, regex_var_detect))
+                    final_dict.update(add_vuln_var(payload, path, vuln_content, content, regex_var_detect))
                 
         
         # Detection of RCE/SQLI/LFI/RFI/RFU/XSS/...
@@ -98,7 +98,7 @@ def analysis(path):
 
                         if not false_positive:
                             result_count = result_count + 1
-                            my_dict.update(display(path, payload, vuln_content, line_vuln, declaration_text, line, vulnerable_var[1], occurence))
+                            final_dict.update(display(path, payload, vuln_content, line_vuln, declaration_text, line, vulnerable_var[1], occurence))
 
 
 # Run thru every files and subdirectories
@@ -119,7 +119,7 @@ def recursive(dir, progress):
 
 # Display basic informations about the scan
 def finalresult():
-    return my_dict
+    return final_dict
 
 
 

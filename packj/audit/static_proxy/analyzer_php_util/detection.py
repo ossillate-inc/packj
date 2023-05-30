@@ -9,20 +9,6 @@ from packj.audit.static_proxy.analyzer_php_util.function import *
 result_count = 0
 result_files = 0
 final_dict ={}
-# Compute a Shannon entropy for a string based on an iterator
-def shannon_entropy(data, iterator):
-    """
-    Borrowed from http://blog.dkbza.org/2007/05/scanning-data-for-entropy-anomalies.html
-    """
-    if not data:
-        return 0
-    entropy = 0
-    for x in iterator:
-        p_x = float(data.count(x))/len(data)
-        if p_x > 0:
-            entropy += - p_x*math.log(p_x, 2)
-    return entropy
-
 
 # Analyse the source code of a single page
 def analysis(path):

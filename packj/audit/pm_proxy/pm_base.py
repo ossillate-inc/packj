@@ -60,8 +60,14 @@ class PackageManagerProxy(object):
 		if not exists(dir_for_pkgname):
 			os.makedirs(dir_for_pkgname)
 		return dir_for_pkgname
-     
-     
+	@staticmethod
+	def get_metadata_fname(pkg_name, pkg_version=None, sudo=False, fmt='json'):
+		pkg_name = PackageManagerProxy.get_sanitized_pkgname(pkg_name=pkg_name)
+		metadata_fname = '%s:%s'%(pkg_name, pkg_version) if pkg_version else '%s:latest'%pkg_name
+		if sudo:
+			metadata_fname += ':sudo'
+		return '%s:metadata:%s'%(metadata_fname, fmt)
+
 	def get_pkg_info_dir(self, pkg_name):
 		if self.isolate_pkg_info:
 			return self.get_dir_for_pkgname(pkg_name=pkg_name, cache_dir=self.cache_dir)

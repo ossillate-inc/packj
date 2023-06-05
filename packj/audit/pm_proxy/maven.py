@@ -14,4 +14,7 @@ class MavenProxy(PackageManagerProxy):
         self.dep_format = 'json'
         
     def get_metadata(self, pkg_name, pkg_version=None):
-        pass
+        # load cached metadata information
+        pkg_info_dir = self.get_pkg_info_dir(pkg_name=pkg_name)
+        if pkg_info_dir is not None:
+            metadata_fname = self.get_metadata_fname(pkg_name=pkg_name, pkg_version=pkg_version, fmt= self.metadata_format)

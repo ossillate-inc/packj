@@ -42,3 +42,28 @@ class PackageManagerProxy(object):
 	def get_version_hash(self, pkg_name, pkg_version, algorithm='sha1'):
 		# get the hash of the package version
 		pass
+
+	@staticmethod
+	def get_sanitized_pkgname(pkg_name):
+		if not pkg_name:
+			return pkg_name
+
+		if '/' in pkg_name:
+			pkg_name = pkg_name.replace('/', '..')
+		invalid_name = re.compile(r'[^a-zA-Z0-9_.-]')
+		pkg_name = re.sub(invalid_name, '..', pkg_name)
+		return pkg_name
+
+	@staticmethod
+	def get_dir_for_pkgname(pkg_name, cache_dir):
+		dir_for_pkgname = join(cache_dir, PackageManagerProxy.get_sanitized_pkgname(pkg_name))
+		if not exists(dir_for_pkgname):
+			os.makedirs(dir_for_pkgname)
+		return dir_for_pkgname
+     
+     
+	def get_pkg_info_dir(self, pkg_name):
+		if self.isolate_pkg_info:
+			return self.get_dir_for_pkgname(pkg_name=pkg_name, cache_dir=self.cache_dir)
+		else:
+			return self.cache_dir

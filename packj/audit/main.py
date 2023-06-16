@@ -754,16 +754,19 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 	# analyze code for APIs
 	try:
 		static = get_static_proxy_for_language(language=language)
-		try:
-			static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
+		if pm_name =='packagist':
+			perms = static.get_perms(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
 				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
-		except Exception as e:
-			logging.debug('Failed to parse: %s', str(e))
-			raise Exception('parse error: is %s installed?' % (system))
+		else:
+			try:
+				static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
+					pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
+			except Exception as e:
+				logging.debug('Failed to parse: %s', str(e))
+				raise Exception('parse error: is %s installed?' % (system))
 
-		assert os.path.exists(filepath+'.out'), 'parse error!'
-
-		perms = parse_api_usage(pm_name, filepath+'.out')
+			assert os.path.exists(filepath+'.out'), 'parse error!'
+			perms = parse_api_usage(pm_name, filepath+'.out')
 		if not perms:
 			msg_ok('no perms found')
 			return risks, report

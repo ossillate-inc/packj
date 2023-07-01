@@ -31,7 +31,7 @@ class MavenProxy(PackageManagerProxy):
             logging.error("fail to get latest version for pkg %s!", pkg_name)
             return None
 
-    def _get_latest_version(self, pkg_name):
+    def get_version(self, pkg_name, ver_str=None, pkg_info=None):
         versions_info = self._get_versions_info(pkg_name=pkg_name)
         if versions_info:
             return versions_info.find('./versioning/latest').text
@@ -40,7 +40,7 @@ class MavenProxy(PackageManagerProxy):
     
     def _get_sanitized_version(self, pkg_name, pkg_version):
         if pkg_version is None:
-            return self._get_latest_version(pkg_name=pkg_name)
+            return self.get_version(pkg_name=pkg_name)
         else:
             return pkg_version
 

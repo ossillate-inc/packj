@@ -846,7 +846,7 @@ def trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report):
 
 def analyze_manifest_confusion(pm_name, pkg_name, ver_str, filepath, risks, report):
     try:
-        msg_info('Checking for manifest confusion...', end='', flush=True)
+        msg_info('Checking for dependency confusion...', end='', flush=True)
         if pm_name == 'npm':
             try:
                 import requests
@@ -894,16 +894,18 @@ def analyze_manifest_confusion(pm_name, pkg_name, ver_str, filepath, risks, repo
                         if dep not in metadata_deps:
                             in_pj_dep.append(dep)
                     mc_deps['deps in package.json not in metadata'] = in_pj_dep
-                    if not mc_deps['deps in metadata not in package.json'] and not mc_deps['deps in package.json not in metadata']:
+                    if not mc_deps['deps in metadata not in package.jsony']:
                         msg_ok("No manifest confusion")
                     else:
                         reason = f'Manifest confusion deps:{mc_deps}'
                         alert_type = 'manifest confusion'
                         risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
                         msg_alert(reason)
+                    report['manifest_confusion'] = mc_deps
             except Exception as e:
                 raise Exception(e)
         else:
+            report['manifest_confusion'] = ' N/A'
             msg_warn(' N/A','Coming soon!')
     except Exception as e:
         print(str(e))

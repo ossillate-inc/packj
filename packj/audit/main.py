@@ -15,7 +15,7 @@ from colorama import Fore, Style
 from packj.util.net import __parse_url, download_file, check_site_exist, check_domain_popular
 from packj.util.dates import datetime_delta
 from packj.util.email_validity import check_email_address
-from packj.util.files import write_json_to_file, read_from_csv, read_file_lines
+from packj.util.files import write_json_to_file, read_from_csv, read_file_lines, extract_tar_gz
 from packj.util.enum_util import PackageManagerEnum, LanguageEnum
 from packj.util.formatting import human_format
 from packj.util.repo import git_clone, replace_last
@@ -844,6 +844,74 @@ def trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report):
 	finally:
 		return risks, report
 
+def analyze_manifest_confusion(pm_name, pkg_name, ver_str, filepath, risks, report):
+    try:
+        msg_info('Checking for dependency confusion...', end='', flush=True)
+        if pm_name == 'npm':
+            try:
+                import requests
+                if pkg_name and ver_str:
+                    metadata_url = "https://registry.npmjs.org/%s/%s" % (pkg_name, ver_str)
+                    resp = requests.request('GET', metadata_url)
+                    resp.raise_for_status()
+                    pkg_info = resp.json()
+                    try:
+                        metadata_deps = pkg_info['dependencies']
+                    except Exception as e:
+                        if type(e).__name__ == 'KeyError':
+                            reason = 'No dependencies exists in metadata'
+                            alert_type = 'No dependencies'
+                            risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+                            msg_alert(reason)
+                            return risks, report
+                if filepath:
+                    files = extract_tar_gz(filepath)
+                    package_json = None
+                    for path in files:
+                        if 'package.json' in path:
+                            package_json = path
+                    try:
+                        import json
+                        with open(package_json,'r') as f:
+                            info = json.load(f)
+                        pj_deps = info['dependencies']
+                    except Exception as e:
+                        if type(e).__name__ == 'KeyError':
+                            reason = 'No dependencies exists in package.json'
+                            alert_type = 'No dependencies'
+                            risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+                            msg_alert(reason)
+                            return risks, report
+                mc_deps = {}
+                if metadata_deps and pj_deps:
+                    in_md_dep = []
+                    for dep in metadata_deps:
+                        if dep not in pj_deps:
+                            in_md_dep.append(dep)
+                    mc_deps['deps in metadata not in package.json'] = in_md_dep
+                    in_pj_dep = []
+                    for dep in pj_deps:
+                        if dep not in metadata_deps:
+                            in_pj_dep.append(dep)
+                    mc_deps['deps in package.json not in metadata'] = in_pj_dep
+                    if not mc_deps['deps in metadata not in package.jsony']:
+                        msg_ok("No manifest confusion")
+                    else:
+                        reason = f'Manifest confusion deps:{mc_deps}'
+                        alert_type = 'manifest confusion'
+                        risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+                        msg_alert(reason)
+                    report['manifest_confusion'] = mc_deps
+            except Exception as e:
+                raise Exception(e)
+        else:
+            report['manifest_confusion'] = ' N/A'
+            msg_warn(' N/A','Coming soon!')
+    except Exception as e:
+        print(str(e))
+    finally:
+        return risks, report
+
 def audit(pm_args, pkg_name, ver_str, report_dir, extra_args, config):
 
 	pm_enum, pm_name, pm_proxy = pm_args
@@ -918,6 +986,10 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args, config):
 			msg_fail(str(e))
 	else:
 		filepath = pkg_name
+    
+    # performs manifest confusion
+    if filepath:
+        risks, report = analyze_manifest_confusion(pm_name, pkg_name, ver_str, filepath, risks, report)
 
 	# perform static analysis
 	if filepath:
@@ -1050,3 +1122,4 @@ def main(args, config_file):
 	# generate summarized report
 	msg_info('=============================================')
 	generate_summary(reports, report_dir, cmd_args)
+ 

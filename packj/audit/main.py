@@ -556,11 +556,11 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 		# format as a list of emails/names
 		item_list = []
 		for dev in authors:
-			item = dev.get('email', None)
+			item = dev.get('name', None)
 			if not item:
 				item = dev.get('handle', None)
 			if not item:
-				item = dev.get('name', None)
+				item = dev.get('email', None)
 			if item:
 				item_list.append(item)
 		data = ','.join(item_list)

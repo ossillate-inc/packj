@@ -39,6 +39,8 @@ def get_pm_enum(pm_name):
 		return PackageManagerEnum.rust
 	elif pm_name == 'packagist':
 		return PackageManagerEnum.php
+	elif pm_name == 'nuget':
+		return PackageManagerEnum.nuget
 	else:
 		raise Exception(f'Package manager {pm_name} is not supported')
 
@@ -79,5 +81,8 @@ def get_pm_proxy(pm, registry=None, cache_dir=None, isolate_pkg_info=False):
 	elif pm == PackageManagerEnum.php:
 		from packj.audit.pm_proxy.packagist_php import PackagistProxy
 		return PackagistProxy(registry=registry, cache_dir=cache_dir, isolated_pkg_info=isolate_pkg_info)
+	elif pm == PackageManagerEnum.nuget:
+		from packj.audit.pm_proxy.nuget import NugetProxy
+		return NugetProxy(registry=registry, cache_dir=cache_dir, isolate_pkg_info=isolate_pkg_info)
 	else:
 		raise Exception("PM proxy not available for package manager: %s" % pm)

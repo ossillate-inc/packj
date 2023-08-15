@@ -48,6 +48,7 @@ class LanguageEnum(Enum):
     docker = 'docker'
     vagrant = 'vagrant'
     rust = 'rust'
+    nuget = 'nuget'
 
     def __str__(self):
         return self.value

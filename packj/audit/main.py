@@ -745,6 +745,10 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language = LanguageEnum.php
 			configpath = os.path.join(config_dir, 'astgen_php_smt.config')
 			system = 'php'
+		elif pm_name == 'nuget':
+			language = LanguageEnum.nuget
+			configpath = os.path.join(config_dir, 'astgen_nuget_smt.config')
+			system = 'nuget'
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 	except Exception as e:

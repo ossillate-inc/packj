@@ -141,9 +141,15 @@ class RustProxy(PackageManagerProxy):
             assert pkg_info, "Failed to fetch metadata!"
             
             if 'categories' in pkg_info:
-                return [{'name':pkg_info['versions'][0]['published_by']['name']}, {'url':pkg_info['versions'][0]['published_by']['url']}, {'handle':pkg_info['versions'][0]['published_by']['login']}]
+                name = pkg_info['versions'][0]['published_by']['name']
+                url = pkg_info['versions'][0]['published_by']['url']
+                handle = pkg_info['versions'][0]['published_by']['login']
             elif 'version' in pkg_info:
-                return [{'name':pkg_info['version']['published_by']['name']}, {'url':pkg_info['versions'][0]['published_by']['url']}, {'handle':pkg_info['versions'][0]['published_by']['login']}]
+                name = pkg_info['version']['published_by']['name']
+                url = pkg_info['version'][0]['published_by']['url']
+                handle = pkg_info['version'][0]['published_by']['login']
+            email = self._get_email(gh_handle=handle)
+            return [{'name':name, 'url':url, 'handle':handle, 'email':email}]
         except Exception as e:
             logging.warning("Failed to get author details for package %s: %s"%(pkg_name,str(e)))
             return None
@@ -202,7 +208,7 @@ class RustProxy(PackageManagerProxy):
             except:
                 date = None
             days=None
-            if date and last_date:
+            if date or last_date:
                 try:
                     days=datetime_delta(date, date2=last_date,days=True)
                 except:
@@ -220,3 +226,17 @@ class RustProxy(PackageManagerProxy):
                 "yanked":yanked
             }
         return history
+    def _get_email(self, gh_handle):
+        url = f"https://api.github.com/users/{gh_handle}/events/public"
+        try:
+            response = requests.request('GET', url=url)
+            response.raise_for_status()
+            info = response.json()
+            assert info, "Failed to fetch info from GitHub API"
+            for events in info:
+                if events['type'] == 'PushEvent':
+                    commit = events['payload']['commits'][0]
+                    return commit['author']['email']
+        except Exception as e:
+            logging.warning(str(e))
+            return None

@@ -556,11 +556,11 @@ def analyze_author(pm_proxy, pkg_name, ver_str, pkg_info, ver_info, risks, repor
 		# format as a list of emails/names
 		item_list = []
 		for dev in authors:
-			item = dev.get('email', None)
+			item = dev.get('name', None)
 			if not item:
 				item = dev.get('handle', None)
 			if not item:
-				item = dev.get('name', None)
+				item = dev.get('email', None)
 			if item:
 				item_list.append(item)
 		data = ','.join(item_list)
@@ -754,16 +754,19 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 	# analyze code for APIs
 	try:
 		static = get_static_proxy_for_language(language=language)
-		try:
-			static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
+		if pm_name =='packagist':
+			perms = static.get_perms(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
 				pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
-		except Exception as e:
-			logging.debug('Failed to parse: %s', str(e))
-			raise Exception('parse error: is %s installed?' % (system))
+		else:
+			try:
+				static.astgen(inpath=filepath, outfile=filepath+'.out', root=None, configpath=configpath,
+					pkg_name=pkg_name, pkg_version=ver_str, evaluate_smt=False)
+			except Exception as e:
+				logging.debug('Failed to parse: %s', str(e))
+				raise Exception('parse error: is %s installed?' % (system))
 
-		assert os.path.exists(filepath+'.out'), 'parse error!'
-
-		perms = parse_api_usage(pm_name, filepath+'.out')
+			assert os.path.exists(filepath+'.out'), 'parse error!'
+			perms = parse_api_usage(pm_name, filepath+'.out')
 		if not perms:
 			msg_ok('no perms found')
 			return risks, report
@@ -844,6 +847,32 @@ def trace_installation(pm_enum, pkg_name, ver_str, report_dir, risks, report):
 	finally:
 		return risks, report
 
+def analyze_manifest_confusion(pm_name, pm_proxy, pkg_name, ver_str, filepath, risks, report):
+	try:
+		msg_info('Checking for manifest confusion...', end='', flush=True)
+		if pm_name == 'npm':
+			mc_data, error = pm_proxy.npm_manifest_confusion(pkg_name, ver_str, filepath)
+			report['manifest_confusion'] = mc_data
+			if error:
+				if error == 'KeyError':
+					reason = 'No dependencies exists in package.json '
+					alert_type = 'No dependencies'
+				elif error == 'Confusion':
+					reason = f'Manifest confusion deps:{mc_data}'
+					alert_type = 'manifest confusion'
+				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+				msg_alert(reason)
+				return risks, report
+			else:
+				msg_ok('No manifest confusion')
+		else:
+			report['manifest_confusion'] = ' N/A'
+			msg_warn(' N/A','Coming soon!')
+	except Exception as e:
+		print(str(e))
+	finally:
+		return risks, report
+
 def audit(pm_args, pkg_name, ver_str, report_dir, extra_args, config):
 
 	pm_enum, pm_name, pm_proxy = pm_args
@@ -918,6 +947,10 @@ def audit(pm_args, pkg_name, ver_str, report_dir, extra_args, config):
 			msg_fail(str(e))
 	else:
 		filepath = pkg_name
+	
+	# performs manifest confusion
+	if filepath:
+		risks, report = analyze_manifest_confusion(pm_name, pm_proxy, pkg_name, ver_str, filepath, risks, report)
 
 	# perform static analysis
 	if filepath:
@@ -1050,3 +1083,4 @@ def main(args, config_file):
 	# generate summarized report
 	msg_info('=============================================')
 	generate_summary(reports, report_dir, cmd_args)
+ 

@@ -154,3 +154,14 @@ def write_to_file(filename, data):
 			f.write("%s" % (data))
 	except Exception as e:
 		raise Exception("Failed to write to file %s: %s" % (filename, str(e)))
+
+def extract_tar_gz(file_path):
+    import tarfile
+    extracted_file_paths = []
+
+    with tarfile.open(file_path, "r:gz") as tar:
+        tar.extractall()
+        for member in tar.getmembers():
+            extracted_file_paths.append(member.name)
+
+    return extracted_file_paths

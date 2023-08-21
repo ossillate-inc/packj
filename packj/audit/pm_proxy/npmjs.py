@@ -12,6 +12,7 @@ import dateutil.parser
 import requests
 
 from packj.audit.pm_proxy.pm_base import PackageManagerProxy
+from packj.util.files import extract_tar_gz
 
 class NpmjsProxy(PackageManagerProxy):
 	# npm-scripts: How npm handles the "scripts" field
@@ -264,3 +265,49 @@ class NpmjsProxy(PackageManagerProxy):
 
 		#npm_user = ver_info.get('_npmUser', None)
 		#data = self.__parse_dev_list(maintainers, '_npmUser', data=data)
+
+	def npm_manifest_confusion(self, pkg_name:str, ver_str:str=None, filepath:str=None):
+		try:
+			import requests
+			if pkg_name and ver_str:
+				metadata_url = "https://registry.npmjs.org/%s/%s" % (pkg_name, ver_str)
+				resp = requests.request('GET', metadata_url)
+				resp.raise_for_status()
+				pkg_info = resp.json()
+				try:
+					metadata_deps = pkg_info['dependencies']
+				except Exception as e:
+					if type(e).__name__ == 'KeyError':
+						return None, type(e).__name__
+			if filepath:
+				files = extract_tar_gz(filepath)
+				package_json = None
+				for path in files:
+					if 'package.json' in path:
+						package_json = path
+				try:
+					import json
+					with open(package_json,'r') as f:
+						info = json.load(f)
+					pj_deps = info['dependencies']
+				except Exception as e:
+					if type(e).__name__ == 'KeyError':
+						return None, type(e).__name__
+			mc_deps = {}
+			if metadata_deps and pj_deps:
+				in_md_dep = []
+				for dep in metadata_deps:
+					if dep not in pj_deps:
+						in_md_dep.append(dep)
+				mc_deps['deps in metadata not in package.json'] = in_md_dep
+				in_pj_dep = []
+				for dep in pj_deps:
+					if dep not in metadata_deps:
+						in_pj_dep.append(dep)
+				mc_deps['deps in package.json not in metadata'] = in_pj_dep
+				if not (mc_deps['deps in metadata not in package.json'] and mc_deps['deps in package.json not in metadata']):
+					return mc_deps, None
+				else:
+					return mc_deps, 'Confusion'
+		except Exception as e:
+			raise Exception(e)

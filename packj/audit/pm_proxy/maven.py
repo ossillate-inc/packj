@@ -18,66 +18,149 @@ class MavenProxy(PackageManagerProxy):
         self.dep_format = 'json'
         
     def get_metadata(self, pkg_name, pkg_version=None):
-        # load cached metadata information
-        pkg_info_dir = self.get_pkg_info_dir(pkg_name=pkg_name)
-        if pkg_info_dir is not None:
-            metadata_fname = self.get_metadata_fname(pkg_name=pkg_name, pkg_version=pkg_version, fmt= self.metadata_format)
-            metadata_file = join(pkg_info_dir, metadata_fname)
-            if exists(metadata_file):
-                logging.warning("get_metadata: using cached metadata_file %s!", metadata_file)
-                if self.metadata_format == 'pom':
-                    return pkg_name, fromstring(open(metadata_file, 'r').read())
-                else:
-                    logging.error("get_metadata: output format %s is not supported!", self.metadata_format)
-                    return pkg_name, None
-        # Maven metadata is loaded in two steps
-        # First load names and versions. Then load the latest/specific version
+        if not pkg_version:
+            pkg_version = self._get_versions_info(pkg_name=pkg_name)
+        actual_pkg_name = pkg_name.split('.')[-1]
+        url_pass = pkg_name.replace('.', '/') +'/'+pkg_version+'/'+actual_pkg_name+'-'+pkg_version+'.pom'
+        metadata_url = f'https://repo1.maven.org/maven2/{url_pass}'
+        
         try:
-            # Maven URL for specific version
-            # e.g, https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.6.1/protobuf-java-3.6.1.pom
-            metadata_url = "https://repo1.maven.org/maven2/%s" % self._get_pkg_path(
-                pkg_name=pkg_name, pkg_version=self._get_sanitized_version(pkg_name=pkg_name, pkg_version=pkg_version),
-                suffix="pom")
-            metadata_content = requests.request('GET', metadata_url)
-            pkg_info = fromstring(metadata_content.text)
+            resp = requests.request('GET', metadata_url)
+            resp.raise_for_status()
+            pkg_info = fromstring(resp.text)
         except Exception as e:
-            logging.error("fail in get_metadata for pkg %s: %s, ignoring!", pkg_name, str(e))
-            return pkg_name, None
-        if pkg_info_dir is not None:
-            if not exists(pkg_info_dir):
-                os.makedirs(pkg_info_dir)
-            metadata_fname = self.get_metadata_fname(pkg_name=pkg_name, pkg_version=pkg_version,
-                                                     fmt=self.metadata_format)
-            metadata_file = join(pkg_info_dir, metadata_fname)
-            if self.metadata_format == 'pom':
-                open(metadata_file, 'w').write(metadata_content.text)
-            else:
-                logging.error("get_metadata: output format %s is not supported!", self.metadata_format)
-        return pkg_name, pkg_info
+            logging.debug("Fail in get_metadata for pkg %s, ignoring!\n%s",pkg_name,str(e))
+            pkg_info=None
+        finally:
+            return pkg_name, pkg_info
 
     def _get_versions_info(self, pkg_name):
-        gid, aid = pkg_name.split('/')
         try:
             # Maven URL for package information
             # https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/maven-metadata.xml
-            versions_url = "https://repo1.maven.org/maven2/%s/%s/maven-metadata.xml" % (gid.replace('.', '/'), aid)
+            versions_url = "https://repo1.maven.org/maven2/%s/maven-metadata.xml" % (pkg_name.replace('.', '/'))
             versions_content = requests.request('GET', versions_url)
             # Parsing pom files
             # https://stackoverflow.com/questions/16802732/reading-maven-pom-xml-in-python
-            return fromstring(versions_content.text)
+            versions_info = fromstring(versions_content.text)
+            if versions_info:
+                    return versions_info.find('./versioning/latest').text
+            else:
+                return None
         except:
             logging.error("fail to get latest version for pkg %s!", pkg_name)
             return None
 
     def get_version(self, pkg_name, ver_str=None, pkg_info=None):
-        versions_info = self._get_versions_info(pkg_name=pkg_name)
-        if versions_info:
-            return versions_info.find('./versioning/latest').text
-        else:
+        return {'tag':self._get_versions_info(pkg_name=pkg_name), 'url':None, 'uploaded':None}
+        
+    def get_download_url(self, pkg_name, ver_str=None, pkg_info=None):
+        try:
+            if not ver_str:
+                pkg_version = self._get_versions_info(pkg_name=pkg_name)
+            actual_pkg_name = pkg_name.split('.')[-1]
+            url_pass = pkg_name.replace('.', '/') +'/'+pkg_version+'/'+actual_pkg_name+'-'+pkg_version+'.jar'
+            dwn_url = f'https://repo1.maven.org/maven2/{url_pass}'
+            
+            return dwn_url
+        except Exception as e:
+            logging.warning(str(e))
             return None
     
-    def _get_sanitized_version(self, pkg_name, pkg_version):
-        if pkg_version is None:
-            return self.get_version(pkg_name=pkg_name)
-        else:
-            return pkg_version
+    def get_description(self, pkg_name, ver_str=None, pkg_info=None):
+        try:
+            if not pkg_info:
+                _, pkg_info = self.get_metadata(pkg_name=pkg_name, pkg_version=ver_str)
+            assert pkg_info and 'package' in pkg_info, "Failed to fetch metadata!"
+            
+            namespace = {'ns': 'http://maven.apache.org/POM/4.0.0'}
+            
+            description = pkg_info.find('ns:description', namespace).text
+            if description and len(description):
+                return description.strip()
+            
+            raise Exception(' No description found in metadata!')
+        except Exception as e:
+            logging.warning(str(e))
+            return None
+    
+    def get_repo(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
+        try:
+            if not pkg_info:
+                _, pkg_info = self.get_metadata(pkg_name=pkg_name)
+            assert pkg_info and 'package' in pkg_info, "Failed to fetch metadata!"
+            
+            namespace = {'ns': 'http://maven.apache.org/POM/4.0.0'}
+            
+            repo_url = pkg_info.find('ns:url', namespace).text
+            if repo_url:
+                return repo_url
+            
+            raise Exception('No repository found in metadata!')
+        except Exception as e:
+            logging.warning(str(e))
+            return None
+    
+    def get_author(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
+        try:
+            if not pkg_info:
+                _, pkg_info = self.get_metadata(pkg_name=pkg_name)
+            assert pkg_info and 'package' in pkg_info, "Failed to fetch metadata!"
+            
+            nsmap = {'m': 'http://maven.apache.org/POM/4.0.0'}
+
+            devs = pkg_info.findall('.//m:developer', nsmap)
+            developers = []
+            for dev in devs:
+                dev_info = {}
+                dev_id = dev.find('m:id', nsmap)
+                if dev_id is not None:
+                    dev_info['id'] = dev_id.text
+                dev_name = dev.find('m:name', nsmap)
+                if dev_name is not None:
+                    dev_info['name'] = dev_name.text
+                dev_email = dev.find('m:email', nsmap)
+                if dev_email is not None:
+                    dev_info['email'] = dev_email.text
+                dev_url = dev.find('m:url', nsmap)
+                if dev_url is not None:
+                    dev_info['url'] = dev_url.text
+                developers.append(dev_info)
+            return developers
+        except Exception as e:
+            logging.warning("Failed to get author details for package %s: %s"%(pkg_name,str(e)))
+            return None
+    
+    def get_downloads(self, pkg_name, pkg_info=None):
+        pass
+    
+    def get_dependencies(self, pkg_name, ver_str=None, pkg_info=None, ver_info=None):
+        try:
+            namespace = {'m': 'http://maven.apache.org/POM/4.0.0'}
+
+            root = self.get_metadata(pkg_name=pkg_name)
+            dependencies = []
+            for dependency in root.findall('.//m:dependency', namespace):
+                group_id = dependency.find('m:groupId', namespace).text
+                artifact_id = dependency.find('m:artifactId', namespace).text
+                dependencies.append(f'{group_id}.{artifact_id}')
+            
+            if dependencies:
+                return dependencies
+            
+            raise Exception('No dependencies found in metadata!')
+        except Exception as e:
+            logging.warning(str(e))
+            return None
+
+    def get_maintainers(self, pkg_name:str, ver_str:str=None, pkg_info:dict=None, ver_info:dict=None):
+        pass
+    
+    def get_homepage(self, pkg_name, ver_str=None, pkg_info=None):
+        pass
+    
+    def get_release_history(self, pkg_name, pkg_info=None, max_nums=-1):
+        pass
+    
+    def get_readme(self, pkg_name, ver_str=None, pkg_info=None):
+        pass

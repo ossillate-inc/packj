@@ -52,14 +52,18 @@ class MavenProxy(PackageManagerProxy):
             return None
 
     def get_version(self, pkg_name, ver_str=None, pkg_info=None):
-        return {'tag':self._get_versions_info(pkg_name=pkg_name), 'url':None, 'uploaded':None}
+        ver_str = self._get_versions_info(pkg_name=pkg_name)
+        actual_pkg_name = pkg_name.split('.')[-1]
+        url_pass = pkg_name.replace('.', '/') +'/'+ver_str+'/'+actual_pkg_name+'-'+ver_str+'.jar'
+        dwn_url = f'https://repo1.maven.org/maven2/{url_pass}'
+        return {'tag':ver_str, 'url':dwn_url, 'uploaded':None}
         
     def get_download_url(self, pkg_name, ver_str=None, pkg_info=None):
         try:
             if not ver_str:
-                pkg_version = self._get_versions_info(pkg_name=pkg_name)
+                ver_str = self._get_versions_info(pkg_name=pkg_name)
             actual_pkg_name = pkg_name.split('.')[-1]
-            url_pass = pkg_name.replace('.', '/') +'/'+pkg_version+'/'+actual_pkg_name+'-'+pkg_version+'.jar'
+            url_pass = pkg_name.replace('.', '/') +'/'+ver_str+'/'+actual_pkg_name+'-'+ver_str+'.jar'
             dwn_url = f'https://repo1.maven.org/maven2/{url_pass}'
             
             return dwn_url

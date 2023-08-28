@@ -14,6 +14,8 @@ def parse_api_usage(pm_name, filepath):
 		api_dir = os.path.join(config_dir, 'rubygems_api')
 	elif pm_name == 'packagist':
 		api_dir = os.path.join(config_dir, 'php_api')
+	elif pm_name == 'maven':
+		api_dir = os.path.join(config_dir, 'java_api')
 	else:
 		raise Exception('API parser for %s not supported!' % (pm_name))
 

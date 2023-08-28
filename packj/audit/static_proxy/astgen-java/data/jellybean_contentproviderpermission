@@ -1,0 +1,78 @@
+content://browser/bookmarks/search_suggest_query R android.permission.GLOBAL_SEARCH path
+content://browser R com.android.browser.permission.READ_HISTORY_BOOKMARKS
+content://browser W com.android.browser.permission.WRITE_HISTORY_BOOKMARKS
+content://call_log R android.permission.READ_CALL_LOG
+content://call_log W android.permission.WRITE_CALL_LOG
+content://cellbroadcasts R android.permission.READ_CELL_BROADCASTS
+content://com.android.bluetooth.opp/btopp R android.permission.ACCESS_BLUETOOTH_SHARE path
+content://com.android.bluetooth.opp/btopp W android.permission.ACCESS_BLUETOOTH_SHARE path
+content://com.android.browser/bookmarks/search_suggest_query R android.permission.GLOBAL_SEARCH path
+content://com.android.browser.home R com.android.browser.permission.READ_HISTORY_BOOKMARKS
+content://com.android.browser R com.android.browser.permission.READ_HISTORY_BOOKMARKS
+content://com.android.browser W com.android.browser.permission.WRITE_HISTORY_BOOKMARKS
+content://com.android.calendar R android.permission.READ_CALENDAR
+content://com.android.calendar W android.permission.WRITE_CALENDAR
+content://com.android.contacts/contacts/.*/photo R android.permission.GLOBAL_SEARCH pathPattern
+content://com.android.contacts.* grant-uri-permission pathPattern
+content://com.android.contacts R android.permission.READ_CONTACTS
+content://com.android.contacts/search_suggest_query R android.permission.GLOBAL_SEARCH pathPrefix
+content://com.android.contacts/search_suggest_shortcut R android.permission.GLOBAL_SEARCH pathPrefix
+content://com.android.contacts W android.permission.WRITE_CONTACTS
+content://com.android.email.attachmentprovider R com.android.email.permission.READ_ATTACHMENT
+content://com.android.email.notifier R com.android.email.permission.ACCESS_PROVIDER
+content://com.android.email.notifier W com.android.email.permission.ACCESS_PROVIDER
+content://com.android.email.provider R com.android.email.permission.ACCESS_PROVIDER
+content://com.android.email.provider W com.android.email.permission.ACCESS_PROVIDER
+content://com.android.exchange.directory.provider R android.permission.READ_CONTACTS
+content://com.android.launcher2.settings R com.android.launcher.permission.READ_SETTINGS
+content://com.android.launcher2.settings W com.android.launcher.permission.WRITE_SETTINGS
+content://com.android.mms.SuggestionsProvider R android.permission.READ_SMS
+content://com.android.mms.SuggestionsProvider/search_suggest_query R android.permission.GLOBAL_SEARCH pathPrefix
+content://com.android.mms.SuggestionsProvider/search_suggest_shortcut R android.permission.GLOBAL_SEARCH pathPrefix
+content://com.android.voicemail R com.android.voicemail.permission.ADD_VOICEMAIL
+content://com.android.voicemail W com.android.voicemail.permission.ADD_VOICEMAIL
+content://com.google.provider.NotePad.* grant-uri-permission pathPattern
+content://contacts/contacts/.*/photo R android.permission.GLOBAL_SEARCH pathPattern
+content://contacts.* grant-uri-permission pathPattern
+content://contacts R android.permission.READ_CONTACTS
+content://contacts/search_suggest_query R android.permission.GLOBAL_SEARCH pathPrefix
+content://contacts/search_suggest_shortcut R android.permission.GLOBAL_SEARCH pathPrefix
+content://contacts W android.permission.WRITE_CONTACTS
+content://ctspermissionwithsignaturegranting/foo.* grant-uri-permission pathPattern
+content://ctspermissionwithsignaturegranting R com.android.cts.permissionWithSignature
+content://ctspermissionwithsignaturegranting W com.android.cts.permissionWithSignature
+content://ctspermissionwithsignaturegranting/yes.* grant-uri-permission pathPattern
+content://ctspermissionwithsignaturepath/foo R com.android.cts.permissionWithSignature pathPrefix
+content://ctspermissionwithsignaturepath.* grant-uri-permission pathPattern
+content://ctspermissionwithsignaturepath R com.android.cts.permissionNotUsedWithSignature
+content://ctspermissionwithsignaturepathrestricting/foo/bar R com.android.cts.permissionNormal pathPrefix
+content://ctspermissionwithsignaturepathrestricting/foo R com.android.cts.permissionWithSignature pathPrefix
+content://ctspermissionwithsignaturepath W com.android.cts.permissionNotUsedWithSignature
+content://ctspermissionwithsignaturepath/yes R com.android.cts.permissionWithSignature pathPrefix
+content://ctspermissionwithsignature R com.android.cts.permissionWithSignature
+content://ctspermissionwithsignature W com.android.cts.permissionWithSignature
+content://ctsprivateprovidergranting/foo.* grant-uri-permission pathPattern
+content://ctsprivateprovidergranting/yes.* grant-uri-permission pathPattern
+content://downloads/all_downloads/ grant-uri-permission pathPrefix
+content://downloads/all_downloads R android.permission.ACCESS_ALL_DOWNLOADS pathPrefix
+content://downloads/all_downloads W android.permission.ACCESS_ALL_DOWNLOADS pathPrefix
+content://downloads/download R android.permission.INTERNET pathPrefix
+content://downloads/download W android.permission.INTERNET pathPrefix
+content://downloads/my_downloads R android.permission.INTERNET pathPrefix
+content://downloads/my_downloads W android.permission.INTERNET pathPrefix
+content://icc R android.permission.READ_CONTACTS
+content://icc W android.permission.WRITE_CONTACTS
+content://media/external/ grant-uri-permission pathPrefix
+content://media/external/ R android.permission.READ_EXTERNAL_STORAGE pathPrefix
+content://media/external/ R android.permission.WRITE_EXTERNAL_STORAGE pathPrefix
+content://mms/drm/ grant-uri-permission pathPrefix
+content://mms/part/ grant-uri-permission pathPrefix
+content://mms R android.permission.READ_SMS
+content://mms-sms R android.permission.READ_SMS
+content://mms-sms W android.permission.WRITE_SMS
+content://mms W android.permission.WRITE_SMS
+content://settings W android.permission.WRITE_SETTINGS
+content://sms R android.permission.READ_SMS
+content://sms W android.permission.WRITE_SMS
+content://user_dictionary R android.permission.READ_USER_DICTIONARY
+content://user_dictionary W android.permission.WRITE_USER_DICTIONARY

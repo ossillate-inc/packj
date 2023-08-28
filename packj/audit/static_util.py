@@ -6,6 +6,7 @@ from packj.audit.static_proxy.py_analyzer import PyAnalyzer
 from packj.audit.static_proxy.js_analyzer import JsAnalyzer
 from packj.audit.static_proxy.ruby_analyzer import RubyAnalyzer
 from packj.audit.static_proxy.php_analyzer import PhpAnalyzer
+from packj.audit.static_proxy.java_analyzer import JavaAnalyzer
 
 def get_static_proxy_for_language(language):
 	if language == LanguageEnum.python:
@@ -16,6 +17,8 @@ def get_static_proxy_for_language(language):
 		return RubyAnalyzer()
 	elif language == LanguageEnum.php:
 		return PhpAnalyzer()
+	elif language == LanguageEnum.java:
+		return JavaAnalyzer()
 	else:
 		raise Exception("Static proxy not available for language: %s" % language)
 

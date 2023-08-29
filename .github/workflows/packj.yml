@@ -5,7 +5,6 @@ name: Packj security audit
 on:
   # Allows non-contributors to run PR jobs
   pull_request_target:
-    branches: main
 
 # Declare default permissions as read only.
 permissions: read-all

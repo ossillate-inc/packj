@@ -626,6 +626,8 @@ def analyze_composition(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language=LanguageEnum.rust
 		elif pm_name == 'packagist':
 			language = LanguageEnum.php
+		elif pm_name == 'maven':
+			language = LanguageEnum.java
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 	except Exception as e:
@@ -745,6 +747,10 @@ def analyze_apis(pm_name, pkg_name, ver_str, filepath, risks, report):
 			language = LanguageEnum.php
 			configpath = os.path.join(config_dir, 'astgen_php_smt.config')
 			system = 'php'
+		elif pm_name == 'maven':
+			language = LanguageEnum.java
+			configpath = os.path.join(config_dir, 'astgen_java_smt.config')
+			system = 'java'
 		else:
 			raise Exception(f'Package manager {pm_name} is not supported!')
 	except Exception as e:

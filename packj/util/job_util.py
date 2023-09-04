@@ -100,7 +100,7 @@ def exec_command(cmd, args, cwd=None, env=None, timeout=600, redirect_mask:int=0
 		if redirect_mask & 1:
 			stderr = PIPE
 
-		pipe = Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr)
+		pipe = Popen(args, cwd=cwd, env=env, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 		current_subprocs.add(pipe)
 		try:
 			stdout, stderr = func_timeout(timeout, pipe.communicate)

@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from enum import Enum
 import os
+import re
 import inspect
 import logging
 import yaml
@@ -539,6 +540,27 @@ def analyze_readme(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 			msg_alert(reason)
 		else:
 			msg_ok(f'{len(readme)} bytes')
+	except Exception as e:
+		msg_fail(str(e))
+		return risks, report
+
+	try:
+		msg_info('Checking for warning(s) from dev...', end='', flush=True, indent=1)
+		# parse README for uppercase warnings
+		pattern = r'\b[A-Z]{2,}\b'
+		match = []
+		sentences = re.findall("[^.]+.", readme)
+		for sentence in sentences:
+			uppercase = re.findall(pattern, sentence)
+			if uppercase:
+				match.append(" ".join(uppercase))
+		if 'WARN' in match or 'WARNING' in match:
+			alert_type = 'contains dev warning'
+			reason = ';'.join(match)
+			risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
+			msg_alert(reason)
+		else:
+			msg_ok('No warnings')
 	except Exception as e:
 		msg_fail(str(e))
 	finally:
@@ -1089,4 +1111,3 @@ def main(args, config_file):
 	# generate summarized report
 	msg_info('=============================================')
 	generate_summary(reports, report_dir, cmd_args)
- 

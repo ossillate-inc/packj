@@ -132,6 +132,10 @@ audit:
         - reason: package is a typo-guard, placeholder, dummy, empty, or troll package
         - enabled: true
 
+      contains dev warning:
+        - reason: package contains a warning from the developer
+        - enabled: true
+
       #
       # type: repo stats
       #

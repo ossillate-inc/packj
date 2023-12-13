@@ -82,9 +82,9 @@ It also supports vetting local (unpublished) NPM and PyPI packages.
 | Cargo     | Rust       | :white_check_mark: |
 | Rubygems  | Ruby       | :white_check_mark: |
 | Packagist | PHP        | :white_check_mark: |
-| Docker    | PHP        | :x: |
-| Nuget     | .NET       | :x: |
-| Maven     | Java       | :x: |
+| Docker    | Docker     | :x: |
+| Nuget     | .NET       | :white_check_mark: |
+| Maven     | Java       | :white_check_mark: |
 | Cocoapods | Swift      | :x: |
 
 # Functionality #

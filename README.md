@@ -55,7 +55,7 @@ docker run -v /tmp:/tmp/packj -it ossillate/packj:latest --help
 Clone this repo, 
 
 ```
-https://github.com/ossillate-inc/packj.git && cd packj
+git clone https://github.com/ossillate-inc/packj.git && cd packj
 ```
 
 Install dependencies

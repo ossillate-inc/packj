@@ -16,7 +16,7 @@ from packj.audit.proto.python.ast_pb2 import PkgAstResults, AstLookupConfig, Fil
 
 Language2Extensions = {
     LanguageEnum.python: ('.py',),
-    LanguageEnum.javascript: ('.js',),
+    LanguageEnum.javascript: ('.js','.ts'),
     LanguageEnum.ruby: ('.rb',),
     LanguageEnum.java: ('.java', '.class', '.jar', '.aar', '.war', '.dex', '.apk'),  # java packages are compiled
     LanguageEnum.csharp: ('.cs',),  # c# packages are compiled and are windows binaries/libraries

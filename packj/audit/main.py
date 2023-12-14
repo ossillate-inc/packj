@@ -355,10 +355,10 @@ def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 
 			# check if a popular webpage
 			elif check_domain_popular(url):
-				reason = 'invalid (popular) webpage'
+				reason = f'popular webpage: {url}'
 				alert_type = 'invalid or no homepage'
 				risks = alert_user(alert_type, THREAT_MODEL, reason, risks)
-				msg_alert(reason)
+				msg_warn('WARN', reason)
 
 			else:
 				msg_ok(url)
@@ -371,8 +371,11 @@ def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 def analyze_repo_descr(risks, report):
 	try:
 		msg_info('Checking repo description...', end='', flush=True, indent=1)
-		descr = report['repo']['description']
-		msg_ok(descr)
+		descr = report['repo'].get('description', None)
+		if not descr:
+			msg_warn('WARN', 'No descr')
+		else:
+			msg_ok(descr)
 	except Exception as e:
 		msg_fail(str(e))
 	finally:

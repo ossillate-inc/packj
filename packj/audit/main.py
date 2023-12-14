@@ -370,8 +370,11 @@ def analyze_homepage(pm_proxy, pkg_name, ver_str, pkg_info, risks, report):
 def analyze_repo_descr(risks, report):
 	try:
 		msg_info('Checking repo description...', end='', flush=True, indent=1)
-		descr = report['repo']['description']
-		msg_ok(descr)
+		descr = report['repo'].get('description', None)
+		if not descr:
+			msg_warn(' N/A', 'No descr')
+		else:
+			msg_ok(descr)
 	except Exception as e:
 		msg_fail(str(e))
 	finally:

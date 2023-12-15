@@ -1,3 +1,6 @@
+def nearest(tuple_list, pivot):
+	return min(tuple_list, key=lambda x: abs(x[1] - pivot))
+
 def ts_to_date_str(tstamp:float, fmt:str='%m-%d-%Y'):
 	try:
 		import datetime
@@ -45,7 +48,7 @@ def date_str_to_datetime(date_str, fmt=None):
 	except Exception as e:
 		raise Exception("Failed to get datetime from date string %s: %s" % (date_str, str(e)))
 
-def datetime_delta(date1, date2=None, days=None):
+def datetime_delta(date1, date2=None, days=False):
 	try:
 		import datetime
 		import pytz

@@ -1,6 +1,8 @@
 from packj.util.json_wrapper import json_loads
 from packj.util.job_util import md5_digest_file
 import os
+import json
+import git
 
 import magic
 
@@ -118,10 +120,6 @@ def read_dict_from_file(filename):
 
 def read_json_from_file(filepath):
 	try:
-		import json
-	except ImportError as e:
-		raise Exception("'json' module not available. Please install.")
-	try:
 		with open(filepath, "r") as f:
 			return json_loads(f.read())
 	except Exception as e:
@@ -137,6 +135,31 @@ def read_from_csv(filename, skip_header=False):
 			if len(row) and not row[0].startswith('#'):
 				yield row
 
+
+class JSONEncoder(json.JSONEncoder):
+	"""A custom JSON encoder that supports additional types."""
+	def default(self, obj):
+		# gitpython's 'Commit' class.
+		if isinstance(obj, git.Commit):
+			return {
+				'hash': obj.hexsha,
+				'author_name': obj.author.name,
+				'author_email': obj.author.email,
+				'committer_name': obj.committer.name,
+				'committer_email': obj.committer.email,
+				'message': obj.message,
+				'committed_date': obj.committed_datetime.isoformat(),
+			}
+		# Python standard library sets.
+		#
+		# Sorting the resulting list in an attempt to ensure
+		# deterministic output.
+		if isinstance(obj, set):
+			return sorted(list(obj))
+		# Leave everything else up to the base class.
+		return super().default(obj)
+
+
 def write_json_to_file(filepath, data_json, indent=0):
 	try:
 		import json
@@ -144,7 +167,7 @@ def write_json_to_file(filepath, data_json, indent=0):
 		raise Exception("'json' module not available. Please install.")
 	try:
 		with open(filepath, "w+") as f:
-			json.dump(data_json, f, indent=indent)
+			json.dump(data_json, f, indent=indent, cls=JSONEncoder)
 	except Exception as e:
 		raise Exception("Failed to dump json content to file %s: %s" % (filepath, str(e)))
 

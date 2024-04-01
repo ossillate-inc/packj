@@ -18,7 +18,7 @@ def git_clone(repo_url):
 		git.Git(clone_dir).clone(repo_url)
 	except Exception as e:
 		logging.debug("Failed to clone %s: %s" % (repo_url, str(e)))
-		return "repo does not exit", None
+		return "repo does not exist", None
 
 	try:
 		clone_dir = os.path.join(clone_dir, os.path.basename(repo_url))

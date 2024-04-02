@@ -40,7 +40,7 @@ Use Packj to audit dependencies in pull requests.
     REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-View on GitHub [marketplace](https://packj.dev/go?next=https://github.com/marketplace/actions/packj-security-audit). Example [PR run](https://packj.dev/go?next=https://github.com/ossillate-inc/packj-github-action-demo/pull/3#issuecomment-1274797138).
+View on GitHub [marketplace](https://github.com/marketplace/actions/packj-security-audit). Example [PR run](https://github.com/ossillate-inc/packj-github-action-demo/pull/3#issuecomment-1274797138).
 
 ### 2. Docker image (recommended)
 
@@ -147,7 +147,7 @@ By default, `audit` only performs static code analysis to detect risky code. You
 
 > WARNING: since packages could execute malicious code during installation, it is recommended to ONLY use `-t` or `--trace` when running inside a Docker container or a Virtual Machine.
 
-Audit can also be performed in Docker/Podman containers. Please find details on risky attributes and how to use at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
+Audit can also be performed in Docker/Podman containers. Please find details on risky attributes and how to use at [Audit README](https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
 
 ## Sandboxed package installation ##
 
@@ -155,7 +155,7 @@ Packj offers a lightweight sandboxing for `safe installation` of a package. Spec
 
 It sandboxes install-time scripts, including any native compliation. It uses **strace** (i.e., **NO** VM/Container required).
 
-Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/sandbox/README.md).
+Please find details on the sandboxing mechanism and how to use at [Sandbox README](https://github.com/ossillate-inc/packj/blob/main/packj/sandbox/README.md).
 
 <details>
     <summary><h4>Show example run/output</h4></summary>
@@ -218,9 +218,9 @@ Please find details on the sandboxing mechanism and how to use at [Sandbox READM
 <details>
 	<summary><h4>Show long answer</h4></summary>
 
-Packj started as an academic research project. Specifically, the static code analysis techniques used by Packj are based on cutting-edge Cybersecurity research: [MalOSS](https://packj.dev/go?next=https://github.com/osssanitizer/maloss) project by our research [group](https://packj.dev/go?next=http://cyfi.ece.gatech.edu) at Georgia Tech.
+Packj started as an academic research project. Specifically, the static code analysis techniques used by Packj are based on cutting-edge Cybersecurity research: [MalOSS](https://github.com/osssanitizer/maloss) project by our research [group](http://cyfi.ece.gatech.edu) at Georgia Tech.
 
-<a href="https://packj.dev/go?next=https://arxiv.org/pdf/2002.01139v1.pdf" target="_blank">
+<a href="https://arxiv.org/pdf/2002.01139v1.pdf" target="_blank">
 	<img src="https://drive.google.com/uc?export=view&id=1L03-kFTdNDFvGLWt_zJ-Qe8PPX75ICqo" width="300" alt="academic paper">
 </a>
 
@@ -243,16 +243,16 @@ A typical example of an accidental programming bug is a missing bounds check on 
 
 The modern software supply chain threat landscape **shifted** after the Solarwinds attack. Bad actors have found new vulnerabilities, but this time in the supply channel, not code. These new vulnerabilities such as dependency confusion, typo-squatting, protestware (sabotaging), account hijacking, and social engineering are being exploited to propagate malware. Thousands of compromised NPM/PyPI/Ruby packages have been reported. 
 
-In contrast to CVEs, malware is deliberately bad (a.k.a. malicious) code. Moreover, malware itself is an exploit and cannot be patched or fixed by upgrading to a newer version. For example, [dependency confusion attack](https://packj.dev/go?next=https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610) was intentionally malicious; it did not exploit any accidental programming bug in the code. Similarly, an author of popular package sabotaging their own code to [protest](https://packj.dev/go?next=https://en.wikipedia.org/wiki/Peacenotwar) against the war is very much intentional and does not exploit any CVEs. Typo-squatting is another attack vector that bad actors use to propagate malware in popular open-source package registries: it exploits [typos and inexperience of devs](https://packj.dev/go?next=https://discuss.python.org/t/improving-risks-and-consequences-against-typosquatting-on-pypi/5090), not accidental programming bugs or CVEs in the code. 
+In contrast to CVEs, malware is deliberately bad (a.k.a. malicious) code. Moreover, malware itself is an exploit and cannot be patched or fixed by upgrading to a newer version. For example, [dependency confusion attack](https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610) was intentionally malicious; it did not exploit any accidental programming bug in the code. Similarly, an author of popular package sabotaging their own code to [protest](https://en.wikipedia.org/wiki/Peacenotwar) against the war is very much intentional and does not exploit any CVEs. Typo-squatting is another attack vector that bad actors use to propagate malware in popular open-source package registries: it exploits [typos and inexperience of devs](https://discuss.python.org/t/improving-risks-and-consequences-against-typosquatting-on-pypi/5090), not accidental programming bugs or CVEs in the code. 
 
 Existing scanners **FAIL** to detect these Solarwinds-like modern software supply-chain attacks from deliberately vulnerable (malicious) code. These tools simply scan the source code for open-source dependencies, compile a list of all dependencies being used, and look each <dependency-NAME, dependency-VERSION> up in a database (e.g., NVD) to report affected package versions (e.g., vulnerable version of Log4J, LibSSL version affected by HeartBleed).
 
-Packj not only audits for CVEs, but also performs deep static+dynamic code analysis as well as metadata checks to detect any "risky" behavior and attributes, such as spawning of shell, use of SSH keys, mismatch of GitHub code vs packaged code (provenance), lack of 2FA, and several more. Such insecure attributes do not qualify as as CVEs, which is why none of the existing tools can flag them. Packj can flag malicious, typo-squatting, abandoned, vulnerable, and other insecure dependencies (weak links) in your software supply chain. Please read more at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md#faq)
+Packj not only audits for CVEs, but also performs deep static+dynamic code analysis as well as metadata checks to detect any "risky" behavior and attributes, such as spawning of shell, use of SSH keys, mismatch of GitHub code vs packaged code (provenance), lack of 2FA, and several more. Such insecure attributes do not qualify as as CVEs, which is why none of the existing tools can flag them. Packj can flag malicious, typo-squatting, abandoned, vulnerable, and other insecure dependencies (weak links) in your software supply chain. Please read more at [Audit README](https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md#faq)
 </details>
 
 # Customization #
 
-Packj can be easily customized (zero noise) to your threat model. Simply add a [.packj.yaml](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/.packj.yaml) file in the top dir of your repo/project and reduce alert fatigue by commenting out unwanted attributes.
+Packj can be easily customized (zero noise) to your threat model. Simply add a [.packj.yaml](https://github.com/ossillate-inc/packj/blob/main/.packj.yaml) file in the top dir of your repo/project and reduce alert fatigue by commenting out unwanted attributes.
 
 # Malware found #
 
@@ -295,24 +295,24 @@ We found over 40 and 20 malicious packages on PyPI and Rubygems, respectively us
 </details>
 
 
-Packj flagged KrisQian (v0.0.7) as suspicious due to absence of source repo and use of sensitive APIs (network, code generation) during package installation time (in setup.py). We decided to take a deeper look, and found the package malicious. Please find our detailed analysis at [https://packj.dev/malware/krisqian](https://packj.dev/go?next=https://packj.dev/malware/krisqian).
+Packj flagged KrisQian (v0.0.7) as suspicious due to absence of source repo and use of sensitive APIs (network, code generation) during package installation time (in setup.py). We decided to take a deeper look, and found the package malicious. Please find our detailed analysis at [https://packj.dev/malware/krisqian](https://packj.dev/malware/krisqian).
 
-More examples of malware we found are listed at [https://packj.dev/malware](https://packj.dev/go?next=https://packj.dev/malware) Please reach out to us at [oss@ossillate.com](mailto:oss@ossillate.com) for full list.
+More examples of malware we found are listed at [https://packj.dev/malware](https://packj.dev/malware) Please reach out to us at [oss@ossillate.com](mailto:oss@ossillate.com) for full list.
 
 # Resources #
 
 To learn more about Packj tool or open-source software supply chain attacks, refer to our
 
-[![PyConUS'22 Video](https://img.youtube.com/vi/Rcuqn56uCDk/hqdefault.jpg)](https://packj.dev/go?next=https://www.youtube.com/watch?v=Rcuqn56uCDk)
-[![OSSEU'22 Video](https://img.youtube.com/vi/a7BfDGeW_jY/hqdefault.jpg)](https://packj.dev/go?next=https://www.youtube.com/watch?v=a7BfDGeW_jY)
+[![PyConUS'22 Video](https://img.youtube.com/vi/Rcuqn56uCDk/hqdefault.jpg)](https://www.youtube.com/watch?v=Rcuqn56uCDk)
+[![OSSEU'22 Video](https://img.youtube.com/vi/a7BfDGeW_jY/hqdefault.jpg)](https://www.youtube.com/watch?v=a7BfDGeW_jY)
 
-- PyConUS'22 [talk](https://packj.dev/go?next=https://www.youtube.com/watch?v=Rcuqn56uCDk) and [slides](https://packj.dev/go?next=https://speakerdeck.com/ashishbijlani/pyconus22-slides).
-- BlackHAT Asia'22 Arsenal [presentation](https://packj.dev/go?next=https://www.blackhat.com/asia-22/arsenal/schedule/#mitigating-open-source-software-supply-chain-attacks-26241)
-- PackagingCon'21 [talk](https://packj.dev/go?next=https://www.youtube.com/watch?v=PHfN-NrUCoo) and [slides](https://packj.dev/go?next=https://speakerdeck.com/ashishbijlani/mitigating-open-source-software-supply-chain-attacks)
+- PyConUS'22 [talk](https://www.youtube.com/watch?v=Rcuqn56uCDk) and [slides](https://speakerdeck.com/ashishbijlani/pyconus22-slides).
+- BlackHAT Asia'22 Arsenal [presentation](https://www.blackhat.com/asia-22/arsenal/schedule/#mitigating-open-source-software-supply-chain-attacks-26241)
+- PackagingCon'21 [talk](https://www.youtube.com/watch?v=PHfN-NrUCoo) and [slides](https://speakerdeck.com/ashishbijlani/mitigating-open-source-software-supply-chain-attacks)
 - BlackHat USA'22 Arsenal talk [Detecting typo-squatting, backdoored, abandoned, and other "risky" open-source packages using Packj](https://www.blackhat.com/us-22/arsenal/schedule/#detecting-typo-squatting-backdoored-abandoned-and-other-risky-open-source-packages-using-packj-28075)
-- Academic [dissertation](https://packj.dev/go?next=https://cyfi.ece.gatech.edu/publications/DUAN-DISSERTATION-2019.pdf) on open-source software security and the [paper](https://packj.dev/go?next=https://www.ndss-symposium.org/wp-content/uploads/ndss2021_1B-1_23055_paper.pdf) from our group at Georgia Tech that started this research.
-- Open Source Summit, Europe'22 talk [Scoring dependencies to detect “weak links” in your open-source software supply chain](https://packj.dev/go?next=https://osseu2022.sched.com/overview/type/SupplyChainSecurityCon) - presentation video on [YouTube](https://packj.dev/go?next=https://www.youtube.com/watch?v=a7BfDGeW_jY)
-- NullCon'22 talk [Unearthing Malicious And Other “Risky” Open-Source Packages Using Packj](https://packj.dev/go?next=https://nullcon.net/goa-2022/unearthing-malicious-and-other-risky-open-source-packages-using-packj)
+- Academic [dissertation](https://cyfi.ece.gatech.edu/publications/DUAN-DISSERTATION-2019.pdf) on open-source software security and the [paper](https://www.ndss-symposium.org/wp-content/uploads/ndss2021_1B-1_23055_paper.pdf) from our group at Georgia Tech that started this research.
+- Open Source Summit, Europe'22 talk [Scoring dependencies to detect “weak links” in your open-source software supply chain](https://osseu2022.sched.com/overview/type/SupplyChainSecurityCon) - presentation video on [YouTube](https://www.youtube.com/watch?v=a7BfDGeW_jY)
+- NullCon'22 talk [Unearthing Malicious And Other “Risky” Open-Source Packages Using Packj](https://nullcon.net/goa-2022/unearthing-malicious-and-other-risky-open-source-packages-using-packj)
 
 # Feature roadmap #
 
@@ -322,11 +322,11 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 Watch :eyes: this repo to stay up to date.
 
-Have a feature or support request? Please visit our [GitHub discussion page](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/qFcqaV2wYa) for discussion and requests.
+Have a feature or support request? Please visit our [GitHub discussion page](https://github.com/ossillate-inc/packj/discussions/) or join our [discord community](https://discord.gg/qFcqaV2wYa) for discussion and requests.
 
 # Team and contributors #
 
-Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://packj.dev/go?next=https://packj.dev/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators. Show your appreciation by giving us a :star: if you like our work.
+Packj has been developed by Cybersecurity researchers at [Ossillate Inc.](https://packj.dev/team) and external collaborators to help developers mitigate risks of supply chain attacks when sourcing untrusted third-party open-source software dependencies. We thank our developers and collaborators. Show your appreciation by giving us a :star: if you like our work.
 
 We welcome code contributions with open arms. See [CONTRIBUTING.md](CONTRIBUTING.md) guidelines. Found a bug? Please open an issue. Refer to our [SECURITY.md](SECURITY.md) guidelines to report a security issue.
 
@@ -342,13 +342,13 @@ Packj can currently vet NPM, PyPI, and RubyGems packages for "risky" attributes.
 <details>
 	<summary><b>What techniques does Packj employ to detect risky/malicious packages?</b></summary>
 
-Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive auditing. Static analysis alone is not sufficient to flag sophisticated malware that can hide itself better using code obfuscation. Dynamic analysis is performed by installing the package under `strace` and monitoring it's runtime behavior. Please read more at [Audit README](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
+Packj uses static code analysis, dynamic tracing, and metadata analysis for comprehensive auditing. Static analysis alone is not sufficient to flag sophisticated malware that can hide itself better using code obfuscation. Dynamic analysis is performed by installing the package under `strace` and monitoring it's runtime behavior. Please read more at [Audit README](https://github.com/ossillate-inc/packj/blob/main/packj/audit/README.md).
 	
 </details>
 
 <details>
 	<summary><b>Does it work on obfuscated calls? For example, a base 64 encrypted string that gets decrypted and then passed to a shell?</b></summary>
 
-This is a very common malicious behavior. Packj detects code obfuscation as well as spawning of shell commands (exec system call). For example, Packj can  flag use of `getattr()` and `eval()` API as they indicate "runtime code generation"; a developer can go and take a deeper look then. See [main.py](https://packj.dev/go?next=https://github.com/ossillate-inc/packj/blob/main/packj/audit/main.py#L512) for details.
+This is a very common malicious behavior. Packj detects code obfuscation as well as spawning of shell commands (exec system call). For example, Packj can  flag use of `getattr()` and `eval()` API as they indicate "runtime code generation"; a developer can go and take a deeper look then. See [main.py](https://github.com/ossillate-inc/packj/blob/main/packj/audit/main.py#L512) for details.
 	
 </details>

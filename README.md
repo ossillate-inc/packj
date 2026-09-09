@@ -316,9 +316,9 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 # Feature roadmap #
 
-* Add Rust analyzer. Rust is a work in progress [ETA: Feb '24].
-* Add functionality to detect several (TODO) "risky" code as well as metadata attributes [ETA: Feb '24].
-* Self-hosted Packj webserver and several useful integrations (e.g., Gitlab runner) [ETA: Apr'24].
+* Add Rust analyzer. Rust is a work in progress. 
+* Add functionality to detect several (TODO) "risky" code as well as metadata attributes.
+* Self-hosted Packj webserver and several useful integrations (e.g., Gitlab runner)
 
 Watch :eyes: this repo to stay up to date.
 

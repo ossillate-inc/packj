@@ -305,6 +305,7 @@ To learn more about Packj tool or open-source software supply chain attacks, ref
 
 [![PyConUS'22 Video](https://img.youtube.com/vi/Rcuqn56uCDk/hqdefault.jpg)](https://www.youtube.com/watch?v=Rcuqn56uCDk)
 [![OSSEU'22 Video](https://img.youtube.com/vi/a7BfDGeW_jY/hqdefault.jpg)](https://www.youtube.com/watch?v=a7BfDGeW_jY)
+[![NULLCON'22 Video](https://img.youtube.com/vi/PgvlSjl-mrY/hqdefault.jpg)](https://www.youtube.com/watch?v=PgvlSjl-mrY)
 
 - PyConUS'22 [talk](https://www.youtube.com/watch?v=Rcuqn56uCDk) and [slides](https://speakerdeck.com/ashishbijlani/pyconus22-slides).
 - BlackHAT Asia'22 Arsenal [presentation](https://www.blackhat.com/asia-22/arsenal/schedule/#mitigating-open-source-software-supply-chain-attacks-26241)

@@ -46,9 +46,17 @@ def git_clone(repo_url):
 	commits = []
 	try:
 		for commit in repo.iter_commits():
-			commits.append(commit)
+			commits.append({
+				'hash': commit.hexsha,
+				'author_name': commit.author.name,
+				'author_email': commit.author.email,
+				'committer_name': commit.committer.name,
+				'committer_email': commit.committer.email,
+				'message': commit.message,
+				'committed_date': commit.committed_datetime.isoformat(),
+			})
 	except Exception as e:
-		logging.debug("Failed to get commits %s: %s" % (clone_dir, str(e)))
+		logging.debug("Failed to get commits %s" % (clone_dir, str(e)))
 		commits = None
 		reason = 'No commits'
 
